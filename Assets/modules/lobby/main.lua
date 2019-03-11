@@ -130,8 +130,8 @@ local function main()
 	-- local r, err = coroutine.resume(co)
 	-- if not r then
 		-- logger.error(debug.traceback(co, err))
-	-- end	
-	fairy.UIPackage.AddPackage('Assets/modules/lobby/fui/Package1')
+	-- end
+	_ENV._mhub:AddUIPackage('lobby/fui/Package1')
 	local view = fairy.UIPackage.CreateObject('Package1', 'Component1')
 	fairy.GRoot.inst:AddChild(view)
 	local children = view:GetChildren()

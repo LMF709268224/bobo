@@ -24,16 +24,21 @@ public class Boot : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+        stopWatch.Start();
+
         // 先订阅一下日志，把日志写到文件
         SubscribeLogMsg();
 
-        var uiroot = GameObject.Find("UIRoot");
         // 启动lobby大厅模块
-        lobby = new ModuleHub("lobby", null, uiroot?.transform, this);
+        lobby = new ModuleHub("lobby", null, null, this);
 
         floader = new FairyGUILoader(lobby);
 
         lobby.Launch();
+
+        stopWatch.Stop();
+        Debug.Log($"Boot.Start total time:{stopWatch.Elapsed.TotalMilliseconds} milliseconds");
     }
 
     /// <summary>

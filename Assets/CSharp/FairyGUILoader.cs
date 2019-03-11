@@ -27,10 +27,23 @@ public class FairyGUILoader
         destroyMethod = FairyGUI.DestroyMethod.Unload;
         var assetPath = inBundleName + extension;
 
-        // TODO:以后可以注释掉
-        Debug.Log($"myFairyUILoadFunc, name:{name}, in-bundle name:{inBundleName}, extension:{extension}, type:{type}");
+        // 以后可以注释掉
+        // Debug.Log($"myFairyUILoadFunc, name:{name}, in-bundle name:{inBundleName}, extension:{extension}, type:{type}");
 
-        // TODO: 如果不属于lobby模块，则找到对应的模块然后请求该模块加载
-        return lobby.loader.LoadFromBundleAsType(assetPath, type);
+        if (inBundleName.StartsWith("lobby"))
+        {
+            return lobby.loader.LoadFromBundleAsType(assetPath, type);
+        }
+
+        // 如果不属于lobby模块，则找到对应的模块然后请求该模块加载
+        foreach(var m in lobby.subModules.Values)
+        {
+            if (inBundleName.StartsWith(m.modName))
+            {
+                return m.loader.LoadFromBundleAsType(assetPath, type);
+            }
+        }
+
+        return null;
     }
 }

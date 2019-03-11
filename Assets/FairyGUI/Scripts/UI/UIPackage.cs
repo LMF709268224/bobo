@@ -65,6 +65,7 @@ namespace FairyGUI
 		static Dictionary<string, UIPackage> _packageInstByName = new Dictionary<string, UIPackage>();
 		static List<UIPackage> _packageList = new List<UIPackage>();
 
+        // LLWANT: 增加一个自定义加载函数，以便从bundle中加载资源
         internal static LoadResource customiseLoadFunc;
 
         internal static int _constructing;
@@ -210,13 +211,20 @@ namespace FairyGUI
 		/// <returns>UIPackage</returns>
 		public static UIPackage AddPackage(string descFilePath)
 		{
+            // LLWANT：如果设置了自定义加载函数，则全部转给它处理
             if (customiseLoadFunc != null)
             {
                 return AddPackage(descFilePath, customiseLoadFunc);
             }
 
-			if (descFilePath.StartsWith("Assets/"))
-			{
+            if (!descFilePath.StartsWith("Assets/"))
+            {
+                // LLWANT：我们约定资源都放于Assets/modules/目录下面
+                descFilePath = "Assets/modules/" + descFilePath;
+            }
+
+			//if (descFilePath.StartsWith("Assets/"))
+			//{
 #if UNITY_EDITOR
 				return AddPackage(descFilePath, (string name, string extension, System.Type type, out DestroyMethod destroyMethod) =>
 				{
@@ -228,12 +236,12 @@ namespace FairyGUI
 				Debug.LogWarning("FairyGUI: failed to load package in '" + descFilePath + "'");
 				return null;
 #endif
-			}
-			return AddPackage(descFilePath, (string name, string extension, System.Type type, out DestroyMethod destroyMethod) =>
-			{
-				destroyMethod = DestroyMethod.Unload;
-				return Resources.Load(name, type);
-			});
+			//}
+			//return AddPackage(descFilePath, (string name, string extension, System.Type type, out DestroyMethod destroyMethod) =>
+			//{
+			//	destroyMethod = DestroyMethod.Unload;
+			//	return Resources.Load(name, type);
+			//});
 		}
 
 		/// <summary>
@@ -306,7 +314,11 @@ namespace FairyGUI
 			if (!_packageInstById.TryGetValue(packageIdOrName, out pkg))
 			{
 				if (!_packageInstByName.TryGetValue(packageIdOrName, out pkg))
-					throw new Exception("FairyGUI: '" + packageIdOrName + "' is not a valid package id or name.");
+                {
+                    // LLWANT: 不抛异常，只输出日志提示
+                    Debug.Log("FairyGUI: '" + packageIdOrName + "' is not a valid package id or name. maybe removed");
+                    return;
+                }
 			}
 			pkg.Dispose();
 			_packageInstById.Remove(pkg.id);

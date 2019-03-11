@@ -28,8 +28,9 @@ public class ModuleHub
 
     private readonly UnityEngine.Transform mountNode;
 
-    private Dictionary<string, ModuleHub> subModules = new Dictionary<string, ModuleHub>();
+    public Dictionary<string, ModuleHub> subModules = new Dictionary<string, ModuleHub>();
     private List<VoidLuaFunc> cleanup = new List<VoidLuaFunc>();
+    private HashSet<string> myUIPackage = new HashSet<string>();
 
     [XLua.CSharpCallLua]
     public delegate void VoidLuaFunc();
@@ -138,6 +139,11 @@ public class ModuleHub
 
         // 卸载bundle包
         loader.Unload();
+
+        foreach(var p in myUIPackage)
+        {
+            FairyGUI.UIPackage.RemovePackage(p);
+        }
 
         Debug.LogWarning($"module {modName} destroyed");
     }
@@ -281,6 +287,20 @@ public class ModuleHub
     public void RegisterCleanup(VoidLuaFunc f)
     {
         cleanup.Add(f);
+    }
+
+    /// <summary>
+    /// 增加FairyUI的资源包，LUA应该仅调用本函数来增加资源包，因为模块卸载时，可以卸载对应的资源包
+    /// </summary>
+    /// <param name="path"></param>
+    public void AddUIPackage(string path)
+    {
+        var p = FairyGUI.UIPackage.AddPackage(path);
+        if (p != null && !myUIPackage.Contains(p.name))
+        {
+            Debug.Log($"ModuleHub.AddUIPackage, path:{path}, package name:{p.name}");
+            myUIPackage.Add(p.name);
+        }
     }
 
     /// <summary>
