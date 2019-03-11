@@ -1,0 +1,32 @@
+{
+    "name": "lobby",
+    "version": "v1.0.2",
+    "abList": [
+        {
+            "name": "lobby",
+            "md5": "2720107114f9cf3dc111ec12015d076b",
+            "size": 2850,
+            "deps": []
+        },
+        {
+            "name": "lobby_lcore",
+            "md5": "7949469ecb75e06b42afd140d42ebbbf",
+            "size": 11836,
+            "deps": []
+        },
+        {
+            "name": "lobby_prefabsa",
+            "md5": "12fd8be6225a8687ab94f4af99c29049",
+            "size": 2853,
+            "deps": []
+        },
+        {
+            "name": "lobby_prefabsb",
+            "md5": "4a9d08a0a4219b33d27366ce15c2763c",
+            "size": 2941,
+            "deps": [
+                "lobby_prefabsa"
+            ]
+        }
+    ]
+}
