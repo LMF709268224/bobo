@@ -131,8 +131,9 @@ local function main()
 	-- if not r then
 		-- logger.error(debug.traceback(co, err))
 	-- end
-	_ENV._mhub:AddUIPackage('lobby/fui/Package1')
-	local view = fairy.UIPackage.CreateObject('Package1', 'Component1')
+	_ENV._mhub:AddUIPackage('lobby/fui/lobbyCommon')
+	_ENV._mhub:AddUIPackage('lobby/fui/lobbyMain')
+	local view = fairy.UIPackage.CreateObject('lobbyMain', 'MainComp')
 	fairy.GRoot.inst:AddChild(view)
 	local children = view:GetChildren()
 	local length = children.Length
