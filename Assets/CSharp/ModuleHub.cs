@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
@@ -26,8 +27,6 @@ public class ModuleHub
     public ILoader loader;
     public readonly ModuleHub parent;
 
-    private readonly UnityEngine.Transform mountNode;
-
     public Dictionary<string, ModuleHub> subModules = new Dictionary<string, ModuleHub>();
     private List<VoidLuaFunc> cleanup = new List<VoidLuaFunc>();
     private HashSet<string> myUIPackage = new HashSet<string>();
@@ -42,11 +41,10 @@ public class ModuleHub
     /// <param name="modName">模块的名字</param>
     /// <param name="parent">父模块，例如游戏模块的父模块是大厅模块</param>
     /// <param name="mountNode">视图节点，模块所有的view都挂在这个节点上</param>
-    public ModuleHub(string modName, ModuleHub parent, UnityEngine.Transform mountNode, MonoBehaviour monoBehaviour)
+    public ModuleHub(string modName, ModuleHub parent, MonoBehaviour monoBehaviour)
     {
         this.modName = modName;
         this.parent = parent;
-        this.mountNode = mountNode;
         luaenv = new XLua.LuaEnv();
         this.monoBehaviour = monoBehaviour;
     }
@@ -72,7 +70,7 @@ public class ModuleHub
         LuaEnvInit.AddBasicBuildin(luaenv);
         SelectModulePath();
 
-        luaenv.Global.Set("_mhub", this);
+        luaenv.Global.Set("thisMod", this);
 
         var entryLuaFile = $"{modName}/main";
         luaenv.DoString($"require '{entryLuaFile}'", entryLuaFile);
@@ -134,7 +132,7 @@ public class ModuleHub
         //Object.Destroy(mountNode.gameObject);
 
         // 重设_mhub为null，取消和lua的关系，否则会luaenv dispose时抛异常: dispose with c# callback
-        luaenv.Global.Set("_mhub", (object)null);
+        luaenv.Global.Set("thisMod", (object)null);
         luaenv.Dispose();
 
         // 卸载bundle包
@@ -207,14 +205,6 @@ public class ModuleHub
         });
     }
 
-    public GameObject MountGameObject(GameObject prefab)
-    {
-        var go = Object.Instantiate(prefab);
-        go.transform.parent = mountNode;
-
-        return go;
-    }
-
     public void WaitMilliseconds(int milliseconds, VoidLuaFunc callback)
     {
         monoBehaviour.StartCoroutine(MyWaitForSeconds(milliseconds, callback));
@@ -252,32 +242,77 @@ public class ModuleHub
         if (parent != null)
         {
             // 如果parent不等于null，表示模块是游戏模块，游戏模块不能创建新的游戏模块
-            Debug.LogError($"LaunchGameModule {gameModName} failed, module {modName} not lobby");
-            return;
+            throw new System.Exception($"LaunchGameModule {gameModName} failed, module {modName} not lobby");
         }
 
         // 检查是否新建重复的游戏模块
         if (subModules.ContainsKey(gameModName))
         {
-            Debug.LogError($"LaunchGameModule {gameModName} failed, duplicate module");
-            return;
+            throw new System.Exception($"LaunchGameModule {gameModName} failed, duplicate module");
         }
 
         // 检查是否启动多于一个游戏模块，目前仅允许一个游戏在运行
         if (subModules.Count > 1)
         {
-            Debug.LogError($"LaunchGameModule {gameModName} failed, only support 1 game module on running");
-            return;
+            throw new System.Exception($"LaunchGameModule {gameModName} failed, only support 1 game module on running");
         }
 
-        var objToSpawn = new GameObject(gameModName);
-        objToSpawn.transform.parent = this.mountNode;
+        // 界面必须清空后才能进入子游戏
+        var guiChildrenCount = FairyGUI.GRoot.inst._children.Count;
+        if (guiChildrenCount > 0)
+        {
+            throw new System.Exception($"GRoot.inst's children count should be zero, but now it is {guiChildrenCount}");
+        }
 
-        var m = new ModuleHub(gameModName, this, objToSpawn.transform, monoBehaviour);
+        var m = new ModuleHub(gameModName, this, monoBehaviour);
         subModules.Add(gameModName, m);
 
         // 执行模块目录下的mian.lua文件
         m.Launch();
+    }
+
+    public void BackToLobby()
+    {
+        // 只有大厅模块的parent才不为null，其他所有游戏模块的parent必须是null
+        if (parent == null)
+        {
+            // 如果parent不等于null，表示模块是游戏模块，游戏模块不能创建新的游戏模块
+            throw new System.Exception($"BackToLobby  failed, module {modName} is already lobby");
+        }
+
+        monoBehaviour.StartCoroutine(DoBackToLobbyNextFrame());
+    }
+
+    IEnumerator DoBackToLobbyNextFrame()
+    {
+        // We should only read the screen buffer after rendering is complete
+        yield return new WaitForEndOfFrame();
+
+        DoBackToLobby();
+
+        yield return null;
+    }
+
+    private void DoBackToLobby()
+    {
+
+        // 界面必须清空后才能进入子游戏
+        var guiChildrenCount = FairyGUI.GRoot.inst._children.Count;
+        if (guiChildrenCount > 0)
+        {
+            throw new System.Exception($"GRoot.inst's children count should be zero, but now it is {guiChildrenCount}");
+        }
+
+        var lobby = parent;
+
+        DoDestroy();
+
+        lobby.OnBackToLobby(modName);
+    }
+
+    public void OnBackToLobby(string gameModName)
+    {
+        luaenv.Global.Get<VoidLuaFunc>("backToLobby")?.Invoke();
     }
 
     /// <summary>

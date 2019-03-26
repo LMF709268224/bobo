@@ -16,8 +16,14 @@ local function print_func_ref_by_csharp()
     end
 end
 
+local mylobbyView = nil
+
 -- 由C#调用
 local function shutdownCleanup()
+	if mylobbyView ~= nil then
+		mylobbyView:Dispose()
+	end
+
 	logger.warn('lobby main cleanup')
 	print_func_ref_by_csharp()
 end
@@ -87,13 +93,13 @@ local function mainEntryCoroutine()
 	if err ~= nil then
 		-- 发生错误，退出
 		logger.error('Error:', err.msg, 'Code:', err.code, ',程序将结束运行')
-		--_ENV._mhub:AppExit()
+		--_ENV.thisMod:AppExit()
 		return
 	end
 
 	if upgraded then
 		-- 更新完成后，卸载背景，并reboot
-		_ENV._mhub:Reboot()
+		_ENV.thisMod:Reboot()
 		return
 	end
 
@@ -102,15 +108,38 @@ local function mainEntryCoroutine()
 	-- login()
 	
 	
-	--_ENV._mhub:LaunchGameModule("game1")
+	--_ENV.thisMod:LaunchGameModule("game1")
 end
 
-local gooo = nil
 local function onStupidClick(context)
   	print('you click on '..context.sender.name)
 	
 	-- CS.UnityEngine.Object.Destroy(gooo)
 	-- gooo = nil
+end
+
+local function onFriendClick(context)
+	--testGame1UI()
+	mylobbyView = fairy.GRoot.inst:GetChildAt(0)
+	fairy.GRoot.inst:RemoveChild(mylobbyView)
+	fairy.GRoot.inst:CleanupChildren()
+
+	_ENV.thisMod:LaunchGameModule('game1')
+end
+
+function backToLobby()
+	print('backToLobby')
+	fairy.GRoot.inst:AddChild(mylobbyView)
+	mylobbyView = nil
+end
+
+local function testLobbyUI()
+	_ENV.thisMod:AddUIPackage('lobby/fui/lobby_main')
+	local view = fairy.UIPackage.CreateObject('lobby_main', 'Main')
+	fairy.GRoot.inst:AddChild(view)
+	
+	local friendBtn = view:GetChild('n1')
+	friendBtn.onClick:Add(onFriendClick)
 end
 
 local function main()
@@ -123,7 +152,7 @@ local function main()
 
 	logger.warn('lobby/Boot begin, lobby version:', lobbyVer, ',csharp version:', csharpVer)
 
-	_ENV._mhub:RegisterCleanup(shutdownCleanup)
+	_ENV.thisMod:RegisterCleanup(shutdownCleanup)
 
 	-- 启动cortouine
 	-- local co = coroutine.create(mainEntryCoroutine)
@@ -131,20 +160,8 @@ local function main()
 	-- if not r then
 		-- logger.error(debug.traceback(co, err))
 	-- end
-	_ENV._mhub:AddUIPackage('lobby/fui/lobbyCommon')
-	_ENV._mhub:AddUIPackage('lobby/fui/lobbyMain')
-	local view = fairy.UIPackage.CreateObject('lobbyMain', 'MainComp')
-	fairy.GRoot.inst:AddChild(view)
-	local children = view:GetChildren()
-	local length = children.Length
-	print('view child count:'..length)
-	for i = 0,(length-1) do
-		local child = children[i]
-		print('child:'..child.name)
-	end
-	
-	local btn = view:GetChild('n5')
-	btn.onClick:Add(onStupidClick)
+
+	testLobbyUI()
 end
 
 main()

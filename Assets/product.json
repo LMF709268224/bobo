@@ -15,17 +15,13 @@
 					"filters":"*.lua"
 				},
 				{
-					"path":"lobby/prefabsA",
-					"filters":"*.prefab"
-				},
-				{
-					"path":"lobby/prefabsB",
-					"filters":"*.prefab"
-				},
-				{
 					"path":"lobby/fui",
 					"filters":"*.png,*.bytes"
-				}				
+				},
+				{
+					"path":"lobby/fui_lobby_poker",
+					"filters":"*.png,*.bytes"
+				}
 			]
 		},
 		{
@@ -35,7 +31,19 @@
 					"path":"game1",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
-				}
+				},
+				{
+					"path":"game1/bg",
+					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"game1/fgui",
+					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"game1/setting",
+					"filters":"*.png,*.bytes"
+				}				
 			]
 		}
 	]

@@ -732,5 +732,20 @@ namespace FairyGUI
 			get { return Stage.inst.soundVolume; }
 			set { Stage.inst.soundVolume = value; }
 		}
+
+        /// <summary>
+        /// LLWANT: 增加一个函数用来清空GRoot的所有子节点
+        /// </summary>
+        public void CleanupChildren()
+        {
+            GObject[] arr = _children.ToArray();
+            foreach (GObject g in arr)
+            {
+                if (g is Window)
+                    HideWindowImmediately(g as Window, true);
+            }
+
+            RemoveChildren(0, -1, true);
+        }
 	}
 }

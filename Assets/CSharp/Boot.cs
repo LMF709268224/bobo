@@ -31,7 +31,7 @@ public class Boot : MonoBehaviour
         SubscribeLogMsg();
 
         // 启动lobby大厅模块
-        lobby = new ModuleHub("lobby", null, null, this);
+        lobby = new ModuleHub("lobby", null, this);
 
         floader = new FairyGUILoader(lobby);
 
