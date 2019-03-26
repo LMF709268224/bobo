@@ -94,14 +94,6 @@ public class ModuleHub
     /// </summary>
     public void OnDestroy()
     {
-        //if (parent != null)
-        //{
-        //    DoDestroy();
-        //}
-        //else
-        //{
-        //    monoBehaviour.StartCoroutine(MyWaitForSeconds(0, DoDestroy));
-        //}
         DoDestroy();
     }
 
@@ -271,6 +263,9 @@ public class ModuleHub
         m.Launch();
     }
 
+    /// <summary>
+    /// 游戏子模块调用本函数回到大厅，同时会销毁游戏模块
+    /// </summary>
     public void BackToLobby()
     {
         // 只有大厅模块的parent才不为null，其他所有游戏模块的parent必须是null
@@ -280,12 +275,13 @@ public class ModuleHub
             throw new System.Exception($"BackToLobby  failed, module {modName} is already lobby");
         }
 
+        // 用coroutine的方式执行DoBackToLobby，这样才不会导致残留一些c#引用lua代码
+        // 避免luaenv dispose时产生异常
         monoBehaviour.StartCoroutine(DoBackToLobbyNextFrame());
     }
 
     IEnumerator DoBackToLobbyNextFrame()
     {
-        // We should only read the screen buffer after rendering is complete
         yield return new WaitForEndOfFrame();
 
         DoBackToLobby();
