@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class LuaEnvInit
 {
-    public static void AddBasicBuildin(XLua.LuaEnv luaenv)
+    public static void AddBasicBuiltin(XLua.LuaEnv luaenv)
     {
         luaenv.AddBuildin("rapidjson", XLua.LuaDLL.Lua.LoadRapidJson);
         luaenv.AddBuildin("protobuf.c", XLua.LuaDLL.Lua.LoadProtobufC);

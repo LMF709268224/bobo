@@ -33,6 +33,11 @@
 					"filters":"*.lua,*.pb"
 				},
 				{
+					"path":"scripts",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},				
+				{
 					"path":"game1/bg",
 					"filters":"*.png,*.bytes"
 				},

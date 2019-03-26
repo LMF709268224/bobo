@@ -81,12 +81,12 @@ public static class NetHelper
         return ws;
     }
     
-    public static void SendBinary(this BestHTTP.WebSocket.WebSocket ws, byte[] darray)
+    public static void WebsocketSendBinary(this BestHTTP.WebSocket.WebSocket ws, byte[] darray)
     {
         ws.Send(darray);
     }
     
-    public static void SendText(this BestHTTP.WebSocket.WebSocket ws, string text)
+    public static void WebsocketSendText(this BestHTTP.WebSocket.WebSocket ws, string text)
     {
         ws.Send(text);
     }
@@ -181,8 +181,8 @@ public static class NetHelper
     /// <summary>
     /// 比较两个版本字符串
     /// </summary>
-    /// <param name="version1"></param>
-    /// <param name="version2"></param>
+    /// <param name="version1">形式如: v1.0.0</param>
+    /// <param name="version2">形式如: v1.0.0</param>
     /// <returns></returns>
     public static int VersionCompare(string version1, string version2)
     {

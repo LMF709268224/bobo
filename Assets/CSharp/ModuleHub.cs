@@ -22,19 +22,29 @@ using UnityEngine;
 [XLua.LuaCallCSharp]
 public class ModuleHub
 {
+    // lua虚拟机
     public readonly XLua.LuaEnv luaenv;
+    // 模块名字
     public readonly string modName;
+    // 模块资源加载器，例如require 某个lua文件时，由loader去决定从哪里读取这个文件到lua虚拟机中
     public ILoader loader;
+    // 父模块，只有游戏模块有父模块，指向lobby模块。而lobby模块的父模块为null
     public readonly ModuleHub parent;
 
+    // 所有子模块，只有lobby模块才具有子模块
     public Dictionary<string, ModuleHub> subModules = new Dictionary<string, ModuleHub>();
+    // 所有lua脚本中往c#注册的销毁时回调函数
     private List<VoidLuaFunc> cleanup = new List<VoidLuaFunc>();
+    // 所有本模块加载的ui包，模块销毁时会卸载
     private HashSet<string> myUIPackage = new HashSet<string>();
 
+    // delegate定义
     [XLua.CSharpCallLua]
     public delegate void VoidLuaFunc();
 
+    // 保存一个MonoBehaviour，用于使用unity的coroutine
     private MonoBehaviour monoBehaviour;
+
     /// <summary>
     /// 构造一个新的ModuleHub，对应一个模块
     /// </summary>
@@ -67,17 +77,22 @@ public class ModuleHub
     /// </summary>
     public void Launch()
     {
-        LuaEnvInit.AddBasicBuildin(luaenv);
+        // 给lua虚拟机注入一些模块，例如jason模块，protocol buffer模块等等
+        LuaEnvInit.AddBasicBuiltin(luaenv);
+
+        // 选择模块的目录，例如可能是只读目录，或者可写目录
         SelectModulePath();
 
+        // 设置this到lua虚拟机中，脚本可以通过thisMod访问module hub对象
         luaenv.Global.Set("thisMod", this);
 
+        // 约定每一个模块都必须有一个main.lua文件，从这个文件开始执行
         var entryLuaFile = $"{modName}/main";
         luaenv.DoString($"require '{entryLuaFile}'", entryLuaFile);
     }
 
     /// <summary>
-    /// 如果main.lua中定义了ShutdownCleanup函数，调用它
+    /// 如果lua脚本中注册了销毁时回调函数，调用它
     /// </summary>
     private void CallCleanup()
     {
@@ -102,6 +117,7 @@ public class ModuleHub
         Debug.Log("ModuleHub.DoDestroy");
         if (parent != null)
         {
+            // 从父模块删除
             parent.subModules.Remove(modName);
         }
 
@@ -123,13 +139,15 @@ public class ModuleHub
 
         //Object.Destroy(mountNode.gameObject);
 
-        // 重设_mhub为null，取消和lua的关系，否则会luaenv dispose时抛异常: dispose with c# callback
+        // 重设thisMod为null，取消和lua的关系，否则会luaenv dispose时抛异常: dispose with c# callback
         luaenv.Global.Set("thisMod", (object)null);
+        // 销毁lua虚拟机
         luaenv.Dispose();
 
         // 卸载bundle包
         loader.Unload();
 
+        // 卸载fairyUI加载的UI包
         foreach(var p in myUIPackage)
         {
             FairyGUI.UIPackage.RemovePackage(p);
@@ -157,7 +175,7 @@ public class ModuleHub
 #if !UNITY_EDITOR
             if (IsStreamingAssetsPathModVersionNewer())
             {
-                // 只读目录模块的cfg.json内的版本号比较新，这可能是由于刚安装了更新的APP，自带的
+                // 只读目录模块的cfg.json内的版本号比较新，这可能是由于刚安装了更加新版本的APP，自带的
                 // 模块版本号比较新的缘故，因此使用只读目录，并删除老的可写目录（清理垃圾）
                 Debug.Log("StreamingAssetsPath module version is newer, use StreamingAssetsPath instead of persistentDataPath");
                 modePathRoot = Application.streamingAssetsPath;
@@ -209,19 +227,33 @@ public class ModuleHub
             }
 
             // 把形如 require 'a.b.c'替换成 require 'a/b/c'
+            // 注意lua代码中，万万不能require('a.lua')，因为这样的话，路径名是a.lua，
+            // 会被下面这行代码替换为：a/lua了，就加载失败
             patch = patch.Replace('.', '/');
             // 确保文件名字带有".lua"后缀，这样才能跟
-            // 打包时的文件名对应
+            // 打包时的文件名对应，注意lua代码中，万万不能require('a.lua')，因为这样的话，路径名是a.lua，
+            // 会被上面这行代码替换为：a/lua了，就加载失败
             filepath = patch + ".lua";
             return loader.LoadTextAsset(filepath);
         });
     }
 
+    /// <summary>
+    /// 等待若干毫秒，然后执行回调
+    /// </summary>
+    /// <param name="milliseconds">多少毫秒</param>
+    /// <param name="callback">回调函数</param>
     public void WaitMilliseconds(int milliseconds, VoidLuaFunc callback)
     {
         monoBehaviour.StartCoroutine(MyWaitForSeconds(milliseconds, callback));
     }
 
+    /// <summary>
+    /// 使用unity的coroutine来完成异步等待
+    /// </summary>
+    /// <param name="milliseconds"></param>
+    /// <param name="callback"></param>
+    /// <returns></returns>
     System.Collections.IEnumerator MyWaitForSeconds(int milliseconds, VoidLuaFunc callback)
     {
         yield return new WaitForSeconds((milliseconds)/1000.0f);
@@ -276,6 +308,7 @@ public class ModuleHub
             throw new System.Exception($"GRoot.inst's children count should be zero, but now it is {guiChildrenCount}");
         }
 
+        // 新建子模块，并添加到子模块列表
         var m = new ModuleHub(gameModName, this, monoBehaviour);
         subModules.Add(gameModName, m);
 
@@ -300,6 +333,10 @@ public class ModuleHub
         monoBehaviour.StartCoroutine(DoBackToLobbyNextFrame());
     }
 
+    /// <summary>
+    /// 等待本帧完成后，再执行DoBackToLobby
+    /// </summary>
+    /// <returns></returns>
     IEnumerator DoBackToLobbyNextFrame()
     {
         yield return new WaitForEndOfFrame();
@@ -309,6 +346,9 @@ public class ModuleHub
         yield return null;
     }
 
+    /// <summary>
+    /// 销毁本模块，然后回到lobby模块
+    /// </summary>
     private void DoBackToLobby()
     {
 
@@ -326,7 +366,12 @@ public class ModuleHub
         lobby.OnBackToLobby(modName);
     }
 
-    public void OnBackToLobby(string gameModName)
+    /// <summary>
+    /// 调用lua脚本中的backToLobby函数
+    /// 注意只有lobby模块才会有这个流程
+    /// </summary>
+    /// <param name="gameModName"></param>
+    private void OnBackToLobby(string gameModName)
     {
         luaenv.Global.Get<VoidLuaFunc>("backToLobby")?.Invoke();
     }
