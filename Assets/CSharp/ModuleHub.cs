@@ -188,11 +188,31 @@ public class ModuleHub
         // 把加载器增加到lua虚拟机中
         luaenv.AddLoader((ref string filepath) =>
         {
+            var patch = filepath;
+
+            // 确保路径必须以模块名字开头，或者以lobby开头(表示require lobby的lua文件)
+            if (parent == null)
+            {
+                // 本模块是lobby模块
+                if (!patch.StartsWith(modName))
+                {
+                    patch = Path.Combine(modName, patch);
+                }
+            }
+            else
+            {
+                // 本模块是游戏模块
+                if (!patch.StartsWith(modName) && !patch.StartsWith("lobby"))
+                {
+                    patch = Path.Combine(modName, patch);
+                }
+            }
+
             // 把形如 require 'a.b.c'替换成 require 'a/b/c'
-            filepath = filepath.Replace('.', '/');
+            patch = patch.Replace('.', '/');
             // 确保文件名字带有".lua"后缀，这样才能跟
             // 打包时的文件名对应
-            filepath = filepath + ".lua";
+            filepath = patch + ".lua";
             return loader.LoadTextAsset(filepath);
         });
     }

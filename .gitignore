@@ -5,6 +5,7 @@
 [Bb]uilds/
 [Ll]ogs/
 .vs/
+.vscode/
 win32/
 win64/
 AssetBundles/
