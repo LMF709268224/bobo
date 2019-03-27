@@ -80,16 +80,6 @@ public static class NetHelper
 
         return ws;
     }
-    
-    public static void WebsocketSendBinary(this BestHTTP.WebSocket.WebSocket ws, byte[] darray)
-    {
-        ws.Send(darray);
-    }
-    
-    public static void WebsocketSendText(this BestHTTP.WebSocket.WebSocket ws, string text)
-    {
-        ws.Send(text);
-    }
 
     public static int TimeElapsedMilliseconds(byte[] timeBuffer)
     {

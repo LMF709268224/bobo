@@ -34,6 +34,7 @@ public class AssetBundleLoader : ILoader
     [XLua.ReflectionUse]
     public byte[] LoadTextAsset(string assetPath)
     {
+        assetPath = ModuleHub.AppendModPrefix(assetPath, moduleName);
         var ta = LoadFromBundle<TextAsset>(assetPath);
         if (ta == null)
         {
@@ -48,6 +49,7 @@ public class AssetBundleLoader : ILoader
     [XLua.ReflectionUse]
     public GameObject LoadGameObject(string assetPath)
     {
+        assetPath = ModuleHub.AppendModPrefix(assetPath, moduleName);
         var go = LoadFromBundle<GameObject>(assetPath);
         return go;
     }
@@ -56,12 +58,14 @@ public class AssetBundleLoader : ILoader
     [XLua.ReflectionUse]
     public Texture2D LoadTexture2D(string assetPath)
     {
+        assetPath = ModuleHub.AppendModPrefix(assetPath, moduleName);
         var go = LoadFromBundle<Texture2D>(assetPath);
         return go;
     }
 
     public UnityEngine.Object LoadFromBundleAsType(string assetPath, System.Type type)
     {
+        assetPath = ModuleHub.AppendModPrefix(assetPath, moduleName);
         // 首先根据路径转为包名，这是打包的时候约定的：所有分隔符替换为下划线来组成bundle名
         var bundleName = Path2AssetBundleName(assetPath);
         var bundle = GetBundle(bundleName);

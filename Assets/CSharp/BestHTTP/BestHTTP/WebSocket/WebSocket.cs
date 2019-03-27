@@ -15,12 +15,19 @@ using BestHTTP.Extensions;
 
 namespace BestHTTP.WebSocket
 {
+    [XLua.CSharpCallLua]
     public delegate void OnWebSocketOpenDelegate(WebSocket webSocket);
+    [XLua.CSharpCallLua]
     public delegate void OnWebSocketMessageDelegate(WebSocket webSocket, string message);
+    [XLua.CSharpCallLua]
     public delegate void OnWebSocketBinaryDelegate(WebSocket webSocket, byte[] data);
+    [XLua.CSharpCallLua]
     public delegate void OnWebSocketClosedDelegate(WebSocket webSocket, ushort code, string message);
+    [XLua.CSharpCallLua]
     public delegate void OnWebSocketErrorDelegate(WebSocket webSocket, Exception ex);
+    [XLua.CSharpCallLua]
     public delegate void OnWebSocketErrorDescriptionDelegate(WebSocket webSocket, string reason);
+    [XLua.CSharpCallLua]
     public delegate byte[] PingDataProviderDelegate();
 
 #if (!UNITY_WEBGL || UNITY_EDITOR)
@@ -539,6 +546,23 @@ namespace BestHTTP.WebSocket
                 webSocket.Send(frame);
         }
 #endif
+        /// <summary>
+        /// LLWANT add
+        /// </summary>
+        /// <param name="darray"></param>
+        public void SendBinary(byte[] darray)
+        {
+            Send(darray);
+        }
+
+        /// <summary>
+        /// LLWANT add
+        /// </summary>
+        /// <param name="darray"></param>
+        public void SendText(string text)
+        {
+            Send(text);
+        }
 
         /// <summary>
         /// It will initiate the closing of the connection to the server.

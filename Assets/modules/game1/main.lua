@@ -3,6 +3,8 @@ local fairy = require 'lobby/lcore/fairygui'
 
 logger.warn('i am game1')
 
+local version = require 'version'
+
 -- 打印所有被C#引用着的LUA函数
 local function print_func_ref_by_csharp()
     local registry = debug.getregistry()
@@ -132,4 +134,22 @@ local function testGame1UI()
 	gooo = operationPanel
 end
 
-testGame1UI()
+local function main()
+	logger.info('game ', version.MODULE_NAME, ' startup, version:', version.VER_STR)
+	_ENV.MODULE_NAME = version.MODULE_NAME
+
+	--testGame1UI()
+	local singletonMod = require('scripts/singleton')
+	local singleton = singletonMod.getSingleton()
+	-- 启动cortouine
+	local co = coroutine.create(function()
+		singleton:tryEnterRoom()
+	end)
+
+	local r, err = coroutine.resume(co)
+	if not r then
+		logger.error(debug.traceback(co, err))
+	end	
+end
+
+main()

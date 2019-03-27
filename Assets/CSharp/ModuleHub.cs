@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,6 +34,7 @@ public class ModuleHub
 
     // 所有子模块，只有lobby模块才具有子模块
     public Dictionary<string, ModuleHub> subModules = new Dictionary<string, ModuleHub>();
+
     // 所有lua脚本中往c#注册的销毁时回调函数
     private List<VoidLuaFunc> cleanup = new List<VoidLuaFunc>();
     // 所有本模块加载的ui包，模块销毁时会卸载
@@ -207,24 +209,6 @@ public class ModuleHub
         luaenv.AddLoader((ref string filepath) =>
         {
             var patch = filepath;
-
-            // 确保路径必须以模块名字开头，或者以lobby开头(表示require lobby的lua文件)
-            if (parent == null)
-            {
-                // 本模块是lobby模块
-                if (!patch.StartsWith(modName))
-                {
-                    patch = Path.Combine(modName, patch);
-                }
-            }
-            else
-            {
-                // 本模块是游戏模块
-                if (!patch.StartsWith(modName) && !patch.StartsWith("lobby"))
-                {
-                    patch = Path.Combine(modName, patch);
-                }
-            }
 
             // 把形如 require 'a.b.c'替换成 require 'a/b/c'
             // 注意lua代码中，万万不能require('a.lua')，因为这样的话，路径名是a.lua，
@@ -438,5 +422,21 @@ public class ModuleHub
                 return icmp > 0;
             }
         }
+    }
+
+    internal static string AppendModPrefix(string assetPath, string moduleName)
+    {
+        if (assetPath.StartsWith("lobby"))
+        {
+            // 已经是以lobby模块名字问前缀
+            return assetPath;
+        }
+
+        if (assetPath.StartsWith(moduleName))
+        {
+            return assetPath;
+        }
+
+        return Path.Combine(moduleName, assetPath);
     }
 }

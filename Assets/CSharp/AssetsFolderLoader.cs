@@ -23,6 +23,7 @@ public class AssetsFolderLoader: ILoader
     [XLua.ReflectionUse]
     public byte[] LoadTextAsset(string assetPath)
     {
+        assetPath = ModuleHub.AppendModPrefix(assetPath, moduleName);
         var assetPathInBundle = Path.Combine(UnityEngine.Application.dataPath, "modules", assetPath);
         return NetHelper.UnityWebRequestLocalGet(assetPathInBundle);
     }
@@ -31,6 +32,7 @@ public class AssetsFolderLoader: ILoader
     [XLua.ReflectionUse]
     public GameObject LoadGameObject(string assetPath)
     {
+        assetPath = ModuleHub.AppendModPrefix(assetPath, moduleName);
         var go = LoadFromAssetsFolder<GameObject>(assetPath);
         return go;
     }
@@ -54,6 +56,7 @@ public class AssetsFolderLoader: ILoader
     [XLua.ReflectionUse]
     public Texture2D LoadTexture2D(string assetPath)
     {
+        assetPath = ModuleHub.AppendModPrefix(assetPath, moduleName);
         var go = LoadFromAssetsFolder<Texture2D>(assetPath);
         return go;
     }

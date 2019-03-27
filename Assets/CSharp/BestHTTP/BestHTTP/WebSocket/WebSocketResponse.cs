@@ -486,6 +486,14 @@ namespace BestHTTP.WebSocket
                                 if (OnPong != null)
                                     OnPong(this, frame.Data);
                                 break;
+                            case WebSocketFrameTypes.Ping:
+                                // Any not Final frame is handled as a fragment
+                                if (!frame.IsFinal)
+                                    goto case WebSocketFrameTypes.Continuation;
+
+                                // copy ping data, resend to peer
+                                Send(new WebSocketFrame(this.WebSocket, WebSocketFrameTypes.Pong, frame.Data));
+                                break;
                         }
                     }
                     catch (Exception ex)
