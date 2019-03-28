@@ -33,7 +33,7 @@
 					"filters":"*.lua,*.pb"
 				},
 				{
-					"path":"scripts",
+					"path":"game1/scripts",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
 				},				

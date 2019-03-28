@@ -148,7 +148,6 @@ function DF:doEnterRoom(url, myUser, roomInfo)
         enterRoomReplyMsg = self:waitWebsocketMessage(showProgressTips)
     end
 
-    --logger.debug(" doEnterRoom, date4: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
     if enterRoomReplyMsg == nil then
         -- 连接超时提示和处理（用户选择是否重连，重连的话下一帧重新执行tryEnterRoom）
         logger.debug(" waitWebsocketMessage return nil")
@@ -169,7 +168,6 @@ function DF:doEnterRoom(url, myUser, roomInfo)
         return
     end
 
-    --logger.debug(" doEnterRoom, date5: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
     logger.debug(" server reply enter room status:", enterRoomResult.status)
     if enterRoomResult.status ~= 0 then
         -- 进入房间错误提示
@@ -178,46 +176,43 @@ function DF:doEnterRoom(url, myUser, roomInfo)
         return
     end
 
-    -- 如果没有错误，切换界面
-    -- 挂载打麻将的相应脚本
-    --logger.debug(" construct room and room view")
-
     -- self.room可能不为nil，因为如果断线重入，room以及roomview就可能已经加载
     if self.room == nil then
-        logger.debug(" doEnterRoom, date2: " .. os.date() .. ", timeStamp:" .. os.time() .. ", clock:" .. os.clock())
-        -- g_ModuleMgr:GetModule(ModuleName.SCENE_MODULE):EnterRoomScene("Room")
-        self.room = room:new(myUser)
-        self.room.host = self
-        self.room.roomInfo = roomInfo
-        --logger.debug(" doEnterRoom, date7: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
-        --dfCompatibleAPI:showWaitTip("进入房间...", nil, nil, 0)
-        logger.debug("进入子游戏关张，创建房间socket完成，当前系统时间：" .. os.time())
-        self.room.initRoomViewFinish = false
-        self.room:loadRoomView()
-
-        local starttime = os.clock()
-
-        coroutine.waitDoFinish(self.room)
-
-        log(string.format("----loadRoomView-coroutine-waitDoFinish---cost time  : %.4f", os.clock() - starttime))
-        self.isEnterRoom = false
-        --dfCompatibleAPI:closeWaitTip()
-        --logger.debug(" doEnterRoom, date8: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
-        -- 调用房间的初始化函数，做一些事件订阅
-        self.room:initialize()
-        --进入房间错误清除保留的房间信息
-        g_dataModule:SaveDataByKey("RoomInfo", nil)
+        self:createRoom(myUser, roomInfo)
     end
-    logger.debug(" doEnterRoom, date3: " .. os.date() .. ", timeStamp:" .. os.time() .. ", clock:" .. os.clock())
-    local room = self.room
 
-    --注释掉如下发送ready消息的代码，因希望不要自动ready，让用户选择
-    -- 发送ready到服务器
-    --self:sendPlayerReadyMsg()
+    self:pumpMsg()
 
-    --logger.debug(" begin room main-msg-loop")
-    -- 网络消息主循环
-    -- room.isDestroy会由于用户主动退出，或者房间解散等设置为true
+    logger.debug(" end room main-msg-loop")
+end
+
+function DF:createRoom()
+    --logger.debug(" doEnterRoom, date2: " .. os.date() .. ", timeStamp:" .. os.time() .. ", clock:" .. os.clock())
+    -- g_ModuleMgr:GetModule(ModuleName.SCENE_MODULE):EnterRoomScene("Room")
+    self.room = room:new(myUser)
+    self.room.host = self
+    self.room.roomInfo = roomInfo
+    --logger.debug(" doEnterRoom, date7: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
+    --dfCompatibleAPI:showWaitTip("进入房间...", nil, nil, 0)
+    --logger.debug("进入子游戏关张，创建房间socket完成，当前系统时间：" .. os.time())
+    self.room.initRoomViewFinish = false
+    self.room:loadRoomView()
+
+    --local starttime = os.clock()
+
+    --coroutine.waitDoFinish(self.room)
+
+    --log(string.format("----loadRoomView-coroutine-waitDoFinish---cost time  : %.4f", os.clock() - starttime))
+    self.isEnterRoom = false
+    --dfCompatibleAPI:closeWaitTip()
+    --logger.debug(" doEnterRoom, date8: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
+    -- 调用房间的初始化函数，做一些事件订阅
+    self.room:initialize()
+    --进入房间错误清除保留的房间信息
+    --g_dataModule:SaveDataByKey("RoomInfo", nil)
+end
+
+function DF:pumpMsg()
     while not room.isDestroy do
         -- 并且不显示进度框
         ws = self.ws --重新获取self上的ws，因为如果网络断开重连ws会改变
@@ -248,13 +243,11 @@ function DF:doEnterRoom(url, myUser, roomInfo)
             local canLeave = self:doLeaveRoom()
             if canLeave then
                 break
-            else
-                --dfCompatibleAPI:showTip("游戏已经开始或者房间正在申请解散，不能退出")
+            --else
+            --dfCompatibleAPI:showTip("游戏已经开始或者房间正在申请解散，不能退出")
             end
         end
     end
-
-    logger.debug(" end room main-msg-loop")
 end
 
 ------------------------------------------
