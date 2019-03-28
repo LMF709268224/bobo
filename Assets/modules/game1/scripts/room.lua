@@ -7,79 +7,83 @@ Room.VERSION = "1.0"
 
 local mt = {__index = Room}
 
+local logger = require "lobby/lcore/logger"
+local proto = require "scripts/proto/proto"
+local rapidjson = require("rapidjson")
+
 -----------------------------------------------------------
 --初始化顶层消息响应handlers，有些消息例如ActionResultNotify
 --就需要msg handler继续switch case消息体内的action码
 -----------------------------------------------------------
 local function initMsgHandler()
     local msgHandlers = {}
-
+    local msgCodeEnum = proto.pokerface.MessageCode
     --服务器请求玩家进行动作，例如服务器请求玩家出牌
     --或者暗杠，加杠等等
-    local h = require(dfPath .. "dfMahjong/handlerMsgActionAllowed")
-    msgHandlers[pokerfaceProto.OPActionAllowed] = h
+    local h = require("scripts/handlers/handlerMsgActionAllowed")
+    msgHandlers[msgCodeEnum.OPActionAllowed] = h
 
     --服务器请求对手玩家进行动作
     --例如吃椪杠等等
-    h = require(dfPath .. "dfMahjong/handlerMsgReActionAllowed")
-    msgHandlers[pokerfaceProto.OPReActionAllowed] = h
+    h = require("scripts/handlers/handlerMsgReActionAllowed")
+    msgHandlers[msgCodeEnum.OPReActionAllowed] = h
 
     --服务器通知玩家动作结果
     --该动作可能是本玩家发起的，也可能是其他玩家发起的
-    h = require(dfPath .. "dfMahjong/handlerMsgActionResult")
-    msgHandlers[pokerfaceProto.OPActionResultNotify] = h
+    h = require("scripts/handlers/handlerMsgActionResult")
+    msgHandlers[msgCodeEnum.OPActionResultNotify] = h
 
     --服务器发牌
-    h = require(dfPath .. "dfMahjong/handlerMsgDeal")
-    msgHandlers[pokerfaceProto.OPDeal] = h
+    h = require("scripts/handlers/handlerMsgDeal")
+    msgHandlers[msgCodeEnum.OPDeal] = h
 
     --手牌结束时，服务器下发计分结果
-    h = require(dfPath .. "dfMahjong/handlerMsgHandOver")
-    msgHandlers[pokerfaceProto.OPHandOver] = h
+    h = require("scripts/handlers/handlerMsgHandOver")
+    msgHandlers[msgCodeEnum.OPHandOver] = h
 
     --房间更新（主要是玩家进入，或者离开之类）
-    h = require(dfPath .. "dfMahjong/handlerMsgRoomUpdate")
-    msgHandlers[pokerfaceProto.OPRoomUpdate] = h
+    h = require("scripts/handlers/handlerMsgRoomUpdate")
+    msgHandlers[msgCodeEnum.OPRoomUpdate] = h
 
     --掉线恢复
-    h = require(dfPath .. "dfMahjong/handlerMsgRestore")
-    msgHandlers[pokerfaceProto.OPRestore] = h
+    h = require("scripts/handlers/handlerMsgRestore")
+    msgHandlers[msgCodeEnum.OPRestore] = h
 
     --房间删除、解散
-    h = require(dfPath .. "dfMahjong/handlerMsgDeleted")
-    msgHandlers[pokerfaceProto.OPRoomDeleted] = h
+    h = require("scripts/handlers/handlerMsgDeleted")
+    msgHandlers[msgCodeEnum.OPRoomDeleted] = h
 
     --显示提示信息
-    h = require(dfPath .. "dfMahjong/handlerMsgShowTips")
-    msgHandlers[pokerfaceProto.OPRoomShowTips] = h
+    h = require("scripts/handlers/handlerMsgShowTips")
+    msgHandlers[msgCodeEnum.OPRoomShowTips] = h
 
     --牌局结束
-    h = require(dfPath .. "dfMahjong/handlerMsgGameOver")
-    msgHandlers[pokerfaceProto.OPGameOver] = h
+    h = require("scripts/handlers/handlerMsgGameOver")
+    msgHandlers[msgCodeEnum.OPGameOver] = h
 
     --牌局解散请求回复和通告
-    h = require(dfPath .. "dfMahjong/handlerMsgDisbandNotify")
-    msgHandlers[pokerfaceProto.OPDisbandNotify] = h
+    h = require("scripts/handlers/handlerMsgDisbandNotify")
+    msgHandlers[msgCodeEnum.OPDisbandNotify] = h
 
     --踢人结果通知
-    h = require(dfPath .. "dfMahjong/handlerMsgKickoutResult")
-    msgHandlers[pokerfaceProto.OPKickout] = h
+    h = require("scripts/handlers/handlerMsgKickoutResult")
+    msgHandlers[msgCodeEnum.OPKickout] = h
 
     --道具通知
-    h = require(dfPath .. "dfMahjong/handlerMsgDonate")
-    msgHandlers[pokerfaceProto.OPDonate] = h
+    h = require("scripts/handlers/handlerMsgDonate")
+    msgHandlers[msgCodeEnum.OPDonate] = h
 
     --用户位置更新
-    h = require(dfPath .. "dfMahjong/handlerMsgLocationUpdate")
-    msgHandlers[pokerfaceProto.OPUpdateLocation] = h
+    h = require("scripts/handlers/handlerMsgLocationUpdate")
+    msgHandlers[msgCodeEnum.OPUpdateLocation] = h
 
     --用户返回大厅
-    h = require(dfPath .. "dfMahjong/handlerMsgReturnHall")
-    msgHandlers[pokerfaceProto.OP2Lobby] = h
+    h = require("scripts/handlers/handlerMsgReturnHall")
+    msgHandlers[msgCodeEnum.OP2Lobby] = h
 
     --更新道具配置
-    h = require(dfPath .. "dfMahjong/handlerMsgPropCfgUpdate")
-    msgHandlers[mjproto.OPUpdatePropCfg] = h
+    h = require("scripts/handlers/handlerMsgPropCfgUpdate")
+    msgHandlers[msgCodeEnum.OPUpdatePropCfg] = h
     return msgHandlers
 end
 
@@ -90,18 +94,13 @@ Room.Handlers = initMsgHandler()
 --create a room object
 --@param user user 对象，房间拥有者，通过user对象访问用户各种数据
 -----------------------------------------------------------
-function Room:new(user, dfReplay)
+function Room.new(user, dfReplay)
     local room = {user = user, dfReplay = dfReplay}
     --players初始化位空表，player使用chairId来索引
     room.players = {}
     --庄家座位id
     room.bankerChairID = 0
-    --本手牌风圈，初始化为东风
-    room.windFlowerID = pokerfaceProto.enumTid_TON
-    --初始时，有144张牌，其中136是标准麻将牌，加上8张花牌
-    --room.tilesInWall = 144
-    --弹框列表
-    room.iMsgBoxList = List:new()
+
     return setmetatable(room, mt)
 end
 
@@ -154,59 +153,11 @@ function Room:isMe(player)
 end
 
 -------------------------------------------
--- 设置消息阻塞
--------------------------------------------
-function Room:beginWait(exceptMsgCode)
-    if self.inWait then
-        return
-    end
-
-    self.inWait = true
-    self.myWaitCo = coroutine.running()
-
-    self.host:registerWakeupWSMsg(
-        function(gmsgData)
-            --print(" wakeup msg call back")
-            local gmsg = pokerfaceProto.GameMessage()
-            gmsg:ParseFromString(gmsgData)
-
-            if gmsg.Ops == exceptMsgCode then
-                self:dispatchGameMessage(gmsg)
-                return true
-            end
-
-            return false
-        end
-    )
-
-    coroutine.yield()
-    self.myWaitCo = nil
-    self.inWait = false
-    self.host:unRegisterWakeupWSMsg()
-end
-
-function Room:completedWait()
-    if self.myWaitCo ~= nil then
-        local waitCo = self.myWaitCo
-        self.myWaitCo = nil
-        local flag, msg = coroutine.resume(waitCo)
-        if not flag then
-            logError(msg)
-            return
-        end
-    end
-end
-
--------------------------------------------
 -- 消息分发
 -- 主要处理最外层的GameMessage消息结构
 -------------------------------------------
-function Room:dispatchWeboscketMessage(msg)
-    local gmsg = pokerfaceProto.GameMessage()
-    gmsg:ParseFromString(msg)
-
-    print(" room dispatch msg, op:", gmsg.Ops, #gmsg.Data)
-
+function Room:dispatchWeboscketMessage(gmsg)
+    logger.debug(" room dispatch msg, op:", gmsg.Ops, #gmsg.Data)
     self:dispatchGameMessage(gmsg)
 end
 
@@ -326,7 +277,7 @@ function Room:loadRoomView()
 
     local starttime = os.clock()
     local roomCfg = {
-        luaPath = dfPath .. "View/LZOnlineView",
+        luaPath = "View/LZOnlineView",
         resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund3/LZOnlineView.prefab"
     }
     local function cb(view)
@@ -355,7 +306,7 @@ function Room:loadHandResultView()
     local viewObj =
         viewModule:CreatePanel(
         {
-            luaPath = dfPath .. "View/DFResultView",
+            luaPath = "View/DFResultView",
             resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/DFResultView.prefab",
             superClass = self.roomView.unityViewNode,
             parentNode = self.roomView.unityViewNode.transform
@@ -388,7 +339,7 @@ function Room:loadGameOverResultView()
     local viewObj =
         viewModule:OpenMsgBox(
         {
-            luaPath = dfPath .. "View/DFOverView",
+            luaPath = "View/DFOverView",
             resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/DFOverView.prefab"
         },
         self
@@ -595,7 +546,7 @@ function Room:onChatMsg(msgChat)
         --语音消息处理
         --logError("msgChat.data ---------------- :" .. #msgChat.data)
     else
-        local record = Json.decode(msgChat.data)
+        local record = rapidjson.decode(msgChat.data)
         local chatMessage = record["msg"]
 
         local oCurTextChat = nil
@@ -608,7 +559,7 @@ function Room:onChatMsg(msgChat)
             oCurTextChat:SubGet("msg", "Text").text = tostring(chatMessage)
             oCurTextChat:Show()
         elseif dataType == accessory_pb.Emoji then
-            local data = Json.decode(msgChat.data)
+            local data = rapidjson.decode(msgChat.data)
             local emojiName = data.msg
             oCurTextChat = playerView.head.faceChat
 
@@ -901,11 +852,11 @@ function Room:updateDisbandVoteView(msgDisbandNotify)
         local viewObj =
             viewModule:OpenMsgBox(
             {
-                luaPath = dfPath .. "View/DissolveVoteView",
+                luaPath = "View/DissolveVoteView",
                 resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/DissolveVoteView.prefab"
             }
         )
-        local disbandVoteView = require(dfPath .. "dfMahjong/disbandVoteView")
+        local disbandVoteView = require("scripts/handlers/disbandVoteView")
         self.disbandVoteView = disbandVoteView:new(self, viewObj)
         self.disbandVoteView:updateView(msgDisbandNotify)
     end
@@ -943,7 +894,7 @@ function Room:getRoomConfig()
 
     local roomInfo = self.roomInfo
     if roomInfo ~= nil and roomInfo.config ~= nil and roomInfo.config ~= "" then
-        local config = Json.decode(roomInfo.config)
+        local config = rapidjson.decode(roomInfo.config)
         self.config = config
     end
     return self.config
@@ -1086,25 +1037,10 @@ function Room:openMessageBoxFromDaFengNoOrder(viewName, ...)
 end
 
 function Room:openMessageBoxFromDaFeng(viewName, order, ...)
-    -- local iMsgBoxList = self.iMsgBoxList
-    -- local cfg = {
-    --     luaPath = dfPath .. "View." .. viewName,
-    --     resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/" .. viewName..".prefab",
-    --     parentNode = self.roomView.unityViewNode.transform
-    -- }
-    --  local viewModule = g_ModuleMgr:GetModule(ModuleName.VIEW_MODULE)
-    -- local msgBox = viewModule:CreatePanel(cfg, ...)
-    -- msgBox.OnDestroyFinish = function( msgBox )
-    --     iMsgBoxList:erase(msgBox)
-    -- end
-    -- iMsgBoxList:push(msgBox)
-    -- msgBox:Show()
-    -- self:UIAction(msgBox)
-    -- return msgBox
     local viewObj =
         viewModule:CreatePanel(
         {
-            luaPath = dfPath .. "View." .. viewName,
+            luaPath = "View." .. viewName,
             resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/" .. viewName .. ".prefab",
             parentNode = self.roomView.unityViewNode.transform
         },
@@ -1122,24 +1058,6 @@ function Room:UIAction(target)
     target.transform = gameObject.transform
     target.transform.size = Vector2(3000, 3000)
     target.transform:SetParent(self.roomView.unityViewNode.transform, false)
-end
-
-function Room:closeMessageBox(closeAll)
-    local iMsgBoxList = self.iMsgBoxList
-    if iMsgBoxList == nil then
-        return
-    end
-    SafeCallFunc(
-        function()
-            while iMsgBoxList:tail() do
-                iMsgBoxList:tail():Destroy()
-                if not closeAll then
-                    break
-                end
-            end
-        end,
-        self
-    )
 end
 
 function Room:updatePlayerLocation(msgUpdateLocation)
@@ -1175,7 +1093,7 @@ function Room:getPropCfg(index)
         return nil
     end
 
-    local propCfg = Json.decode(propCfgString)
+    local propCfg = rapidjson.decode(propCfgString)
     if propCfg == nil then
         return nil
     end

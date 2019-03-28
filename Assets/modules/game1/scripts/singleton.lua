@@ -94,23 +94,6 @@ function DF:tryEnterRoom(url, myUser, roomInfo)
     logger.debug(" -------destory room complete-------")
 end
 
-function DF:waitSecond(someSecond)
-    local waitCo = coroutine.running()
-    StartTimer(
-        someSecond,
-        function()
-            local flag, msg = coroutine.resume(waitCo)
-            if not flag then
-                logError(msg)
-                return
-            end
-        end,
-        1,
-        true
-    )
-    coroutine.yield()
-end
-
 function DF:doEnterRoom(url, myUser, roomInfo)
     --logger.debug(" doEnterRoom, date1: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
     -- 每次进入本函数时都重置retry为false
@@ -213,39 +196,33 @@ function DF:createRoom()
 end
 
 function DF:pumpMsg()
-    while not room.isDestroy do
-        -- 并且不显示进度框
-        ws = self.ws --重新获取self上的ws，因为如果网络断开重连ws会改变
-        local result = ws:waitWebsocketMessageEx()
-        if result.ev == websocket.websocketEvent then
-            local msg = result.data
-            if msg == nil then
-                logger.debug(" waitWebsocketMessage return nil, connection has broken")
-                if room.isDestroy then
-                    -- 用户主动离开房间，不再做重入
-                    logger.debug(" room has been destroy")
-                    break
-                end
-                -- 网络连接断开，重新登入
-                --self:showRetryMsgBox("与游戏服务器连接断开，是否重连？")
-                -- 网络连接断开时关闭申请解散框
-                room:destroyVoteView()
-                self.retry = true
-                if self.connectErrorCount > 2 then
-                    self:showRetryMsgBox()
-                end
+    while true do
+        local mq = self.mq
+        local msg = mq:getMsg()
+        if msg.mt == msgQueue.MsgType.quit then
+            -- quit
+            break
+        end
+
+        if msg.mt == msgQueue.MsgType.wsData then
+            -- 分派websocket消息
+            self.room:dispatchWeboscketMessage(msg.data)
+        elseif msg.mt == msgQueue.MsgType.wsClosed or msg.mt == msgQueue.MsgType.wsError then
+            logger.debug(" websocket connection has broken")
+            if self.room.isDestroy then
+                -- 用户主动离开房间，不再做重入
+                logger.debug(" room has been destroy")
                 break
-            else
-                -- 分发消息
-                room:dispatchWeboscketMessage(msg)
             end
-        elseif result.ev == websocket.exitRoomEvent then
-            local canLeave = self:doLeaveRoom()
-            if canLeave then
-                break
-            --else
-            --dfCompatibleAPI:showTip("游戏已经开始或者房间正在申请解散，不能退出")
+            -- 网络连接断开，重新登入
+            self:showRetryMsgBox("与游戏服务器连接断开，是否重连？")
+            -- 网络连接断开时关闭申请解散框
+            self.room:destroyVoteView()
+            self.retry = true
+            if self.connectErrorCount > 2 then
+                self:showRetryMsgBox()
             end
+            break
         end
     end
 end
@@ -256,9 +233,9 @@ end
 ------------------------------------------
 function DF:waitWebsocketMessage(showProgressTips)
     logger.debug("DF:waitWebsocketMessage--------------------" .. showProgressTips)
-    local df = self
+
     -- 显示滚动圈并显示文字showProgressTips
-    if showProgressTips ~= nil and showProgressTips ~= "" then
+    -- if showProgressTips ~= nil and showProgressTips ~= "" then
     -- dfCompatibleAPI:showWaitTip(
     --     showProgressTips,
     --     30,
@@ -267,19 +244,19 @@ function DF:waitWebsocketMessage(showProgressTips)
     --     end,
     --     0
     -- )
-    end
+    -- end
 
     local msg = self.mq:getMsg()
 
     -- 隐藏滚动圈
-    if showProgressTips ~= nil and showProgressTips ~= "" then
+    -- if showProgressTips ~= nil and showProgressTips ~= "" then
     --dfCompatibleAPI:closeWaitTip()
-    end
+    -- end
 
-    if msg.mt == msgQueue.MsgType.websocket then
-        if msg.mk == msgQueue.WSEvent.wsData then
-            return msg.data
-        end
+    if msg.mt == msgQueue.MsgType.wsData then
+        return msg.data
+    else
+        logger.error("expected normal websocket msg, but got:", msg)
     end
 
     return nil
@@ -308,10 +285,8 @@ function DF:waitConnect(showProgressTips)
     -- end
     logger.debug("DF:waitConnect, mq:getMsg return:", msg)
 
-    if msg.mt == msgQueue.MsgType.websocket then
-        if msg.mk == msgQueue.WSEvent.wsOpen then
-            return 0
-        end
+    if msg.mt == msgQueue.MsgType.wsOpen then
+        return 0
     end
 
     return -1

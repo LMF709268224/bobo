@@ -10,11 +10,9 @@ local mt = {__index = MQ}
 local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"
 
-local MsgType = {websocket = 1}
-local WSEvent = {wsOpen = 1, wsClosed = 2, wsError = 3, wsData = 4}
+local MsgType = {wsOpen = 1, wsClosed = 2, wsError = 3, wsData = 4, quit = 5}
 
 MQ.MsgType = MsgType
-MQ.WSEvent = WSEvent
 
 function MQ.new()
     local mq = {messages = {}}
@@ -34,29 +32,34 @@ function MQ:getMsg()
 end
 
 function MQ:pushWebsocketOpenEvent()
-    local msg = {mt = MsgType.websocket, mk = WSEvent.wsOpen}
+    local msg = {mt = MsgType.wsOpen}
     self:pushMsg(msg)
 end
 
 function MQ:pushWebsocketCloseEvent()
-    local msg = {mt = MsgType.websocket, mk = WSEvent.wsClosed}
+    local msg = {mt = MsgType.wsClosed}
     self:pushMsg(msg)
 end
 
 function MQ:pushWebsocketErrorEvent()
-    local msg = {mt = MsgType.websocket, mk = WSEvent.wsError}
+    local msg = {mt = MsgType.wsError}
     self:pushMsg(msg)
 end
 
 function MQ:pushWebsocketTextMessageEvent(text)
-    local msg = {mt = MsgType.websocket, mk = WSEvent.wsData, data = text}
+    local msg = {mt = MsgType.wsData, data = text}
     self:pushMsg(msg)
 end
 
 function MQ:pushWebsocketBinaryEvent(binary)
     -- 所有二进制数据包约定是GameMessage类型的proto 消息
     local gmsg = proto.decodeGameMessage(binary)
-    local msg = {mt = MsgType.websocket, mk = WSEvent.wsData, data = gmsg}
+    local msg = {mt = MsgType.wsData, data = gmsg}
+    self:pushMsg(msg)
+end
+
+function MQ:pushQuit()
+    local msg = {mt = MsgType.quit}
     self:pushMsg(msg)
 end
 
