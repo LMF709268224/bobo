@@ -3,26 +3,35 @@
 ]]
 local RoomView = {}
 
-local mt = {__index = RoomView}
-local dfPath = "GuanZhang/Script/"
-local PlayerView = require(dfPath .. "dfMahjong/playerView")
-local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
-local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
-local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
-local userDataModule = g_ModuleMgr:GetModule(ModuleName.DATASTORAGE_MODULE)
-local viewModule = g_ModuleMgr:GetModule(ModuleName.VIEW_MODULE)
-local dispatcher = g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE)
-local configModule = g_ModuleMgr:GetModule("ConfigModule")
-local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
+local fairy = require 'lobby/lcore/fairygui'
+-- local mt = {__index = RoomView}
+-- local dfPath = "GuanZhang/Script/"
+-- local PlayerView = require(dfPath .. "dfMahjong/playerView")
+-- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
+-- local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
+-- local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
+-- local userDataModule = g_ModuleMgr:GetModule(ModuleName.DATASTORAGE_MODULE)
+-- local viewModule = g_ModuleMgr:GetModule(ModuleName.VIEW_MODULE)
+-- local dispatcher = g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE)
+-- local configModule = g_ModuleMgr:GetModule("ConfigModule")
+-- local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
 
 pkproto2 = pkproto2
 
-function RoomView:new(room, roomViewObj)
+function RoomView:new(room)
+    _ENV.thisMod:AddUIPackage("lobby/fui_lobby_poker/lobby_poker")
+    _ENV.thisMod:AddUIPackage("game1/bg/runfast_bg_2d")
+    _ENV.thisMod:AddUIPackage("game1/fgui/runfast")
+    _ENV.thisMod:AddUIPackage("game1/setting/runfast_setting")
+    local view = fairy.UIPackage.CreateObject("runfast", "desk")
+    fairy.GRoot.inst:AddChild(view)
+    local operationPanel = view:GetChild("n31")
+
     local roomView = {}
     setmetatable(roomView, mt)
 
     roomView.room = room
-    roomView.unityViewNode = roomViewObj
+    -- roomView.unityViewNode = roomViewObj
 
     -- 根据prefab中的位置，正中下方是Cards/P1，左手是Cards/P4，右手是Cards/P2，正中上方是Cards/P3
     local playerViews = {}
@@ -69,19 +78,19 @@ function RoomView:new(room, roomViewObj)
     roomView.invitButton = unityViewNode.transform:Find("ExtendFuc/invit_btn")
     roomView.invitButton:SetActive(true)
 
-      --返回大厅
+    --返回大厅
     roomView.returnHallBtn = unityViewNode.transform:Find("ExtendFuc/return_hall_btn")
     roomView.returnHallBtn:SetActive(true)
     roomView.noFriendTips = {}
-    for i=1,2 do
-        roomView.noFriendTips[i] = unityViewNode.transform:Find("ExtendFuc/NoFriendTips/TipBg"..i)
+    for i = 1, 2 do
+        roomView.noFriendTips[i] = unityViewNode.transform:Find("ExtendFuc/NoFriendTips/TipBg" .. i)
     end
 
     --包牌警告文字
     roomView.baopai = unityViewNode.transform:Find("baopai")
     --倒计时
     roomView.countdown = unityViewNode.transform:Find("Countdown/countdown")
-    roomView.countdownText = unityViewNode.transform:SubGet("Countdown/countdown/LastTimeText","Text")
+    roomView.countdownText = unityViewNode.transform:SubGet("Countdown/countdown/LastTimeText", "Text")
 
     roomView.PostLogBtn = unityViewNode.transform:Find("PostLog")
     -- 长按10秒上传日志文件
@@ -218,9 +227,10 @@ function RoomView:new(room, roomViewObj)
                 -- roomView:showRuleView()
                 viewModule:OpenMsgBox(
                     {
-                    luaPath = "GuanZhang.Script.View.RoomRuleMsgBox",
-                    resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/RoomRuleMsgBox.prefab"
-                    },room:getRoomConfig()
+                        luaPath = "GuanZhang.Script.View.RoomRuleMsgBox",
+                        resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/RoomRuleMsgBox.prefab"
+                    },
+                    room:getRoomConfig()
                 )
                 -- local rule = require("RuleComponent.Script.RuleModule")
                 -- local ruleModule = g_ModuleMgr:GetModule(rule.moduleName)
@@ -229,7 +239,6 @@ function RoomView:new(room, roomViewObj)
                 -- end
                 -- local dispatcher = g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE)
                 -- dispatcher:dispatch("OPEN_RULE_VIEW")
-
             end
         )
         roomView.replayUnityViewNode:AddClick(
@@ -271,7 +280,6 @@ function RoomView:new(room, roomViewObj)
                 dfReplay:onExitReplay()
             end
         end
-
     end
 
     roomView:handleOnbackPress()
@@ -301,13 +309,12 @@ function RoomView:new(room, roomViewObj)
     --     )
     -- end
 
-
     roomView:registerBroadcast()
     if g_dataModule:GetAntiAddiction() then
         local data = g_dataModule:GetAntiAddiction()
-        roomView:AntiAddiction(data.fillIn,data.onlineTime)
+        roomView:AntiAddiction(data.fillIn, data.onlineTime)
     end
-    logger.debug("进入子游戏关张房间完成，当前系统时间："..os.time())
+    logger.debug("进入子游戏关张房间完成，当前系统时间：" .. os.time())
     return roomView
 end
 --gps
@@ -382,15 +389,15 @@ function RoomView:updateDistance()
             if safe == 2 then
                 str = "IP相同"
                 self.distanceViewWarnLines[i]:SetActive(true)
-                self:setBreathingEffect(self.distanceViewWarnLines[i],i)
+                self:setBreathingEffect(self.distanceViewWarnLines[i], i)
             elseif safe == 1 then
                 str = "距离小于20米"
                 self.distanceViewWarnLines[i]:SetActive(true)
-                self:setBreathingEffect(self.distanceViewWarnLines[i],i)
+                self:setBreathingEffect(self.distanceViewWarnLines[i], i)
             elseif safe == 3 then
                 str = "IP相同 距离小于20米"
                 self.distanceViewWarnLines[i]:SetActive(true)
-                self:setBreathingEffect(self.distanceViewWarnLines[i],i)
+                self:setBreathingEffect(self.distanceViewWarnLines[i], i)
             else
                 self.distanceViewWarnLines[i]:SetActive(false)
             end
@@ -406,7 +413,7 @@ function RoomView:hideDistanceView()
 end
 
 -- gps距离警告线呼吸效果
-function RoomView:setBreathingEffect(iterm,i)
+function RoomView:setBreathingEffect(iterm, i)
     local uiTweenAlpha = iterm:GetComponent("UITweenAlpha")
     if uiTweenAlpha == nil then
         logger.debug(" uiTweenAlpha is nil ")
@@ -415,10 +422,15 @@ function RoomView:setBreathingEffect(iterm,i)
         uiTweenAlpha.enabled = true
     end
 
-    self.unityViewNode:StartTimer("BreathEffect".. i,3,function()
+    self.unityViewNode:StartTimer(
+        "BreathEffect" .. i,
+        3,
+        function()
             uiTweenAlpha.enabled = false
-            self.unityViewNode:StopTimer("BreathEffect".. i)
-        end,1)
+            self.unityViewNode:StopTimer("BreathEffect" .. i)
+        end,
+        1
+    )
 end
 
 function RoomView:pauseResumeButtons(pauseBtnVisible, resumeBtnVisible)
@@ -462,15 +474,24 @@ function RoomView:ShowInviteFriendsView()
     local shareUrl = g_commonModule:GetShareUrl()
 
     local fEncodeUri = function(s)
-    	s = string.gsub(s, "([^%w%.%- ])", function(c) return string.format("%%%02X", string.byte(c)) end)
-    	return string.gsub(s, " ", "+")
+        s =
+            string.gsub(
+            s,
+            "([^%w%.%- ])",
+            function(c)
+                return string.format("%%%02X", string.byte(c))
+            end
+        )
+        return string.gsub(s, " ", "+")
     end
 
     local password = "0"
     local arenaId = "0"
 
-    local param = string.format("{\"RoomId\":%s,\"Password\":%s,\"ArenaId\":%s}", self.room.roomNumber, password, arenaId)
-    local url = shareUrl ..string.format("WeixinInvitedContent=%s&GameID=%s&UserID=%s",fEncodeUri(param), GameId, self.room.user.userID)
+    local param = string.format('{"RoomId":%s,"Password":%s,"ArenaId":%s}', self.room.roomNumber, password, arenaId)
+    local url =
+        shareUrl ..
+        string.format("WeixinInvitedContent=%s&GameID=%s&UserID=%s", fEncodeUri(param), GameId, self.room.user.userID)
     --local url = shareUrl .. string.format("GameID=%s&UserID=%s", GameId, self.room.user.userID)
     g_ModuleMgr:GetModule(ModuleName.SHARE_MODULE):Share(
         1,
@@ -504,7 +525,8 @@ function RoomView:openChatView()
             superClass = self.unityViewNode,
             parentNode = self.unityViewNode.transform
         },
-        instance,dfConfig.CommonLanguage
+        instance,
+        dfConfig.CommonLanguage
     )
     local uiDepth = layer:GetComponent("UIDepth")
     if not uiDepth then
@@ -582,16 +604,18 @@ end
 function RoomView:showRuleView()
     if self.room.disbandVoteView then
         return
-     end
+    end
     Util.SaveToPlayerPrefs("isOpenRuleMsgBox", "1")
     self.ruleTipNode:SetActive(false)
     self.unityViewNode:StopAction(self.fingerMoveAction1)
-    self.RoomRuleMsgBox =  viewModule:OpenMsgBox(
-         {
-         luaPath = "GuanZhang.Script.View.RoomRuleMsgBox",
-         resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/RoomRuleMsgBox.prefab"
-         }, self.room:getRoomConfig()
-     )
+    self.RoomRuleMsgBox =
+        viewModule:OpenMsgBox(
+        {
+            luaPath = "GuanZhang.Script.View.RoomRuleMsgBox",
+            resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/RoomRuleMsgBox.prefab"
+        },
+        self.room:getRoomConfig()
+    )
 end
 
 function RoomView:closeRuleView()
@@ -747,7 +771,7 @@ function RoomView:initMenu()
             if self.skinIndex ~= 1 then
                 self:UpdateBgStyle(1)
                 self:initRoomSkin(1)
-                userDataModule:Save("accountCfg","skinIndex", "1")
+                userDataModule:Save("accountCfg", "skinIndex", "1")
             end
         end
     )
@@ -757,7 +781,7 @@ function RoomView:initMenu()
             if self.skinIndex ~= 2 then
                 self:UpdateBgStyle(2)
                 self:initRoomSkin(2)
-                userDataModule:Save("accountCfg","skinIndex", "2")
+                userDataModule:Save("accountCfg", "skinIndex", "2")
             end
         end
     )
@@ -767,8 +791,9 @@ function RoomView:ShowGameRuleView()
     viewModule:OpenMsgBox(
         {
             luaPath = "RuleComponent.Script.RuleView",
-            resPath = "Component/RuleComponent/Bundle/prefab/RuleView.prefab",
-        },10045
+            resPath = "Component/RuleComponent/Bundle/prefab/RuleView.prefab"
+        },
+        10045
     )
 end
 
@@ -853,7 +878,7 @@ end
 ----------------------------------------------
 -- 播放发牌动画
 ----------------------------------------------
-function RoomView:dealAnimation(me,player1,player2)
+function RoomView:dealAnimation(me, player1, player2)
     local waitCo = coroutine.running()
 
     dfCompatibleAPI:soundPlay("effect/effect_fapai")
@@ -953,7 +978,6 @@ function RoomView:touZiStartAnimation(dice1, dice2)
     --     function()
     --     end
     -- )
-
     -- self.unityViewNode:DelayRun(
     --     0.8,
     --     function()
@@ -1045,16 +1069,13 @@ end
 --------------------------------------
 function RoomView:setRoundMask(index)
     -- logger.debug("llwant , set round mask = " .. index)
-
     -- local curRoundMask = self.roundMarks[index]
     -- curRoundMask.transform:SetActive(true)
     -- self.curRoundMask = curRoundMask
     -- self:clearWaitingPlayer()
-
     -- --设置风圈和被当做花牌的风牌
     -- self.wind:SetActive(true)
     -- tileMounter:mountTileImage(self.windTile, self.room.windFlowerID)
-
     --self.playerViews[index]:setHeadEffectBox()
 end
 --------------------------------------
@@ -1359,7 +1380,6 @@ function RoomView:onDissolveClick()
     dfCompatibleAPI:showMessageBox(
         msg,
         function()
-
             local room = roomView.room
             --先向服务器发送解散房间请求
             room:onDissolveClicked()
@@ -1390,11 +1410,10 @@ function RoomView:onRetunHallClick()
     --         --nothing to do
     --     end
     -- )
-   local room = self.room
+    local room = self.room
     --先向服务器发送返回大厅请求
     room:onRetunHallClicked()
 end
-
 
 --------------------------------------
 --播放玩家开局头像动画
@@ -1459,9 +1478,10 @@ function RoomView:initVoiceButton()
     self.voiceButton = self.unityViewNode.transform:Find("ExtendFuc/RightBtns/chat_audio_btn")
     local w = self.voiceButton.width
     local h = self.voiceButton.height
-    local scrPos = Util.GetUICamera():GetComponent(typeof(UnityEngine.Camera)):WorldToScreenPoint(self.voiceButton.position)
+    local scrPos =
+        Util.GetUICamera():GetComponent(typeof(UnityEngine.Camera)):WorldToScreenPoint(self.voiceButton.position)
     local rect = UnityEngine.Rect(scrPos.x - w / 2, scrPos.y - h / 2, w, h)
-    local init = function ()
+    local init = function()
         if not self.voiceLayer then
             self.voiceLayer = self:createVoiceLayer()
             self.voiceLayer:SetVoiceButtonRect(rect)
@@ -1482,7 +1502,8 @@ function RoomView:initVoiceButton()
 end
 
 function RoomView:createVoiceLayer()
-    local layer = viewModule:CreatePanel(
+    local layer =
+        viewModule:CreatePanel(
         {
             luaPath = "VoiceComponent.Script.VoiceLayer",
             resPath = "Component/VoiceComponent/Bundle/prefab/VoiceLayer.prefab",
@@ -1534,8 +1555,7 @@ function RoomView:initRoomStatus()
     end
 
     -- 游戏开始了
-    local onPlay =
-        function()
+    local onPlay = function()
         roomView.invitButton:SetActive(false)
         roomView.returnHallBtn:SetActive(false)
         --roomView.wind:SetActive(false) --发牌的时候，或者掉线恢复的时候会设置风圈因此此处不需要visible
@@ -1574,7 +1594,7 @@ function RoomView:initRoomStatus()
 end
 
 function RoomView:hideNoFriendTips()
-    for i,tip in ipairs(self.noFriendTips) do
+    for i, tip in ipairs(self.noFriendTips) do
         tip:Hide()
     end
 end
@@ -1589,12 +1609,12 @@ function RoomView:initPlayersRelation()
     self:hideNoFriendTips()
     local viewChairIDs = {}
     local myGroupIds = self.room.myPlayer.groupIds or {}
-    for userId,player in pairs(self.room.players) do
+    for userId, player in pairs(self.room.players) do
         if userId ~= self.room.myPlayer.userID then
             local isFriend = false
             local groupIds = player.groupIds or {}
-            for i,myGroupId in ipairs(myGroupIds) do
-                for i,groupId in ipairs(groupIds) do
+            for i, myGroupId in ipairs(myGroupIds) do
+                for i, groupId in ipairs(groupIds) do
                     if tonumber(myGroupId) and tonumber(groupId) and myGroupId == groupId then
                         isFriend = true
                         break
@@ -1605,14 +1625,13 @@ function RoomView:initPlayersRelation()
                 end
             end
             if not isFriend then
-                local viewChairID =  player.playerView.viewChairID
-                table.insert(viewChairIDs,viewChairID)
+                local viewChairID = player.playerView.viewChairID
+                table.insert(viewChairIDs, viewChairID)
             end
-
         end
     end
-    for i,viewChairID in ipairs(viewChairIDs) do
-        self.noFriendTips[viewChairID-1]:SetActive(g_dataModule:GetFunctionSwitchInfo(function_switch_pb.FSPaiYouQun))
+    for i, viewChairID in ipairs(viewChairIDs) do
+        self.noFriendTips[viewChairID - 1]:SetActive(g_dataModule:GetFunctionSwitchInfo(function_switch_pb.FSPaiYouQun))
     end
 end
 ----------------------------------------------------------
@@ -1658,7 +1677,6 @@ function RoomView:handleOnbackPress()
     local room = roomView.room
 
     if room:isReplayMode() then
-
         roomView.replayUnityViewNode.OnMenuBack = function()
             local dfReplay = room.dfReplay
             dfReplay:onExitReplay()
@@ -1679,7 +1697,6 @@ function RoomView:handleOnbackPress()
                     self.menuPanel:Hide()
                     return
                 end
-
 
                 if self.chatView.transform.gameObject.activeSelf then
                     self.chatView:Hide()
@@ -1806,12 +1823,10 @@ function RoomView:getInvitationDescription(isLoadDouble)
             rule = rule .. p .. "缺" .. n .. "，"
         end
 
-
         if config.handNum ~= nil then
             rule = rule .. tostring(config.handNum) .. "局，"
             self.room.handNum = config.handNum
         end
-
 
         if config.payType ~= nil then
             local s = " 房主支付"
@@ -1859,7 +1874,6 @@ function RoomView:getInvitationDescription(isLoadDouble)
         if config.doubleScoreWhenZuoYuanZi ~= nil and config.doubleScoreWhenZuoYuanZi then
             rule = rule .. ", 坐园子"
         end
-
 
         rule = rule .. "大丰关张，大丰人最喜爱的纸牌游戏，仅此一家！"
 
@@ -2023,13 +2037,13 @@ function RoomView:unregisterBroadcast()
     dispatcher:unregister("FunctionSwitch", self, self.FunctionSwitch)
 end
 
-function RoomView:AntiAddiction(fillIn,onlineTime)
+function RoomView:AntiAddiction(fillIn, onlineTime)
     logger.debug("room receive AntiAddiction---------------------------------------------------------")
     g_dataModule:SetAntiAddiction(nil)
     if onlineTime == 1 or onlineTime == 2 then
-        g_commonModule:ShowTip(string.format("您累计在线时间已满%s小时",onlineTime),3)
+        g_commonModule:ShowTip(string.format("您累计在线时间已满%s小时", onlineTime), 3)
     elseif onlineTime > 2 then
-        g_dataModule:SetAntiAddiction({fillIn = fillIn,onlineTime = onlineTime})
+        g_dataModule:SetAntiAddiction({fillIn = fillIn, onlineTime = onlineTime})
     end
 end
 
@@ -2048,7 +2062,7 @@ function RoomView:refreshProps()
     if not self.otherUserInfoObj or not self.unityViewNode.donateBtns then
         return
     end
-    for i,donateBtn in ipairs(self.unityViewNode.donateBtns) do
+    for i, donateBtn in ipairs(self.unityViewNode.donateBtns) do
         local propIcon = donateBtn:Find("ImageConf")
         local charmText = donateBtn:Find("TextXin")
         local diamondText = donateBtn:Find("TextZuan")
@@ -2060,20 +2074,19 @@ function RoomView:refreshProps()
 
             local propID = prop["propID"]
             local num = g_dataModule:GetPackagePropNum(propID)
-            logger.debug("num"..tostring(num)..", propID:"..tostring(propID))
-            if num and num ~=0 then
+            logger.debug("num" .. tostring(num) .. ", propID:" .. tostring(propID))
+            if num and num ~= 0 then
                 propNum:SetActive(true)
                 local propNumText = propNum:Find("Text")
-                propNumText.text = "免费"..tostring(num).."次"
+                propNumText.text = "免费" .. tostring(num) .. "次"
             end
-            propIcon:SetImage("Component/CommonComponent/Bundle/image/prop/"..propID..".png")
+            propIcon:SetImage("Component/CommonComponent/Bundle/image/prop/" .. propID .. ".png")
         end
     end
 end
 
-
 function RoomView:FunctionSwitch()
-    local show=g_dataModule:GetFunctionSwitchInfo(function_switch_pb.FSDuanWei)
+    local show = g_dataModule:GetFunctionSwitchInfo(function_switch_pb.FSDuanWei)
     self.unityViewNode.transform:Find("UserInfo/MyInfoBg/Info/SegmentLogo"):SetActive(show)
     self.unityViewNode.transform:Find("UserInfo/MyInfoBg/Info/SegmentLogoText"):SetActive(show)
     self.unityViewNode.transform:Find("UserInfo/OtherInfoBg/Info/SegmentLogo"):SetActive(show)

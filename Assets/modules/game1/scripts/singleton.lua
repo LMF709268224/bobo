@@ -191,7 +191,7 @@ function DF:createRoom()
     --dfCompatibleAPI:closeWaitTip()
     --logger.debug(" doEnterRoom, date8: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
     -- 调用房间的初始化函数，做一些事件订阅
-    self.room:initialize()
+    -- self.room:initialize()
     --进入房间错误清除保留的房间信息
     --g_dataModule:SaveDataByKey("RoomInfo", nil)
 end
