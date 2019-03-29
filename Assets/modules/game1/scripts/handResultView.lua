@@ -4,20 +4,12 @@
 local HandResultView = {}
 HandResultView.VERSION = "1.0"
 
-local dfPath = "GuanZhang/Script/"
-local tmpPath = "AccComponent.Script."
-local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
+local proto = require "scripts/proto/proto"
+local logger = require "lobby/lcore/logger"
 
-local bit = require(dfPath .. "dfMahjong/bit")
-local DfHuaDunView = require(dfPath .. "dfMahjong/dfHuaDunView")
-local Loader = require(dfPath .. "dfMahjong/spriteLoader")
-local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
-local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
-require (dfPath.."Proto/game_pokerface_rf_pb")
-local pokerfacerf = game_pokerface_rf_pb
 local mt = {__index = HandResultView}
-local Key = "handResultView"
-function HandResultView:new(room, viewObj, waitCo)
+--local Key = "handResultView"
+function HandResultView.new(room, viewObj, waitCo)
     local handResultView = {}
     setmetatable(handResultView, mt)
     handResultView.waitCo = waitCo
@@ -87,13 +79,12 @@ function HandResultView:new(room, viewObj, waitCo)
     --     handResultView:showOrHideSelf(true)
     -- end
 
-
     -- ios提审屏蔽
-    if g_ModuleMgr:GetModule("ConfigModule"):IsIosAudit() then
-        unityViewNode:FindChild("AgainButton").localPosition = Vector3(0, -274, 0)
+    -- if g_ModuleMgr:GetModule("ConfigModule"):IsIosAudit() then
+    --     unityViewNode:FindChild("AgainButton").localPosition = Vector3(0, -274, 0)
 
-        unityViewNode:FindChild("ShareButton"):SetActive(false)
-    end
+    --     unityViewNode:FindChild("ShareButton"):SetActive(false)
+    -- end
 
     if room:isReplayMode() then
         unityViewNode:FindChild("AgainButton"):SetActive(false)
@@ -185,27 +176,19 @@ function HandResultView:updateRoomData()
     --背景（输还是赢）
     --endType == enumHandOverType_None 表示流局 也就是没有人胡牌
     --if self.msgHandOver.endType ~= pokerfacerf.enumHandOverType_None then
-        if self.room:me().score.score > 0 then
-            --self.bgImageWin:SetActive(true)
-            local effobj =
-                Animator.PlayLoop(
-                dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_YING .. ".prefab",
-                self.canvasOrder
-            )
-            effobj:SetParent(self.unityViewNode.transform, false)
-            effobj.localPosition = Vector3(1.6, 0.8, 0)
-            self.effect = effobj
-        else
-            -- self.bgImageLose:SetActive(true)
-            local effobj =
-                Animator.PlayLoop(
-                dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_SHU .. ".prefab",
-                self.canvasOrder
-            )
-            effobj:SetParent(self.unityViewNode.transform, false)
-            effobj.localPosition = Vector3(1.6, 0.8, 0)
-            self.effect = effobj
-        end
+    if self.room:me().score.score > 0 then
+        --self.bgImageWin:SetActive(true)
+        local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_YING .. ".prefab", self.canvasOrder)
+        effobj:SetParent(self.unityViewNode.transform, false)
+        effobj.localPosition = Vector3(1.6, 0.8, 0)
+        self.effect = effobj
+    else
+        -- self.bgImageLose:SetActive(true)
+        local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_SHU .. ".prefab", self.canvasOrder)
+        effobj:SetParent(self.unityViewNode.transform, false)
+        effobj.localPosition = Vector3(1.6, 0.8, 0)
+        self.effect = effobj
+    end
     -- else
     --     self.bgImageLose:SetActive(true)
     --     local effobj =
@@ -245,11 +228,11 @@ function HandResultView:updateRoomData()
     local handStartted = self.room.handStartted
     local handNum = self.room.handNum
     if handNum ~= nil and handStartted ~= nil then
-        self.handAmount.text = "局数: "..tostring(handStartted).."/"..tostring(handNum)
+        self.handAmount.text = "局数: " .. tostring(handStartted) .. "/" .. tostring(handNum)
     end
     local roomConfig = self.room.roomInfo.config
     if roomConfig ~= nil and roomConfig ~= "" then
-        print("roomConfig : "..roomConfig)
+        logger.debug("roomConfig : " .. roomConfig)
         local config = Json.decode(roomConfig)
         if config.payType ~= nil then
             self.payType.text = "付费:房主支付"
@@ -258,7 +241,6 @@ function HandResultView:updateRoomData()
             end
         end
     end
-
 end
 
 -------------------------------------------
@@ -290,9 +272,9 @@ function HandResultView:updatePlayerInfoData(player, c)
         --     end
         -- )
         local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
-        tool:SetUrlImage(c.imageIcon.transform,player.headIconURI)
+        tool:SetUrlImage(c.imageIcon.transform, player.headIconURI)
     else
-        print("player.headIconURI is nill")
+        logger.debug("player.headIconURI is nill")
     end
 
     if player.avatarID ~= nil and player.avatarID ~= 0 then
@@ -353,12 +335,12 @@ function HandResultView:updateAllData()
         local myScore = 0
         --endType == enumHandOverType_None 表示流局 也就是没有人胡牌
         --if self.msgHandOver.endType ~= pokerfacerf.enumHandOverType_None then
-            local playerScores = player.score --这是在 handleMsgHandOver里面保存进去的
-            myScore = playerScores.score
-            --包牌
-            if playerScores.winType == pokerfacerf.enumHandOverType_Chucker then
-                c.textChucker:SetActive(true)
-            end
+        local playerScores = player.score --这是在 handleMsgHandOver里面保存进去的
+        myScore = playerScores.score
+        --包牌
+        if playerScores.winType == pokerfacerf.enumHandOverType_Chucker then
+            c.textChucker:SetActive(true)
+        end
         --end
         --牌
         self:updatePlayerTileData(player, c)
@@ -380,11 +362,7 @@ function HandResultView:updateAllData()
 end
 --显示赢标志
 function HandResultView:showWin(c)
-    local effobj =
-        Animator.PlayLoop(
-        dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_WIN .. ".prefab",
-        self.canvasOrder
-    )
+    local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_WIN .. ".prefab", self.canvasOrder)
     effobj:SetParent(c.group.transform, false)
     effobj.localPosition = c.winImagePos.localPosition --Vector3(1.6, 0.8, 0)
 end

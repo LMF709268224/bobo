@@ -307,7 +307,7 @@ function RoomView:new(room, roomViewObj)
         local data = g_dataModule:GetAntiAddiction()
         roomView:AntiAddiction(data.fillIn,data.onlineTime)
     end
-    print("进入子游戏关张房间完成，当前系统时间："..os.time())
+    logger.debug("进入子游戏关张房间完成，当前系统时间："..os.time())
     return roomView
 end
 --gps
@@ -409,7 +409,7 @@ end
 function RoomView:setBreathingEffect(iterm,i)
     local uiTweenAlpha = iterm:GetComponent("UITweenAlpha")
     if uiTweenAlpha == nil then
-        print(" uiTweenAlpha is nil ")
+        logger.debug(" uiTweenAlpha is nil ")
         return
     else
         uiTweenAlpha.enabled = true
@@ -906,7 +906,7 @@ end
 --             end
 --         end
 
---         --print('llwant banker chair id = ' .. self.room.bankerChairID)
+--         --logger.debug('llwant banker chair id = ' .. self.room.bankerChairID)
 --         --拿牌动画
 --         t[5]:SetActive(self.room.bankerChairID + 1 == i)
 --     end
@@ -1044,7 +1044,7 @@ end
 --设置当前房间所使用的风圈
 --------------------------------------
 function RoomView:setRoundMask(index)
-    -- print("llwant , set round mask = " .. index)
+    -- logger.debug("llwant , set round mask = " .. index)
 
     -- local curRoundMask = self.roundMarks[index]
     -- curRoundMask.transform:SetActive(true)
@@ -1335,7 +1335,7 @@ function RoomView:initPhoneInfo()
                 end
             end
         else
-            print("net is not Available！！")
+            logger.debug("net is not Available！！")
         end
     end
     updatePhoneInfo()
@@ -1514,7 +1514,7 @@ function RoomView:initRoomStatus()
 
         local config = self.room:getRoomConfig()
         if config ~= nil then
-            print(" players:" .. room:playerCount() .. ", required:" .. config.playerNumAcquired)
+            logger.debug(" players:" .. room:playerCount() .. ", required:" .. config.playerNumAcquired)
             if room:playerCount() >= config.playerNumAcquired then
                 roomView.invitButton:SetActive(false)
             else
@@ -1621,7 +1621,7 @@ end
 function RoomView:updateLeaveAndDisbandButtons()
     local room = self.room
 
-    --print("room:me().userID == "..room:me().userID)
+    --logger.debug("room:me().userID == "..room:me().userID)
 
     local handStartted = room.handStartted
     if handStartted > 0 then
@@ -1670,7 +1670,7 @@ function RoomView:handleOnbackPress()
                 self:onExitButtonClicked()
             else
                 if room.handResultView then
-                    print("on back OnMenuBack ")
+                    logger.debug("on back OnMenuBack ")
                     room.handResultView:onAgainButtonClick()
                     return
                 end
@@ -1863,7 +1863,7 @@ function RoomView:getInvitationDescription(isLoadDouble)
 
         rule = rule .. "大丰关张，大丰人最喜爱的纸牌游戏，仅此一家！"
 
-        print("llwant , RoomView:getInvitationDescription rule : " .. rule)
+        logger.debug("llwant , RoomView:getInvitationDescription rule : " .. rule)
     end
     return rule
 end
@@ -2024,7 +2024,7 @@ function RoomView:unregisterBroadcast()
 end
 
 function RoomView:AntiAddiction(fillIn,onlineTime)
-    print("room receive AntiAddiction---------------------------------------------------------")
+    logger.debug("room receive AntiAddiction---------------------------------------------------------")
     g_dataModule:SetAntiAddiction(nil)
     if onlineTime == 1 or onlineTime == 2 then
         g_commonModule:ShowTip(string.format("您累计在线时间已满%s小时",onlineTime),3)
@@ -2034,7 +2034,7 @@ function RoomView:AntiAddiction(fillIn,onlineTime)
 end
 
 function RoomView:onBroadcast(message)
-    print("onBroadcast: " .. message.content)
+    logger.debug("onBroadcast: " .. message.content)
     g_commonModule:ShowBroadcast(message.content, message.speed)
 end
 
@@ -2060,7 +2060,7 @@ function RoomView:refreshProps()
 
             local propID = prop["propID"]
             local num = g_dataModule:GetPackagePropNum(propID)
-            print("num"..tostring(num)..", propID:"..tostring(propID))
+            logger.debug("num"..tostring(num)..", propID:"..tostring(propID))
             if num and num ~=0 then
                 propNum:SetActive(true)
                 local propNumText = propNum:Find("Text")

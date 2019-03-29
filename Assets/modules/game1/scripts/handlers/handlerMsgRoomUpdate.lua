@@ -5,20 +5,21 @@
         有玩家离开房间
         有玩家状态改变，例如变为离线，准备好，等等
 ]]
-local Handler={}
-Handler.VERSION='1.0'
+local Handler = {}
+Handler.VERSION = "1.0"
 
-function Handler:onMsg(msgData, room)
-    --print(' handle room update')
+local proto = require "scripts/proto/proto"
+local logger = require "lobby/lcore/logger"
 
-    local msgRoomUpdate = pkproto2.MsgRoomInfo()
-    msgRoomUpdate:ParseFromString(msgData)
+function Handler.onMsg(msgData, room)
+    logger.debug(" handle room update")
 
+    local msgRoomUpdate = proto.decodeGameMessageData("pokerface.MsgRoomInfo", msgData)
     local msgPlayers = msgRoomUpdate.players
 
     -- 房间状态
     room.state = msgRoomUpdate.state
-    print(" room update state = " .. tostring(room.state))
+    logger.debug(" room update state = " .. tostring(room.state))
 
     room.ownerID = msgRoomUpdate.ownerID
     room.roomNumber = msgRoomUpdate.roomNumber
@@ -27,7 +28,7 @@ function Handler:onMsg(msgData, room)
     --有人退出为 -1 有人进来为 1 没有变动为 0
     local updatePlayer = 0
 
-    --print(" room handStartted ".. room.handStartted)
+    --logger.debug(" room handStartted ".. room.handStartted)
 
     -- 显示房间号
     room.roomView:showRoomNumber()
@@ -61,9 +62,9 @@ function Handler:onMsg(msgData, room)
     -- 如果自己还没有创建，创建自己
     for _, msgPlayer in ipairs(msgPlayers) do
         local player = room:getPlayerByUserId(msgPlayer.userID)
-        --print(" room.userID:"..room.user.userID .. ",msgPlayer userID:" .. msgPlayer.userID)
+        --logger.debug(" room.userID:"..room.user.userID .. ",msgPlayer userID:" .. msgPlayer.userID)
         if room.user.userID == msgPlayer.userID then
-            if player == nil  then
+            if player == nil then
                 room:createMyPlayer(msgPlayer)
                 break
             elseif player.chairID ~= msgPlayer.chairID then
@@ -89,24 +90,26 @@ function Handler:onMsg(msgData, room)
         else
             player:updateByPlayerInfo(msgPlayer)
         end
-
     end
 
+    local roomStateEnum = proto.pokerface.RoomState
+    local playerStateEnum = proto.pokerface.PlayerState
+
     --如果房间是等待状态，那么检查自己的状态是否已经是ready状态
-    if msgRoomUpdate.state == pkproto2.SRoomWaiting then
-        if me.state ~= pkproto2.PSReady then
+    if msgRoomUpdate.state == roomStateEnum.SRoomWaiting then
+        if me.state ~= playerStateEnum.PSReady then
             -- 显示准备按钮，以便玩家可以点击
             room.roomView:show2ReadyButton()
-        elseif myOldState ~= pkproto2.PSReady then
+        elseif myOldState ~= playerStateEnum.PSReady then
             -- 并隐藏to ready按钮
             room.roomView:hide2ReadyButton()
         end
         if updatePlayer ~= 0 then
             room.roomView:updateDistance()
-             --玩家自己与其他玩家的关系
+            --玩家自己与其他玩家的关系
             room.roomView:initPlayersRelation()
         end
-    elseif msgRoomUpdate.state == pkproto2.SRoomPlaying then
+    elseif msgRoomUpdate.state == roomStateEnum.SRoomPlaying then
         room.roomView:hideDistanceView()
     end
     --是否需要更新GPS按钮(是否有警告)
@@ -138,21 +141,21 @@ function Handler:onMsg(msgData, room)
         totalScores[4] = 0
         for i = 1, #scoreRecords do
             local playerRecords = scoreRecords[i].playerRecords
-            for i = 1, 4 do
-                local playerRecord = playerRecords[i]
+            for j = 1, 4 do
+                local playerRecord = playerRecords[j]
                 if playerRecord ~= nil then
                     local scoreNumber = playerRecord.score
                     local userID = playerRecord.userID
                     local player = room:getPlayerByUserId(userID)
-                    totalScores[i] = totalScores[i] + scoreNumber
-                    player.totalScores = totalScores[i]
+                    totalScores[j] = totalScores[j] + scoreNumber
+                    player.totalScores = totalScores[j]
                 end
             end
         end
     end
     for _, player in pairs(room.players) do
         if player ~= nil and player.totalScores ~= nil then
-            print(" 更新 player.totalScores ： "..player.totalScores)
+            logger.debug(" 更新 player.totalScores ： " .. player.totalScores)
             player.playerView:setGold(player.totalScores)
         end
     end

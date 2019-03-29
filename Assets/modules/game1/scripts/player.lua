@@ -161,7 +161,7 @@ function Player:removeLatestDiscarded(tileID)
     --从队列尾部删除
     local removed = table.remove(self.tilesDiscarded)
     if removed ~= tileID then
-        print(" removed:" .. removed .. ",expected:" .. tileID)
+        logger.debug(" removed:" .. removed .. ",expected:" .. tileID)
     end
 end
 
@@ -515,14 +515,14 @@ function Player:updateByPlayerInfo(playerInfo)
     player.charm = playerInfo.charm
     player.avatarID = playerInfo.avatarID
     player.groupIds = playerInfo.clubIDs
-    print("player.avatarID:" .. tostring(player.avatarID))
+    logger.debug("player.avatarID:" .. tostring(player.avatarID))
     if self:isMe() and not self.room:isReplayMode() then
         local singleton = acc
         singleton.charm = playerInfo.charm
         g_dataModule:GetUserData():SetCharm(playerInfo.charm)
     end
     self.state = playerInfo.state
-    print("player id:"..player.userID..", avatarID:"..player.avatarID)
+    logger.debug("player id:"..player.userID..", avatarID:"..player.avatarID)
     self:updateHeadEffectBox()
 end
 
@@ -570,7 +570,7 @@ function Player:onTipBtnClick(isHui,btnObj)
     local tipCard = tipCards[self.tipCardsIndex]
     if tipCard then
         local cs = tipCard.cards
-        print(tostring(self.tipCardsIndex) .."提示 cs : " .. tostring(cs))
+        logger.debug(tostring(self.tipCardsIndex) .."提示 cs : " .. tostring(cs))
         if cs then
             for i = 1, 16 do
                 local handsClickCtrl = handsClickCtrls[i]
@@ -737,7 +737,7 @@ function Player:autoDiscard()
     end
 end
 function Player:onPlayerDiscardCards(disCards)
-    print(" onPlayerDiscardCards tile .")
+    logger.debug(" onPlayerDiscardCards tile .")
     --dump(disCards , "----------------- disCards ---------------------------")
     if disCards == nil or  #disCards < 1 then
         dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSELECTCARDS)
@@ -799,7 +799,7 @@ end
 
 function Player:onPlayerDiscardTile(tileID)
     local room = self.room
-    print(" discard tile:" .. tileID)
+    logger.debug(" discard tile:" .. tileID)
     if self.allowedActionMsg ~= nil then
         local actionMsg = pokerface.MsgPlayerAction()
         actionMsg.qaIndex = self.allowedActionMsg.qaIndex

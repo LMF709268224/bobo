@@ -408,7 +408,7 @@ function PlayerView:initHeadView()
 
     --起始
     local onStart = function()
-        print("llwant ,test onstart ")
+        logger.debug("llwant ,test onstart ")
         head.root:SetActive(true)
         head.stateOffline:SetActive(false)
         self.infoGroupEmpty:SetActive(false)
@@ -420,7 +420,7 @@ function PlayerView:initHeadView()
 
     --准备
     local onReady = function(roomstate)
-        print("llwant ,test onReady ")
+        logger.debug("llwant ,test onReady ")
         head.root:SetActive(true)
         head.stateOffline:SetActive(false)
         self.infoGroupEmpty:SetActive(false)
@@ -431,7 +431,7 @@ function PlayerView:initHeadView()
 
     --离线
     local onLeave = function(roomstate)
-        print("llwant ,test onLeave ")
+        logger.debug("llwant ,test onLeave ")
         self.readyIndicator:SetActive(false)
         self.infoGroupEmpty:SetActive(false)
         head.stateOffline:SetActive(true)
@@ -440,7 +440,7 @@ function PlayerView:initHeadView()
 
     --正在玩
     local onPlaying = function(roomstate)
-        print("llwant ,test onPlaying ")
+        logger.debug("llwant ,test onPlaying ")
         self.readyIndicator:SetActive(false)
         self.infoGroupEmpty:SetActive(false)
         head.root:SetActive(true)
@@ -557,13 +557,13 @@ function PlayerView:initHeadPopup()
 
                 local headBoxSprite = self.viewUnityNode:SubGet(headBoxIconPath, "Image").sprite
                 local headBoxIcon = self.viewUnityNode:SubGet(path.."/ImageIcon/Image", "Image")
-                print("headBoxIconPath = "..headBoxIconPath)
+                logger.debug("headBoxIconPath = "..headBoxIconPath)
                 headBoxIcon.sprite = headBoxSprite
                 headBoxIcon:SetNativeSize()
                 headBoxIcon.transform.localScale = Vector3(1.25,1.25,1)
 
                 if player.avatarID ~= nil and player.avatarID ~= 0 then
-                    print("player.avatarID ~= nil and player.avatarID ~= 0 player.avatarID = "..player.avatarID)
+                    logger.debug("player.avatarID ~= nil and player.avatarID ~= 0 player.avatarID = "..player.avatarID)
                     headBoxIcon.transform.localScale = Vector3(1,1,1)
                 end
 
@@ -601,7 +601,7 @@ function PlayerView:initHeadPopup()
                 iconGender.sprite = genderSprite
                 local location = nil
                 if #self.player.location > 0 then
-                    print(" loc:" .. self.player.location)
+                    logger.debug(" loc:" .. self.player.location)
                     location = Json.decode(self.player.location)
                 end
                 -- 与玩家的距离设置
@@ -612,7 +612,7 @@ function PlayerView:initHeadPopup()
                     distanceText[i]:SetActive(false)
                 end
                 local function setDistanceText()
-                    print(" comming to setDistanceText !!")
+                    logger.debug(" comming to setDistanceText !!")
                     local gpsModule = g_ModuleMgr:GetModule(ModuleName.GPS_MODULE)
                     local players = {}
                     players = self.player.room.players
@@ -621,7 +621,7 @@ function PlayerView:initHeadPopup()
                         local dLocation = nil -- 用于解析位置进行判断
                         local nick = ""
                         if #v.location > 0 then
-                            print(" loc:"..v.location)
+                            logger.debug(" loc:"..v.location)
                             dLocation = Json.decode(v.location)
                         end
                         if self.player.userID ~= i then
@@ -718,7 +718,7 @@ function PlayerView:initHeadPopup()
 
                                 local propID = prop["propID"]
                                 local num = g_dataModule:GetPackagePropNum(propID)
-                                print("num"..tostring(num)..", propID:"..tostring(propID))
+                                logger.debug("num"..tostring(num)..", propID:"..tostring(propID))
                                 if num and num ~=0 then
                                     propNum:SetActive(true)
                                     local propNumText = propNum:Find("Text")
@@ -863,7 +863,7 @@ end
 
 function PlayerView:kickoutPlayer()
     if self.viewChairID == 1 then
-        print(" can not kickout self")
+        logger.debug(" can not kickout self")
         return
     end
 
@@ -1130,7 +1130,7 @@ end
 --@param wholeMove 是否整体移动
 ---------------------------------------------
 function PlayerView:showHandsForMe(wholeMove, isShow)
-    --print(" showHandsForMe ---------------------" .. tostring(self.player.cardsOnHand))
+    --logger.debug(" showHandsForMe ---------------------" .. tostring(self.player.cardsOnHand))
     if isShow == nil then
         isShow = true
     end
@@ -1282,7 +1282,7 @@ end
 ------------------------------------------
 function PlayerView:clearAllowedActionsView(discardAble)
     if not discardAble then
-        --print(" clear discardable.."..debug.traceback())
+        --logger.debug(" clear discardable.."..debug.traceback())
         self:clearDiscardable()
         --把听牌标志隐藏
         self:hideTing()
@@ -1383,7 +1383,7 @@ function PlayerView:onDrag(dragGo, index)
 
     --可否拖动
     local function dragable()
-        --print(" drag able")
+        --logger.debug(" drag able")
         local player = self.player
         if player == nil then
             return false
@@ -1420,7 +1420,7 @@ function PlayerView:onDrag(dragGo, index)
     end
 
     dragGo.onBeginDrag = function(obj, eventData)
-        --print(" darg onbegindrag")
+        --logger.debug(" darg onbegindrag")
         if not enable then
             return
         end
@@ -1440,7 +1440,7 @@ function PlayerView:onDrag(dragGo, index)
         end
         siblingIndex = dragGo:GetSiblingIndex()
 
-        --print(" drag ondown")
+        --logger.debug(" drag ondown")
         local x1 = dragGo.localPosition.x - dragGo.sizeDelta.x * 0.5
         local x2 = dragGo.localPosition.x + dragGo.sizeDelta.x * 0.5
         local y1 = dragGo.localPosition.y - dragGo.sizeDelta.y * 0.5
@@ -1468,7 +1468,7 @@ function PlayerView:onDrag(dragGo, index)
         dragGo:SetActive(false)
 
         dragGo:SetSiblingIndex(siblingIndex)
-        --print(" darg onenddrag")
+        --logger.debug(" darg onenddrag")
         detachEffect()
         if pointIsInRect(dragGo.localPosition) then
             dragGo:SetActive(true)
@@ -1581,7 +1581,7 @@ function PlayerView:showHeadImg()
     end
 
     if player.headIconURI then
-        print("showHeadImg player.headIconURI = "..player.headIconURI)
+        logger.debug("showHeadImg player.headIconURI = "..player.headIconURI)
         tool:SetUrlImage(self.head.headImg.transform, player.headIconURI)
     else
         logError("showHeadIcon,  player.headIconURI == nil")
@@ -2002,7 +2002,7 @@ function PlayerView:updatePropNum(index)
     if prop ~= nil then
         local propID = prop["propID"]
         local num = g_dataModule:GetPackagePropNum(propID)
-        print("num"..tostring(num)..", propID:"..tostring(propID))
+        logger.debug("num"..tostring(num)..", propID:"..tostring(propID))
         if num and num ~=0 then
             propNum:SetActive(true)
             local propNumText = propNum:Find("Text")

@@ -30,14 +30,14 @@ function DFReplay:new(df, userID, msgHandRecord)
 end
 
 function DFReplay:gogogo(isShare)
-    print(" gogogo")
+    logger.debug(" gogogo")
 
     --新建room和绑定roomView
     self.room = Room:new(self.user, self)
     self.room.host = self.df
     --self.room.roomInfo = roomInfo
 
-    print(" room info : "..self.msgHandRecord.roomConfigID)
+    logger.debug(" room info : "..self.msgHandRecord.roomConfigID)
     local roomInfo = accessory_pb.RoomInfo{}
     roomInfo.roomID = ""
     roomInfo.roomNumber = self.msgHandRecord.roomNumber
@@ -67,7 +67,7 @@ function DFReplay:gogogo(isShare)
     local players = self.msgHandRecord.players
     for _, p in ipairs(players) do
         --if p.userID == acc.userID then
-        print(" p.userID "..p.userID)
+        logger.debug(" p.userID "..p.userID)
         if p.userID == self.user.userID then
             room:createMyPlayer(p)
         end
@@ -148,7 +148,7 @@ function DFReplay:gogogo(isShare)
 
     if isShare then
         --如果是从查看回放的入口进来的，则回到大厅,否则回到会播房间列表页面
-        print("back to hallview")
+        logger.debug("back to hallview")
         dispatcher:dispatch("OPEN_HALLVIEW")
     else
         local function cb()
@@ -432,7 +432,7 @@ end
 --过
 ---------------------------------
 function DFReplay:skipActionHandler(srAction, room)
-    print(" dfreplay, firstReadyHand")
+    logger.debug(" dfreplay, firstReadyHand")
 
     local actionResultMsg = {targetChairID = srAction.chairID}
     local h = require  ( dfPath .. "dfMahjong/handlerActionResultSkip")
@@ -461,7 +461,7 @@ end
 --出牌
 ---------------------------------
 function DFReplay:discardedActionHandler(srAction, room, waitDiscardReAction)
-    print(" dfreplay, discarded")
+    logger.debug(" dfreplay, discarded")
     --这里要复制table出来用，否则，用户观看完一次回播记录之后，点击重播，srAction.cards会少了第一个元素
     local tiles = clone(srAction.cards)
     local cardHandType = tiles[1]

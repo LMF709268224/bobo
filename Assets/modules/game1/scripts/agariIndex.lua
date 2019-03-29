@@ -88,7 +88,7 @@ local indexMap = {
 function AgariIndex.tileId2ArtId(tileID)
     local artId =  indexMap[tileID]
     if artId == nil then
-        print(" no art id for tile:"..tileID)
+        logger.debug(" no art id for tile:"..tileID)
     end
 
     return artId
@@ -128,7 +128,7 @@ local function resetSlots(hai)
 
     for _,v in ipairs(hai) do
         local idx = math.floor(v / 4)
-        --print("resetSlots, idx:"..idx)
+        --logger.debug("resetSlots, idx:"..idx)
         local h = slots[idx + 1]
         slots[idx+1] = h + 1
     end
@@ -144,9 +144,9 @@ function AgariIndex.calcKey(hai)
     for i = 1,14 do
         local s = slots[i]
         if s > 0 then
-            --print("calcKey, s:"..s..",i:"..i)
+            --logger.debug("calcKey, s:"..s..",i:"..i)
             s = bit.blshift(s, (i-1)*3)
-            --print("bit.blshift, s:"..s)
+            --logger.debug("bit.blshift, s:"..s)
             key = bit.bor(key, s)
         end
     end
@@ -161,7 +161,7 @@ function AgariIndex.agariConvertMsgCardHand(hai)
     local key = AgariIndex.calcKey(hai)
     local agari = agariTable[key]
     if agari == nil then
-        --print("agariConvertMsgCardHand, nil agari, key:"..key)
+        --logger.debug("agariConvertMsgCardHand, nil agari, key:"..key)
         return nil
     end
 
@@ -873,7 +873,7 @@ end
 --从手牌上根据rank抽取若干张牌到一个新table中
 ----------------------------------
 function AgariIndex.extractCardsByRank(hands, rank, count)
-    print("extractCardsByRank, rank:"..rank..",count:"..count)
+    logger.debug("extractCardsByRank, rank:"..rank..",count:"..count)
     local extract ={}
     local ecount = 0
     for _, h in ipairs(hands) do
@@ -893,7 +893,7 @@ end
 --从手牌上根据rank范围抽取若干张牌到一个新table中
 ----------------------------------
 function AgariIndex.extractCardsByRanks(hands, rankStart, rankStop, count)
-    print("extractCardsByRanks, rankStart:"..rankStart..",rankStop:"..rankStop..",count:"..count)
+    logger.debug("extractCardsByRanks, rankStart:"..rankStart..",rankStop:"..rankStop..",count:"..count)
     local extract ={}
 
     for rank = rankStart, rankStop do

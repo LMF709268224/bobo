@@ -3,10 +3,10 @@ require 'Lobby/Lcore/Lcore'
 
 -- local rapidjson = require('rapidjson')
 -- local t = rapidjson.decode('{"a":123}')
--- print(t.a)
+-- logger.debug(t.a)
 -- t.a = 456
 -- local s = rapidjson.encode(t)
--- print('json', s)
+-- logger.debug('json', s)
 
 -- local protobuf = require "Lobby/Lcore/protobuf"
 -- local addr = io.open("D:\\u3d_demo\\bobo\\Assets\\addressbook.pb","rb")
@@ -19,15 +19,15 @@ require 'Lobby/Lcore/Lcore'
 
 -- proto = t.file[1]
 
--- print(proto.name)
--- print(proto.package)
+-- logger.debug(proto.name)
+-- logger.debug(proto.package)
 
 -- message = proto.message_type
 
 -- for _,v in ipairs(message) do
-	-- print(v.name)
+	-- logger.debug(v.name)
 	-- for _,v in ipairs(v.field) do
-		-- print("\t".. v.name .. " ["..v.number.."] " .. v.label)
+		-- logger.debug("\t".. v.name .. " ["..v.number.."] " .. v.label)
 	-- end
 -- end
 
@@ -44,15 +44,15 @@ require 'Lobby/Lcore/Lcore'
 
 -- decode = protobuf.decode("tutorial.Person" , code)
 
--- print(decode.name)
--- print(decode.id)
+-- logger.debug(decode.name)
+-- logger.debug(decode.id)
 -- for _,v in ipairs(decode.phone) do
-	-- print("\t"..v.number, v.type)
+	-- logger.debug("\t"..v.number, v.type)
 -- end
 
 -- phonebuf = protobuf.pack("tutorial.Person.PhoneNumber number","87654321")
 -- buffer = protobuf.pack("tutorial.Person name id phone", "Alice", 123, { phonebuf })
--- print(protobuf.unpack("tutorial.Person name id phone", buffer))
+-- logger.debug(protobuf.unpack("tutorial.Person name id phone", buffer))
 
 local lobby = {version = '1.0.0'}
 CS.Lobby.LaunchNewGame('GameA', "GameA/Main", "lobbyCfg", lobby)

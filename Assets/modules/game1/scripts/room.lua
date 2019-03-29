@@ -168,12 +168,12 @@ function Room:dispatchGameMessage(gmsg)
     local op = gmsg.Ops
     local handler = self.Handlers[op]
     if handler == nil then
-        print(" Room:dispatchWeboscketMessage, no handler for:" .. op)
+        logger.debug(" Room:dispatchWeboscketMessage, no handler for:" .. op)
         return
     end
 
     -- 调用handler的onMsg
-    handler:onMsg(gmsg.Data, self)
+    handler.onMsg(gmsg.Data, self)
 end
 
 ----------------------------------------------
@@ -184,7 +184,7 @@ function Room:showDonate(msgDonate)
         local itemID = msgDonate.itemID
         local propCfg = self:getPropCfg(itemID)
         if propCfg == nil then
-            print("propCfg == nil ")
+            logger.debug("propCfg == nil ")
             return
         end
         itemID = propCfg["propID"]
@@ -198,7 +198,7 @@ function Room:showDonate(msgDonate)
         local fromPlayer = self:getPlayerByChairID(msgDonate.fromChairID)
         local toPlayer = self:getPlayerByChairID(msgDonate.toChairID)
         if fromPlayer == nil or toPlayer == nil then
-            print(" fromPlayer or toPlayer is nil...")
+            logger.debug(" fromPlayer or toPlayer is nil...")
             return
         end
         if msgDonate.toChairID == self.curActiveChairID then
@@ -219,7 +219,7 @@ function Room:showDonate(msgDonate)
         local effobjSUB = itemID
         local sound = itemID
         if sprite == nil or effobjSUB == nil then
-            print(" sprite or effobjSUB is nil...")
+            logger.debug(" sprite or effobjSUB is nil...")
             return
         end
         image.sprite = sprite
@@ -1061,11 +1061,11 @@ function Room:UIAction(target)
 end
 
 function Room:updatePlayerLocation(msgUpdateLocation)
-    print("Room:updatePlayerLocation")
+    logger.debug("Room:updatePlayerLocation")
     local userID = msgUpdateLocation.userID
     local player = self.players[userID]
     if not player then
-        print(" updatePlayerLocation, can't find player " .. userID)
+        logger.debug(" updatePlayerLocation, can't find player " .. userID)
         return
     end
     player.location = msgUpdateLocation.location
@@ -1089,7 +1089,7 @@ function Room:getPropCfg(index)
     local roomInfo = self.roomInfo
     local propCfgString = roomInfo.propCfg
     if propCfgString == nil or propCfgString == "" then
-        print("room propCfg = nil")
+        logger.debug("room propCfg = nil")
         return nil
     end
 
@@ -1099,7 +1099,7 @@ function Room:getPropCfg(index)
     end
 
     -- dump(propCfg, "-------propCfg--------")
-    -- print("index:", index)
+    -- logger.debug("index:", index)
 
     return propCfg[tostring(index)]
 end
@@ -1134,7 +1134,7 @@ function Room:getPropIconName(prop)
 end
 
 function Room:updatePropCfg(msgUpdatePropCfg)
-    print(" updatePropCfg:" .. msgUpdatePropCfg.propCfg)
+    logger.debug(" updatePropCfg:" .. msgUpdatePropCfg.propCfg)
 
     local roomInfo = self.roomInfo
     if roomInfo == nil then

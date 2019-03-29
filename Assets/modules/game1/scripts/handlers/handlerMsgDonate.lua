@@ -1,16 +1,17 @@
 --[[
     处理服务器下发的道具捐赠
 ]]
-local Handler={}
-Handler.VERSION='1.0'
+local Handler = {}
+Handler.VERSION = "1.0"
 
-local pokerfaceProto = pkproto2
+local proto = require "scripts/proto/proto"
+local logger = require "lobby/lcore/logger"
 
-function Handler:onMsg(msgData, room)
-    --print('llwant Donate msg')
+function Handler.onMsg(msgData, room)
+    logger.debug("llwant Donate msg")
 
-    local msgDonate = pokerfaceProto.MsgDonate()
-    msgDonate:ParseFromString(msgData)--
+    local msgDonate = proto.decodeGameMessageData("pokerface.MsgDonate", msgData)
+    --
     --logError("-------------------- msgDonate item :"..tostring(msgDonate.itemID))
     --logError("-------------------- msgDonate toChairID :"..tostring(msgDonate.toChairID))
     --logError("-------------------- msgDonate fromChairID :"..tostring(msgDonate.fromChairID))

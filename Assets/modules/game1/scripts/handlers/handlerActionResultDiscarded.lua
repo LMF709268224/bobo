@@ -1,13 +1,11 @@
 --[[
     处理有玩家打出一张牌结果通知
 ]]
-local Handler={}
-Handler.VERSION='1.0'
-local dfPath = "GuanZhang/Script/"
-local dfCompatibleAPI = require(dfPath ..'dfMahjong/dfCompatibleAPI')
+local Handler = {}
+Handler.VERSION = "1.0"
 
-function Handler:onMsg(actionResultMsg, room)
-    --print(' Discarded result')
+function Handler.onMsg(actionResultMsg, room)
+    --logger.debug(' Discarded result')
     --TODO:开启倒计时
     --room:startDiscardCountdown(15)
 
@@ -16,7 +14,7 @@ function Handler:onMsg(actionResultMsg, room)
     local discardTileIds = actionResultMsg.actionHand.cards
     -- actionResultMsg.actionHand.cardHandType    -- 牌组类型  用于显示文字提示（比如：顺子  对子）
 
-    for _,v in ipairs(discardTileIds) do
+    for _, v in ipairs(discardTileIds) do
         --从手牌移除
         player:removeTileFromHand(v)
         --加到打出牌列表
@@ -29,10 +27,10 @@ function Handler:onMsg(actionResultMsg, room)
     --更新UI
     player:hand2UI()
     player:discarded2UI(discardTileIds)
-    player:showCardHandType(actionResultMsg.actionHand.cardHandType,discardTileIds[1])
+    player:showCardHandType(actionResultMsg.actionHand.cardHandType, discardTileIds[1])
 
     --出牌音效
-    dfCompatibleAPI:soundPlay("effect/effect_chupai")
+    -- dfCompatibleAPI:soundPlay("effect/effect_chupai")
     --logError("chatIsOn : "..tostring(Sound.GetToggle("chatIsOn")))
     --如果打出去的牌是在本人的听牌列表中，要做一个减法
     -- local me = room:me()

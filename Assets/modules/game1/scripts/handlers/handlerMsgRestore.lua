@@ -4,12 +4,14 @@
 local Handler = {}
 Handler.VERSION = "1.0"
 
-function Handler:onMsg(msgData, room)
-    --print(' handle room restore')
+local proto = require "scripts/proto/proto"
+local logger = require "lobby/lcore/logger"
+
+function Handler.onMsg(msgData, room)
+    logger.debug(" handle room restore")
 
     --掉线恢复时，是通过MsgRestore下发的
-    local msgRestore = pokerfaceProto.MsgRestore()
-    msgRestore:ParseFromString(msgData)
+    local msgRestore = proto.decodeGameMessageData("pokerface.MsgRestore", msgData)
 
     --首先清空所有玩家的牌列表
     for _, p in pairs(room.players) do
@@ -55,11 +57,12 @@ function Handler:onMsg(msgData, room)
                 if discardTiles then
                     local discardTileIds = discardTiles.cards
                     if discardTileIds and #discardTileIds > 0 then
-                        for _, v in ipairs(discardTileIds) do
+                        for _, v2 in ipairs(discardTileIds) do
                             --加到打出牌列表
-                            player:addDicardedTile(v)
+                            player:addDicardedTile(v2)
                         end
-                        player:discarded2UI(discardTileIds)--显示
+                        player:discarded2UI(discardTileIds)
+                    --显示
                     end
                 end
             end

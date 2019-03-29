@@ -33,7 +33,7 @@ local function loadProtofile()
             packageEnumSet[v.name] = eset
 
             for _, v1 in ipairs(v.value) do
-                --print("\t" .. v1.name .. "," .. v1.number, ", t:", type(v1.number))
+                --logger.debug("\t" .. v1.name .. "," .. v1.number, ", t:", type(v1.number))
                 eset[v1.name] = v1.number
             end
         end

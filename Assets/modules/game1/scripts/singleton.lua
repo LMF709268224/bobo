@@ -9,6 +9,7 @@ local websocket = require "scripts/websocket"
 local msgQueue = require "scripts/msgQueue"
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
+local room = require "scripts/room"
 
 local singleTon = nil
 

@@ -1,15 +1,17 @@
 --[[
     处理服务器下发的发牌消息，发牌消息意味一手牌开始
 ]]
-local Handler={}
-Handler.VERSION='1.0'
+local Handler = {}
+Handler.VERSION = "1.0"
 
-function Handler:onMsg(msgData, room)
-    print(' deal msg')
+local proto = require "scripts/proto/proto"
+local logger = require "lobby/lcore/logger"
 
-    local msgDeal = pokerfaceProto.MsgDeal()
-    msgDeal:ParseFromString(msgData)
-    --清理
+function Handler.onMsg(msgData, room)
+    logger.debug(" deal msg")
+
+    local msgDeal = proto.decodeGameMessageData("pokerface.MsgDeal", msgData)
+
     room:resetForNewHand()
 
     --隐藏gps
@@ -22,9 +24,9 @@ function Handler:onMsg(msgData, room)
     room.windFlowerID = msgDeal.windFlowerID
     --room.tilesInWall = msgDeal.cardsInWall
     --大丰 1：就表示家家庄    -- 盐城 >0 表示加价局计数
-    --print("msgDeal.markup : " .. msgDeal.markup)
+    --logger.debug("msgDeal.markup : " .. msgDeal.markup)
     room.markup = msgDeal.markup
-    --print("handlerMsgRestore ---------------"..tostring(msgDeal.markup))
+    --logger.debug("handlerMsgRestore ---------------"..tostring(msgDeal.markup))
     --room:updateTilesInWallUI()
 
     local players = room.players
@@ -43,7 +45,7 @@ function Handler:onMsg(msgData, room)
     local player2 = nil
     --保存每一个玩家的牌列表
     local playerCardLists = msgDeal.playerCardLists
-    for _,v in ipairs(playerCardLists) do
+    for _, v in ipairs(playerCardLists) do
         local playerTileList = v
         local chairID = v.chairID
         local player = room:getPlayerByChairID(chairID)
@@ -67,20 +69,19 @@ function Handler:onMsg(msgData, room)
     --播放发牌动画，并使用coroutine等待动画完成
     --room.roomView:dealAnimation()
 
-
     --自己手牌排一下序
     local mySelf = room:me()
-    mySelf:sortHands(mySelf==bankerPlayer)
+    mySelf:sortHands(false)
 
     --显示各个玩家的手牌（对手只显示暗牌）和花牌
-    for _,p in pairs(players) do
-        print(' 显示各个玩家的手牌')
-        p:hand2UI(false,false)
+    for _, p in pairs(players) do
+        logger.debug(" 显示各个玩家的手牌")
+        p:hand2UI(false, false)
         --p:flower2UI()
     end
 
     --播放发牌动画，并使用coroutine等待动画完成
-    room.roomView:dealAnimation(mySelf,player1,player2)
+    room.roomView:dealAnimation(mySelf, player1, player2)
 
     --等待庄家出牌
     local bankerPlayer = room:getPlayerByChairID(room.bankerChairID)

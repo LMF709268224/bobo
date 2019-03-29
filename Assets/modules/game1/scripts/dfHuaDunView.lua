@@ -67,7 +67,7 @@ function DFHuaDunView:updatePlayerInfoData(player,c)
         local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
         tool:SetUrlImage(c.imageIcon.transform,player.headIconURI)
     else
-        print("player.headIconURI is nill")
+        logger.debug("player.headIconURI is nill")
     end
 end
 

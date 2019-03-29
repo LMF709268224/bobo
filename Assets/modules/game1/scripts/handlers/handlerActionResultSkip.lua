@@ -1,12 +1,10 @@
 --[[
     处理有玩家打过
 ]]
-local Handler={}
-Handler.VERSION='1.0'
-local dfPath = "GuanZhang/Script/"
-local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
+local Handler = {}
+Handler.VERSION = "1.0"
 
-function Handler:onMsg(actionResultMsg, room)
+function Handler.onMsg(actionResultMsg, room)
     --这里只要播放  要不起
     local targetChairID = actionResultMsg.targetChairID
     local player = room:getPlayerByChairID(targetChairID)

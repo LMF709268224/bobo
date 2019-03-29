@@ -1,12 +1,15 @@
 --[[
     处理服务器下发的发牌消息，发牌消息意味一手牌开始
 ]]
-local Handler={}
-Handler.VERSION='1.0'
+local Handler = {}
+Handler.VERSION = "1.0"
 
-function Handler:onMsg(msgData, room)
-    print(' return hall msg')
-    g_dataModule:SaveDataByKey("RoomInfo", room.roomInfo)
+--local proto = require "scripts/proto/proto"
+local logger = require "lobby/lcore/logger"
+
+function Handler.onMsg(_, room)
+    logger.debug(" return hall msg")
+    --g_dataModule:SaveDataByKey("RoomInfo", room.roomInfo)
     room.isDestroy = true
 end
 

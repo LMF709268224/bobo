@@ -99,7 +99,7 @@ function GameOverResultView:updateRoomData()
     local handNum = self.room.handNum
     local roomConfig = self.room.roomInfo.config
     if roomConfig ~= nil and roomConfig ~= "" then
-        print("roomConfig : "..roomConfig)
+        logger.debug("roomConfig : "..roomConfig)
         local config = Json.decode(roomConfig)
         if config.payType ~= nil then
             self.payType.text = "付费:房主支付"
@@ -155,7 +155,7 @@ function GameOverResultView:updatePlayerInfoData(player, c)
         local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
         tool:SetUrlImage(c.imageIcon.transform,player.headIconURI)
     else
-        print("player.headIconURI is nill")
+        logger.debug("player.headIconURI is nill")
     end
 
     if player.avatarID ~= nil and player.avatarID ~= 0 then
@@ -336,7 +336,7 @@ function GameOverResultView:onShareButtonClick()
     end
     if configModule:IsIgnoreShareCb() then
         fSuccess()
-    else 
+    else
         u8sdk.OnShareSuccess = fSuccess
     end
 end

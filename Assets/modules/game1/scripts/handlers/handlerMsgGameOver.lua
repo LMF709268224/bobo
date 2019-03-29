@@ -2,13 +2,14 @@
     处理服务器下发的一手牌结束的消息
     一手牌结束后分数结算
 ]]
-local Handler={}
-Handler.VERSION='1.0'
+local Handler = {}
+Handler.VERSION = "1.0"
 
-local pokerfaceProto = pkproto2
+local proto = require "scripts/proto/proto"
+local logger = require "lobby/lcore/logger"
 
-function Handler:onMsg(msgData, room)
-    --print('llwant game over msg')
+function Handler.onMsg(msgData, room)
+    logger.debug("llwant game over msg")
 
     --TODO: 显示结算界面
     --在此时，服务器已经解散了房间，因此客户端会收到房间解散消息
@@ -17,8 +18,8 @@ function Handler:onMsg(msgData, room)
 
     --
 
-    local msgGameOver = pokerfaceProto.MsgGameOver()
-    msgGameOver:ParseFromString(msgData)
+    local msgGameOver = proto.decodeGameMessageData("pokerface.MsgGameOver", msgData)
+
     --把结果保存到 room
     room.msgGameOver = msgGameOver
     --显示游戏最后结果()
