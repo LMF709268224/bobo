@@ -10,6 +10,7 @@ local mt = {__index = Room}
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local rapidjson = require("rapidjson")
+local RoomView = require("scripts/roomView")
 
 -----------------------------------------------------------
 --初始化顶层消息响应handlers，有些消息例如ActionResultNotify
@@ -271,32 +272,32 @@ end
 ----------------------------------------------
 function Room:loadRoomView()
     -- 当前的view（大厅view）替换为LZOnlineView
-    ResourceManager:LoadFontAssetBundle("GameModule/GuanZhang/_AssetsBundleRes/Fonts/FZSXSLKJW.ttf")
+    -- ResourceManager:LoadFontAssetBundle("GameModule/GuanZhang/_AssetsBundleRes/Fonts/FZSXSLKJW.ttf")
 
-    g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE):register("LZOnlineViewInitFinish", self, self.InitRoomView)
-
+    -- g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE):register("LZOnlineViewInitFinish", self, self.InitRoomView)
     local starttime = os.clock()
-    local roomCfg = {
-        luaPath = "View/LZOnlineView",
-        resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund3/LZOnlineView.prefab"
-    }
-    local function cb(view)
-        self.roomViewObj = view
-    end
-    g_ModuleMgr:GetModule(ModuleName.SCENE_MODULE):EnterScene("Room", roomCfg, cb)
+    -- local roomCfg = {
+    --     luaPath = "View/LZOnlineView",
+    --     resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund3/LZOnlineView.prefab"
+    -- }
+    -- local function cb(view)
+    --     self.roomViewObj = view
+    -- end
+    self.InitRoomView()
+    -- g_ModuleMgr:GetModule(ModuleName.SCENE_MODULE):EnterScene("Room", roomCfg, cb)
 
     log(string.format("-----Room:loadRoomView--ReplaceView---cost time  : %.4f", os.clock() - starttime))
 end
 
 function Room:InitRoomView()
     local starttime = os.clock()
-    local roomView = RoomView:new(self, self.roomViewObj)
+    local roomView = RoomView:new(self)
     self.roomView = roomView
     self.initRoomViewFinish = true
 
     log(string.format("------Room:loadRoomView--InitRoomView---cost time  : %.4f", os.clock() - starttime))
 
-    g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE):unregister("LZOnlineViewInitFinish", self, self.InitRoomView)
+    -- g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE):unregister("LZOnlineViewInitFinish", self, self.InitRoomView)
 end
 
 ----------------------------------------------
@@ -566,7 +567,10 @@ function Room:onChatMsg(msgChat)
             g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE):DestroyAllChilds(oCurTextChat)
             if not self.emoji[emojiName] then
                 --local emojiObj = resMgr.LoadAsset("LanZhouMaJiang/prefab/bund1/",emojiName)
-                local emojiObj = ResourceManager:LoadPrefab("GameModule/GuanZhang/_AssetsBundleRes/prefab/bund1/" .. emojiName .. ".prefab")
+                local emojiObj =
+                    ResourceManager:LoadPrefab(
+                    "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund1/" .. emojiName .. ".prefab"
+                )
                 emojiObj:SetParent(self.roomView.unityViewNode.transform, false)
                 emojiObj:Hide()
                 if emojiObj then
