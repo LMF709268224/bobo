@@ -12,7 +12,7 @@
 				{
 					"path":"lobby/lcore",
 					"istxt":true,
-					"filters":"*.lua"
+					"filters":"*.lua,*.pb"
 				},
 				{
 					"path":"lobby/fui",
