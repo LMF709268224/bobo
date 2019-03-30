@@ -173,7 +173,7 @@ end
 function DF:createRoom()
     --logger.debug(" doEnterRoom, date2: " .. os.date() .. ", timeStamp:" .. os.time() .. ", clock:" .. os.clock())
     -- g_ModuleMgr:GetModule(ModuleName.SCENE_MODULE):EnterRoomScene("Room")
-    self.room = room:new(myUser)
+    self.room = room.new(self.myUser)
     self.room.host = self
     self.room.roomInfo = roomInfo
     --logger.debug(" doEnterRoom, date7: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())

@@ -11,6 +11,7 @@ local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local rapidjson = require("rapidjson")
 local RoomView = require("scripts/roomView")
+local Player = require("scripts/player")
 
 -----------------------------------------------------------
 --初始化顶层消息响应handlers，有些消息例如ActionResultNotify
@@ -275,7 +276,7 @@ function Room:loadRoomView()
     -- ResourceManager:LoadFontAssetBundle("GameModule/GuanZhang/_AssetsBundleRes/Fonts/FZSXSLKJW.ttf")
 
     -- g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE):register("LZOnlineViewInitFinish", self, self.InitRoomView)
-    local starttime = os.clock()
+    -- local starttime = os.clock()
     -- local roomCfg = {
     --     luaPath = "View/LZOnlineView",
     --     resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund3/LZOnlineView.prefab"
@@ -283,19 +284,19 @@ function Room:loadRoomView()
     -- local function cb(view)
     --     self.roomViewObj = view
     -- end
-    self.InitRoomView()
+    self:initRoomView()
     -- g_ModuleMgr:GetModule(ModuleName.SCENE_MODULE):EnterScene("Room", roomCfg, cb)
 
-    log(string.format("-----Room:loadRoomView--ReplaceView---cost time  : %.4f", os.clock() - starttime))
+    -- log(string.format("-----Room:loadRoomView--ReplaceView---cost time  : %.4f", os.clock() - starttime))
 end
 
-function Room:InitRoomView()
+function Room:initRoomView()
     local starttime = os.clock()
-    local roomView = RoomView:new(self)
+    local roomView = RoomView.new(self)
     self.roomView = roomView
     self.initRoomViewFinish = true
 
-    log(string.format("------Room:loadRoomView--InitRoomView---cost time  : %.4f", os.clock() - starttime))
+    -- log(string.format("------Room:loadRoomView--InitRoomView---cost time  : %.4f", os.clock() - starttime))
 
     -- g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE):unregister("LZOnlineViewInitFinish", self, self.InitRoomView)
 end

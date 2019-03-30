@@ -4,86 +4,87 @@
 local PlayerView = {}
 
 local mt = {__index = PlayerView}
+local fairy = require "lobby/lcore/fairygui"
 local dfPath = "GuanZhang/Script/"
 --local AgariIndex = require "dfMahjong/AgariIndex"
-local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
-local Loader = require(dfPath .. "dfMahjong/spriteLoader")
-local userDataModule = g_ModuleMgr:GetModule(ModuleName.DATASTORAGE_MODULE)
-local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
-local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
+-- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
+-- local Loader = require(dfPath .. "dfMahjong/spriteLoader")
+-- local userDataModule = g_ModuleMgr:GetModule(ModuleName.DATASTORAGE_MODULE)
+-- local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
+-- local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
 
-local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
+-- local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
 
 --这段代码比较屌----------------------------------------
-function ViewBase:DoPress(clickSound, func, obj, eventData)
-    if clickSound == "selectcard" then
-        Sound.Play(clickSound)
-    end
-    func(obj, eventData)
-end
+-- function ViewBase:DoPress(clickSound, func, obj, eventData)
+--     if clickSound == "selectcard" then
+--         Sound.Play(clickSound)
+--     end
+--     func(obj, eventData)
+-- end
 
-function ViewBase:AddDrag(node, func, clickSound)
-    clickSound = clickSound
-    if isString(func) then
-        func = self:Func(func)
-    end
-    if isString(node) then
-        node = self:FindChild(node)
-    end
-    if node == self.transform then
-        node.onDrag = function(obj, eventData)
-            if eventData.rawPointerPress == eventData.pointerPress then
-                ViewBase:DoPress(clickSound, func, obj, eventData)
-            end
-        end
-    elseif node then
-        node.onDrag = function(obj, eventData)
-            ViewBase:DoPress(clickSound, func, obj, eventData)
-        end
-    end
-end
+-- function ViewBase:AddDrag(node, func, clickSound)
+--     clickSound = clickSound
+--     if isString(func) then
+--         func = self:Func(func)
+--     end
+--     if isString(node) then
+--         node = self:FindChild(node)
+--     end
+--     if node == self.transform then
+--         node.onDrag = function(obj, eventData)
+--             if eventData.rawPointerPress == eventData.pointerPress then
+--                 ViewBase:DoPress(clickSound, func, obj, eventData)
+--             end
+--         end
+--     elseif node then
+--         node.onDrag = function(obj, eventData)
+--             ViewBase:DoPress(clickSound, func, obj, eventData)
+--         end
+--     end
+-- end
 --add drag 2017.3.2 zy
-function ViewBase:AddDragEnd(node, func, clickSound)
-    clickSound = clickSound
-    if isString(func) then
-        func = self:Func(func)
-    end
-    if isString(node) then
-        node = self:FindChild(node)
-    end
-    if node == self.transform then
-        node.onEndDrag = function(obj, eventData)
-            if eventData.rawPointerPress == eventData.pointerPress then
-                ViewBase:DoPress(clickSound, func, obj, eventData)
-            end
-        end
-    elseif node then
-        node.onEndDrag = function(obj, eventData)
-            ViewBase:DoPress(clickSound, func, obj, eventData)
-        end
-    end
-end
+-- function ViewBase:AddDragEnd(node, func, clickSound)
+--     clickSound = clickSound
+--     if isString(func) then
+--         func = self:Func(func)
+--     end
+--     if isString(node) then
+--         node = self:FindChild(node)
+--     end
+--     if node == self.transform then
+--         node.onEndDrag = function(obj, eventData)
+--             if eventData.rawPointerPress == eventData.pointerPress then
+--                 ViewBase:DoPress(clickSound, func, obj, eventData)
+--             end
+--         end
+--     elseif node then
+--         node.onEndDrag = function(obj, eventData)
+--             ViewBase:DoPress(clickSound, func, obj, eventData)
+--         end
+--     end
+-- end
 
-function ViewBase:AddBeginDrag(node, func, clickSound)
-    clickSound = clickSound
-    if isString(func) then
-        func = self:Func(func)
-    end
-    if isString(node) then
-        node = self:FindChild(node)
-    end
-    if node == self.transform then
-        node.onBeginDrag = function(obj, eventData)
-            if eventData.rawPointerPress == eventData.pointerPress then
-                ViewBase:DoPress(clickSound, func, obj, eventData)
-            end
-        end
-    elseif node then
-        node.onBeginDrag = function(obj, eventData)
-            ViewBase:DoPress(clickSound, func, obj, eventData)
-        end
-    end
-end
+-- function ViewBase:AddBeginDrag(node, func, clickSound)
+--     clickSound = clickSound
+--     if isString(func) then
+--         func = self:Func(func)
+--     end
+--     if isString(node) then
+--         node = self:FindChild(node)
+--     end
+--     if node == self.transform then
+--         node.onBeginDrag = function(obj, eventData)
+--             if eventData.rawPointerPress == eventData.pointerPress then
+--                 ViewBase:DoPress(clickSound, func, obj, eventData)
+--             end
+--         end
+--     elseif node then
+--         node.onBeginDrag = function(obj, eventData)
+--             ViewBase:DoPress(clickSound, func, obj, eventData)
+--         end
+--     end
+-- end
 --最屌代码完成---------------------------------------------------------------
 
 -----------------------------------------------
@@ -105,113 +106,120 @@ function PlayerView:new(viewUnityNode, viewChairID)
     -- 这里需要把player的chairID转换为游戏视图中的chairID，这是因为，无论当前玩家本人
     -- 的chair ID是多少，他都是居于正中下方，左手是上家，右手是下家，正中上方是对家
     -- 根据prefab中的位置，正中下方是Cards/1，左手是Cards/4，右手是Cards/2，正中上方是Cards/3
-    local myTilesNode = viewUnityNode.transform:Find("Cards/" .. viewChairID)
-
-    playerView.tilesRoot = myTilesNode
-
-    self.texiaoPos = myTilesNode.transform:Find("texiaoPos") --特效的位置
-    -- 手牌列表
-    local hands = {}
-    local handsOriginPos = {}
-    local handsClickCtrls = {}
-    local myHandTilesNode = myTilesNode.transform:Find("Hands")
-    for i = 1, 16 do
-        local h = myHandTilesNode.transform:Find(tostring(i))
-        --h.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
-        hands[i] = h
-        local pos = {}
-        pos.x = h.x
-        pos.y = h.y
-
-        table.insert(handsOriginPos, pos)
-        table.insert(handsClickCtrls, {clickCount = 0, h = h})
-
-        --订阅点击事件
-        --TODO: 增加drag/drop
-        viewUnityNode:AddClick(
-            h,
-            function(obj)
-                playerView:onHandTileBtnClick(i)
-            end,
-            {isMute = true}
-        )
-        --playerView:onDrag(h, i)
+    -- local myTilesNode = viewUnityNode.transform:Find("Cards/" .. viewChairID)
+    local myTilesNode = fairy.UIPackage.CreateObject("runfast", "desk_view_mine")
+    if (viewChairID == 2) then
+        myTilesNode = fairy.UIPackage.CreateObject("runfast", "desk_view_right")
+    elseif (viewChairID == 3) then
+        myTilesNode = fairy.UIPackage.CreateObject("runfast", "desk_view_left")
     end
-    -- 滑动拖牌
-    viewUnityNode:AddDrag(
-        myHandTilesNode,
-        function(cardObj, data)
-            playerView:OnItemDrag(cardObj, data)
-        end
-    )
-    viewUnityNode:AddBeginDrag(
-        myHandTilesNode,
-        function(cardObj, data)
-            playerView:OnItemBeginDrag(cardObj, data)
-        end
-    )
-    viewUnityNode:AddDragEnd(
-        myHandTilesNode,
-        function(cardObj, data)
-            playerView:OnItemDragEnd(cardObj, data)
-        end
-    )
-    --用于显示手牌数量
-    playerView.handsNumber = myHandTilesNode.transform:SubGet("1/handsNumber", "Text")
+    -- myTilesNode.visible = true
+    -- playerView.tilesRoot = myTilesNode
 
-    playerView.hands = hands
-    playerView.handsOriginPos = handsOriginPos --记忆原始的手牌位置，以便点击手牌时可以往上弹起以及恢复
-    playerView.handsClickCtrls = handsClickCtrls -- 手牌点击时控制数据结构
+    -- -- self.texiaoPos = myTilesNode.transform:Find("texiaoPos") --特效的位置
+    -- local operationPanel = view:GetChild("n31")
+    -- -- 手牌列表
+    -- local hands = {}
+    -- local handsOriginPos = {}
+    -- local handsClickCtrls = {}
+    -- local myHandTilesNode = myTilesNode.transform:Find("Hands")
+    -- for i = 1, 16 do
+    --     local h = myHandTilesNode.transform:Find(tostring(i))
+    --     --h.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
+    --     hands[i] = h
+    --     local pos = {}
+    --     pos.x = h.x
+    --     pos.y = h.y
 
-    -- 打出的牌列表
-    local discards = {}
-    local myDicardTilesNode = myTilesNode.transform:Find("Outs")
-    for i = 1, 16 do
-        local h = myDicardTilesNode.transform:Find(tostring(i))
-        discards[i] = h
-    end
-    playerView.discards = discards
-    --用于保存所有关张的loop特效（不要，三带二，炸弹，顺子等等特效，后面便于清理）
-    --playerView.effectObjLists = {}
-    -- 下面这个Light得到的牌表，是用于结局时摊开牌给其他人看 (也可用于明牌)
-    local lights = {}
-    local myLightTilesNode = myTilesNode.transform:Find("Light")
-    for i = 1, 16 do
-        local h = myLightTilesNode.transform:Find(tostring(i))
-        lights[i] = h
-    end
-    playerView.lights = lights
+    --     table.insert(handsOriginPos, pos)
+    --     table.insert(handsClickCtrls, {clickCount = 0, h = h})
 
-    -- ready状态指示
-    playerView.readyIndicator = viewUnityNode.transform:Find("ReadyTips/" .. viewChairID)
-    -- 打出的牌放大显示
-    playerView.discardTips = viewUnityNode.transform:Find("OneOuts/" .. viewChairID)
-    playerView.discardTipsTile = playerView.discardTips:Find("Card")
-    playerView.discardTipsYellow = playerView.discardTips:Find("Card/Image")
+    --     --订阅点击事件
+    --     --TODO: 增加drag/drop
+    --     viewUnityNode:AddClick(
+    --         h,
+    --         function(obj)
+    --             playerView:onHandTileBtnClick(i)
+    --         end,
+    --         {isMute = true}
+    --     )
+    --     --playerView:onDrag(h, i)
+    -- end
+    -- -- 滑动拖牌
+    -- viewUnityNode:AddDrag(
+    --     myHandTilesNode,
+    --     function(cardObj, data)
+    --         playerView:OnItemDrag(cardObj, data)
+    --     end
+    -- )
+    -- viewUnityNode:AddBeginDrag(
+    --     myHandTilesNode,
+    --     function(cardObj, data)
+    --         playerView:OnItemBeginDrag(cardObj, data)
+    --     end
+    -- )
+    -- viewUnityNode:AddDragEnd(
+    --     myHandTilesNode,
+    --     function(cardObj, data)
+    --         playerView:OnItemDragEnd(cardObj, data)
+    --     end
+    -- )
+    -- --用于显示手牌数量
+    -- playerView.handsNumber = myHandTilesNode.transform:SubGet("1/handsNumber", "Text")
 
-    -- 倒计时 位置
-    playerView.countdownPos = viewUnityNode.transform:Find("Countdown/" .. viewChairID)
+    -- playerView.hands = hands
+    -- playerView.handsOriginPos = handsOriginPos --记忆原始的手牌位置，以便点击手牌时可以往上弹起以及恢复
+    -- playerView.handsClickCtrls = handsClickCtrls -- 手牌点击时控制数据结构
 
-    --特效提示位置
-    playerView.operationTip = viewUnityNode.transform:Find("OpTips/" .. viewChairID)
+    -- -- 打出的牌列表
+    -- local discards = {}
+    -- local myDicardTilesNode = myTilesNode.transform:Find("Outs")
+    -- for i = 1, 16 do
+    --     local h = myDicardTilesNode.transform:Find(tostring(i))
+    --     discards[i] = h
+    -- end
+    -- playerView.discards = discards
+    -- --用于保存所有关张的loop特效（不要，三带二，炸弹，顺子等等特效，后面便于清理）
+    -- --playerView.effectObjLists = {}
+    -- -- 下面这个Light得到的牌表，是用于结局时摊开牌给其他人看 (也可用于明牌)
+    -- local lights = {}
+    -- local myLightTilesNode = myTilesNode.transform:Find("Light")
+    -- for i = 1, 16 do
+    --     local h = myLightTilesNode.transform:Find(tostring(i))
+    --     lights[i] = h
+    -- end
+    -- playerView.lights = lights
 
-    --拖动效果
-    playerView.dragEffect = viewUnityNode.transform:Find("Effects_tuodong")
+    -- -- ready状态指示
+    -- playerView.readyIndicator = viewUnityNode.transform:Find("ReadyTips/" .. viewChairID)
+    -- -- 打出的牌放大显示
+    -- playerView.discardTips = viewUnityNode.transform:Find("OneOuts/" .. viewChairID)
+    -- playerView.discardTipsTile = playerView.discardTips:Find("Card")
+    -- playerView.discardTipsYellow = playerView.discardTips:Find("Card/Image")
 
-    --头像信息
-    playerView.infoGroup = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID)
-    playerView.infoGroupEmpty = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID .. "empty")
-    --playerView.infoGroupPos = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID .. "pos")
+    -- -- 倒计时 位置
+    -- playerView.countdownPos = viewUnityNode.transform:Find("Countdown/" .. viewChairID)
 
-    -- 头像相关
-    playerView:initHeadView()
+    -- --特效提示位置
+    -- playerView.operationTip = viewUnityNode.transform:Find("OpTips/" .. viewChairID)
 
-    -- 头像弹框
-    playerView:initHeadPopup()
+    -- --拖动效果
+    -- playerView.dragEffect = viewUnityNode.transform:Find("Effects_tuodong")
 
-    if viewChairID == 1 then
-        playerView:initOperationButtons()
-    end
+    -- --头像信息
+    -- playerView.infoGroup = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID)
+    -- playerView.infoGroupEmpty = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID .. "empty")
+    -- --playerView.infoGroupPos = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID .. "pos")
+
+    -- -- 头像相关
+    -- playerView:initHeadView()
+
+    -- -- 头像弹框
+    -- playerView:initHeadPopup()
+
+    -- if viewChairID == 1 then
+    --     playerView:initOperationButtons()
+    -- end
 
     return playerView
 end
