@@ -6,19 +6,19 @@ local Player = {}
 Player.VERSION = "1.0"
 
 local mt = {__index = Player}
-local dfPath = "GuanZhang/Script/"
-local msgHelper = require(dfPath .. "dfMahjong/msgHelper")
-local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
-local agariIndex = require(dfPath .. "dfMahjong/AgariIndex")
-local acc = g_ModuleMgr:GetModule("AccModule")
-local userDataModule = g_ModuleMgr:GetModule(ModuleName.DATASTORAGE_MODULE)
-local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
-require(dfPath .. "Proto/game_pokerface_rf_pb")
-local pokerfaceRf = game_pokerface_rf_pb
-require(dfPath .. "Proto/game_pokerface_pb")
-local pokerface = game_pokerface_pb
-local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
-local agariIndex = require(dfPath .. "dfMahjong/agariIndex")
+-- local dfPath = "GuanZhang/Script/"
+-- local msgHelper = require(dfPath .. "dfMahjong/msgHelper")
+-- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
+-- local agariIndex = require(dfPath .. "dfMahjong/AgariIndex")
+-- local acc = g_ModuleMgr:GetModule("AccModule")
+-- local userDataModule = g_ModuleMgr:GetModule(ModuleName.DATASTORAGE_MODULE)
+-- local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
+-- require(dfPath .. "Proto/game_pokerface_rf_pb")
+-- local pokerfaceRf = game_pokerface_rf_pb
+-- require(dfPath .. "Proto/game_pokerface_pb")
+-- local pokerface = game_pokerface_pb
+-- local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
+-- local agariIndex = require(dfPath .. "dfMahjong/agariIndex")
 
 --音效文件定义
 local SoundDef = {
@@ -225,13 +225,13 @@ end
 --排序并不修改手牌列表
 --如果房间当前是回播，则其他的人的牌也明牌显示
 ------------------------------------
-function Player:hand2UI(wholeMove,isShow)
+function Player:hand2UI(wholeMove, isShow)
     --先取消所有手牌显示
     local playerView = self.playerView
     playerView:hideHands()
 
     if self:isMe() then
-        playerView:showHandsForMe(wholeMove,isShow)
+        playerView:showHandsForMe(wholeMove, isShow)
     else
         if self.room:isReplayMode() then
             playerView:hand2Exposed(wholeMove)
@@ -275,11 +275,11 @@ function Player:showCardHandType(cardHandType, discardTileId)
     local effectName = "" -- 音效
     if cardHandType == pokerfaceRf.Flush then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_SHUNZI
-         --顺子
+        --顺子
         effectName = "sunzi"
     elseif cardHandType == pokerfaceRf.Bomb then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_ZHADAN
-         --炸弹
+        --炸弹
         effectName = "zhadan"
     elseif cardHandType == pokerfaceRf.Single then
         tip = "" --单张
@@ -289,11 +289,11 @@ function Player:showCardHandType(cardHandType, discardTileId)
         self:playReadTileSound(discardTileId, true)
     elseif cardHandType == pokerfaceRf.Pair2X then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_LIANDUI
-         --连对
+        --连对
         effectName = "liandui"
     elseif cardHandType == pokerfaceRf.Triplet then
         tip = ""
-         --三张
+        --三张
         self:playSound("sange")
     elseif cardHandType == pokerfaceRf.TripletPair then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_SANDAIER --三带二
@@ -522,7 +522,7 @@ function Player:updateByPlayerInfo(playerInfo)
         g_dataModule:GetUserData():SetCharm(playerInfo.charm)
     end
     self.state = playerInfo.state
-    logger.debug("player id:"..player.userID..", avatarID:"..player.avatarID)
+    logger.debug("player id:" .. player.userID .. ", avatarID:" .. player.avatarID)
     self:updateHeadEffectBox()
 end
 
@@ -530,7 +530,7 @@ end
 -- 玩家选择提示
 -- 上下文必然是allowedReActionMsg
 ----------------------------------------
-function Player:onTipBtnClick(isHui,btnObj)
+function Player:onTipBtnClick(isHui, btnObj)
     --if isHui then return end
     self.playerView:restoreHandPositionAndClickCount()
     local room = self.room
@@ -570,7 +570,7 @@ function Player:onTipBtnClick(isHui,btnObj)
     local tipCard = tipCards[self.tipCardsIndex]
     if tipCard then
         local cs = tipCard.cards
-        logger.debug(tostring(self.tipCardsIndex) .."提示 cs : " .. tostring(cs))
+        logger.debug(tostring(self.tipCardsIndex) .. "提示 cs : " .. tostring(cs))
         if cs then
             for i = 1, 16 do
                 local handsClickCtrl = handsClickCtrls[i]
@@ -602,7 +602,7 @@ end
 ----------------------------------------
 -- 玩家选择出牌
 ----------------------------------------
-function Player:onDiscardBtnClick(isHui , btnObj)
+function Player:onDiscardBtnClick(isHui, btnObj)
     if isHui then
         --提示。。。无牌可出
         dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDS)
@@ -666,7 +666,7 @@ end
 -- 当上下文是allowedActionMsg时，表示不起手听牌
 -- 当上下文是allowedReActionMsg时，表示不吃椪杠胡
 ----------------------------------------
-function Player:onSkipBtnClick(isHui , btnObj)
+function Player:onSkipBtnClick(isHui, btnObj)
     if isHui then
         --提示 不可以过
         if self.allowedActionMsg ~= nil then
@@ -739,7 +739,7 @@ end
 function Player:onPlayerDiscardCards(disCards)
     logger.debug(" onPlayerDiscardCards tile .")
     --dump(disCards , "----------------- disCards ---------------------------")
-    if disCards == nil or  #disCards < 1 then
+    if disCards == nil or #disCards < 1 then
         dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSELECTCARDS)
         return
     end
@@ -830,6 +830,5 @@ function Player:updateHeadEffectBox()
 
     self.playerView:updateHeadEffectBox()
 end
-
 
 return Player

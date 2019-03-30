@@ -43,7 +43,7 @@ function WS:open()
     end
 
     bestHTTPws.OnClosed = function(ws, code, msg)
-        logger.debug("ws closed, code:" .. code .. ",msg:" .. msg)
+        logger.debug("ws closed, code:", code, ",msg:", msg)
         wsClean(ws)
 
         this:onBestHTTPWebsocketClose()
@@ -97,12 +97,12 @@ function WS:onBestHTTPWebsocketError()
 end
 
 function WS:onBestHTTPWebsocketTextMessage(text)
-    logger.debug("ws text msg:" .. text)
+    logger.debug("ws text msg:", text)
     self.mq:pushWebsocketTextMessageEvent(text)
 end
 
 function WS:onBestHTTPWebsocketBinary(binary)
-    logger.debug("ws binary msg, length:" .. #binary)
+    logger.debug("ws binary msg, length:", #binary)
     self.mq:pushWebsocketBinaryEvent(binary)
 end
 

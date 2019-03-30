@@ -3,10 +3,10 @@
 ]]
 local RoomView = {}
 
-local fairy = require 'lobby/lcore/fairygui'
--- local mt = {__index = RoomView}
+local fairy = require "lobby/lcore/fairygui"
+local PlayerView = require("scripts/playerView")
+local mt = {__index = RoomView}
 -- local dfPath = "GuanZhang/Script/"
--- local PlayerView = require(dfPath .. "dfMahjong/playerView")
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
 -- local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
 -- local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
@@ -18,7 +18,15 @@ local fairy = require 'lobby/lcore/fairygui'
 
 pkproto2 = pkproto2
 
-function RoomView:new(room)
+local function onVoiceClick(context)
+    print("you click on onVoiceClick ")
+end
+
+local function onSettingClick(context)
+    print("you click on onSettingClick")
+end
+
+function RoomView.new(room)
     _ENV.thisMod:AddUIPackage("lobby/fui_lobby_poker/lobby_poker")
     _ENV.thisMod:AddUIPackage("game1/bg/runfast_bg_2d")
     _ENV.thisMod:AddUIPackage("game1/fgui/runfast")
@@ -28,16 +36,15 @@ function RoomView:new(room)
     local operationPanel = view:GetChild("n31")
 
     local roomView = {}
-    setmetatable(roomView, mt)
 
     roomView.room = room
-    -- roomView.unityViewNode = roomViewObj
+    roomView.unityViewNode = view
 
     -- 根据prefab中的位置，正中下方是Cards/P1，左手是Cards/P4，右手是Cards/P2，正中上方是Cards/P3
     local playerViews = {}
     for i = 1, 3 do
         local playerView = PlayerView:new(roomView.unityViewNode, i)
-        playerView:hideAll()
+        -- playerView:hideAll()
         playerViews[i] = playerView
     end
 
@@ -48,122 +55,87 @@ function RoomView:new(room)
     roomView.downPlayerView = playerViews[1]
 
     local unityViewNode = roomView.unityViewNode
-    -- 发牌动画挂载节点
-    roomView.FaPaiAniObj = unityViewNode.transform:Find("FaPaiAni")
-    -- roomView.FaPaiAniPref = unityViewNode.transform:Find("FaPaiAni/Fapai")
-    -- roomView.FaPaiAniPref:SetActive(false)
-    --roomView.tFaPaiAniNaCard = {{}, {}, {}}
 
-    -- 牌墙剩余牌数
-    --roomView.tilesInWall = unityViewNode.transform:Find("RoomInfo/CardCount")
+    local voiceBtn = unityViewNode:GetChild("voice")
+    voiceBtn.onClick:Add(onVoiceClick)
+    voiceBtn.visible = false
 
-    -- 隐藏底部边条框
-    --  local bg = unityViewNode.transform:Find("Bottom/bg")
-    --  bg:SetActive(false)
+    local settingBtn = unityViewNode:GetChild("setting")
+    settingBtn.onClick:Add(onSettingClick)
 
-    --提示出牌的箭头
-    --roomView.arrowObj = unityViewNode.transform:Find("Arrow")
-    roomView.arrowObj = unityViewNode.transform:Find("Effects_UI_jiantou")
+    local infoBtn = unityViewNode:GetChild("info")
+    infoBtn.visible = true
+    -- -- 长按10秒上传日志文件
+    -- unityViewNode:AddLongPressClick(
+    --     roomView.PostLogBtn,
+    --     function()
+    --         local toolModule = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
+    --         local logType = 3
+    --         local subGameId = 10034
+    --         toolModule:UploadLogFile(
+    --             function(data)
+    --                 if data.result == 0 and g_commonModule then
+    --                     g_commonModule:ShowTip("日志文件已上传", 2)
+    --                 end
+    --             end,
+    --             logType,
+    --             subGameId
+    --         )
+    --     end,
+    --     5
+    -- )
 
-    roomView.wind = unityViewNode.transform:Find("Feng")
-    roomView.windTile = unityViewNode.transform:Find("Feng/Card")
-    --道具移动动画
-    roomView.donateMoveObj = unityViewNode.transform:Find("PlayInfoGroup/DonateMoveObj")
-    roomView.otherUserInfoObj = unityViewNode.transform:Find("UserInfo/OtherInfoBg/Info")
+    -- unityViewNode:AddClick(
+    --     roomView.readyButton,
+    --     function()
+    --         roomView:onReadyButtonClick()
+    --     end
+    -- )
+    -- unityViewNode:AddClick(
+    --     roomView.invitButton,
+    --     function()
+    --         roomView:onInvitButtonClick()
+    --     end
+    -- )
+    -- unityViewNode:AddClick(
+    --     roomView.returnHallBtn,
+    --     function()
+    --         roomView:onRetunHallClick()
+    --     end
+    -- )
 
-    roomView.readyButton = unityViewNode.transform:Find("ExtendFuc/ready_btn")
-    -- 准备按钮默认是关闭状态
-    roomView.readyButton:SetActive(false)
+    -- roomView.skinManager = SkinManager.GetInstance()
 
-    roomView.invitButton = unityViewNode.transform:Find("ExtendFuc/invit_btn")
-    roomView.invitButton:SetActive(true)
+    -- --计时器
+    -- roomView.timer = {}
 
-    --返回大厅
-    roomView.returnHallBtn = unityViewNode.transform:Find("ExtendFuc/return_hall_btn")
-    roomView.returnHallBtn:SetActive(true)
-    roomView.noFriendTips = {}
-    for i = 1, 2 do
-        roomView.noFriendTips[i] = unityViewNode.transform:Find("ExtendFuc/NoFriendTips/TipBg" .. i)
-    end
+    -- --启动聊天面板监听
+    -- -- require("View/ChatPanelInGame")
 
-    --包牌警告文字
-    roomView.baopai = unityViewNode.transform:Find("baopai")
-    --倒计时
-    roomView.countdown = unityViewNode.transform:Find("Countdown/countdown")
-    roomView.countdownText = unityViewNode.transform:SubGet("Countdown/countdown/LastTimeText", "Text")
+    -- roomView:initRoomSkin()
 
-    roomView.PostLogBtn = unityViewNode.transform:Find("PostLog")
-    -- 长按10秒上传日志文件
-    unityViewNode:AddLongPressClick(
-        roomView.PostLogBtn,
-        function()
-            local toolModule = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
-            local logType = 3
-            local subGameId = 10034
-            toolModule:UploadLogFile(
-                function(data)
-                    if data.result == 0 and g_commonModule then
-                        g_commonModule:ShowTip("日志文件已上传", 2)
-                    end
-                end,
-                logType,
-                subGameId
-            )
-        end,
-        5
-    )
-
-    unityViewNode:AddClick(
-        roomView.readyButton,
-        function()
-            roomView:onReadyButtonClick()
-        end
-    )
-    unityViewNode:AddClick(
-        roomView.invitButton,
-        function()
-            roomView:onInvitButtonClick()
-        end
-    )
-    unityViewNode:AddClick(
-        roomView.returnHallBtn,
-        function()
-            roomView:onRetunHallClick()
-        end
-    )
-
-    roomView.skinManager = SkinManager.GetInstance()
-
-    --计时器
-    roomView.timer = {}
-
-    --启动聊天面板监听
-    -- require("View/ChatPanelInGame")
-
-    roomView:initRoomSkin()
-
-    self.skinIndex = unityViewNode.skinIndex
+    -- self.skinIndex = unityViewNode.skinIndex
 
     -- 聊天
-    roomView:iniChatButtons()
-    -- 语音
-    roomView:initVoiceButton()
-    --菜单
-    roomView:initMenu()
-    --房间号
-    roomView:initRoomNumber()
-    --手机基本信息
-    roomView:initPhoneInfo()
-    --房间温馨提示
-    roomView:initRoomTip()
+    -- roomView:iniChatButtons()
+    -- -- 语音
+    -- roomView:initVoiceButton()
+    -- --菜单
+    -- roomView:initMenu()
+    -- --房间号
+    -- roomView:initRoomNumber()
+    -- --手机基本信息
+    -- roomView:initPhoneInfo()
+    -- --房间温馨提示
+    -- roomView:initRoomTip()
 
-    --房间状态事件初始化
-    roomView:initRoomStatus()
+    -- --房间状态事件初始化
+    -- roomView:initRoomStatus()
 
-    -- 房间规则
-    roomView:initRoomRule()
-    -- GPS
-    roomView:initDistanceView()
+    -- -- 房间规则
+    -- roomView:initRoomRule()
+    -- -- GPS
+    -- roomView:initDistanceView()
     -- 隐藏空椅子
     --roomView:hideEmptyChair()
 
@@ -171,118 +143,118 @@ function RoomView:new(room)
     --notificationCenter:register(self, self.OnMessage, Notifications.OnInGameChatMessage)
     --notificationCenter:register(self, OnPlayerChat, "PlayerChat") --收到聊天信息
 
-    if room:isReplayMode() then
-        local extendFunc = unityViewNode.transform:Find("ExtendFuc")
-        extendFunc:SetActive(false)
+    -- if room:isReplayMode() then
+    --     local extendFunc = unityViewNode.transform:Find("ExtendFuc")
+    --     extendFunc:SetActive(false)
 
-        --roomView.replayUnityViewNode = ViewManager.Open("LZVideoView")
+    --     --roomView.replayUnityViewNode = ViewManager.Open("LZVideoView")
 
-        local videoView =
-            viewModule:CreatePanel(
-            {
-                luaPath = dfPath .. "View/LZVideoView",
-                resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/LZVideoView.prefab",
-                parentNode = unityViewNode.transform,
-                superClass = unityViewNode
-            }
-        )
-        local uiDepth = videoView:GetComponent("UIDepth")
-        if not uiDepth then
-            uiDepth = videoView:AddComponent(UIDepth)
-        end
-        uiDepth.canvasOrder = unityViewNode.order + 3
-        roomView.replayUnityViewNode = unityViewNode
+    --     local videoView =
+    --         viewModule:CreatePanel(
+    --         {
+    --             luaPath = dfPath .. "View/LZVideoView",
+    --             resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/LZVideoView.prefab",
+    --             parentNode = unityViewNode.transform,
+    --             superClass = unityViewNode
+    --         }
+    --     )
+    --     local uiDepth = videoView:GetComponent("UIDepth")
+    --     if not uiDepth then
+    --         uiDepth = videoView:AddComponent(UIDepth)
+    --     end
+    --     uiDepth.canvasOrder = unityViewNode.order + 3
+    --     roomView.replayUnityViewNode = unityViewNode
 
-        local exitBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ExitButt")
-        local ruleBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/RuleBtn")
-        local resumeBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/PlayButt")
-        local pauseBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/StopButt")
-        local speedUPBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/SpeedUp")
-        local speedDownBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/SpeedDown")
-        local ButtObjsObj = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs")
+    --     local exitBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ExitButt")
+    --     local ruleBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/RuleBtn")
+    --     local resumeBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/PlayButt")
+    --     local pauseBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/StopButt")
+    --     local speedUPBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/SpeedUp")
+    --     local speedDownBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/SpeedDown")
+    --     local ButtObjsObj = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs")
 
-        roomView.replayUnityViewNode:AddClick(
-            "LZVideoView/BackGround/bg00",
-            function()
-                ButtObjsObj:SetActive(not ButtObjsObj.activeSelf)
-            end
-        )
+    --     roomView.replayUnityViewNode:AddClick(
+    --         "LZVideoView/BackGround/bg00",
+    --         function()
+    --             ButtObjsObj:SetActive(not ButtObjsObj.activeSelf)
+    --         end
+    --     )
 
-        roomView.resumeBtn = resumeBtn
-        roomView.pauseBtn = pauseBtn
-        resumeBtn:SetActive(false)
-        pauseBtn:SetActive(false)
+    --     roomView.resumeBtn = resumeBtn
+    --     roomView.pauseBtn = pauseBtn
+    --     resumeBtn:SetActive(false)
+    --     pauseBtn:SetActive(false)
 
-        local dfReplay = room.dfReplay
-        roomView.replayUnityViewNode:AddClick(
-            exitBtn,
-            function()
-                dfReplay:onExitReplay()
-            end
-        )
-        roomView.replayUnityViewNode:AddClick(
-            ruleBtn,
-            function()
-                -- 回播的时候,放在messagebox 里面
-                -- roomView:showRuleView()
-                viewModule:OpenMsgBox(
-                    {
-                        luaPath = "GuanZhang.Script.View.RoomRuleMsgBox",
-                        resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/RoomRuleMsgBox.prefab"
-                    },
-                    room:getRoomConfig()
-                )
-                -- local rule = require("RuleComponent.Script.RuleModule")
-                -- local ruleModule = g_ModuleMgr:GetModule(rule.moduleName)
-                -- if not ruleModule then
-                --     g_ModuleMgr:AddModule(rule.moduleName, rule)
-                -- end
-                -- local dispatcher = g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE)
-                -- dispatcher:dispatch("OPEN_RULE_VIEW")
-            end
-        )
-        roomView.replayUnityViewNode:AddClick(
-            pauseBtn,
-            function()
-                dfReplay:onPause()
-            end
-        )
-        roomView.replayUnityViewNode:AddClick(
-            resumeBtn,
-            function()
-                dfReplay:onPauseResume()
-            end
-        )
-        roomView.replayUnityViewNode:AddClick(
-            speedUPBtn,
-            function()
-                dfReplay:increaseSpeed()
-            end
-        )
-        roomView.replayUnityViewNode:AddClick(
-            speedDownBtn,
-            function()
-                dfReplay:decreaseSpeed()
-            end
-        )
+    --     local dfReplay = room.dfReplay
+    --     roomView.replayUnityViewNode:AddClick(
+    --         exitBtn,
+    --         function()
+    --             dfReplay:onExitReplay()
+    --         end
+    --     )
+    --     roomView.replayUnityViewNode:AddClick(
+    --         ruleBtn,
+    --         function()
+    --             -- 回播的时候,放在messagebox 里面
+    --             -- roomView:showRuleView()
+    --             viewModule:OpenMsgBox(
+    --                 {
+    --                     luaPath = "GuanZhang.Script.View.RoomRuleMsgBox",
+    --                     resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/RoomRuleMsgBox.prefab"
+    --                 },
+    --                 room:getRoomConfig()
+    --             )
+    --             -- local rule = require("RuleComponent.Script.RuleModule")
+    --             -- local ruleModule = g_ModuleMgr:GetModule(rule.moduleName)
+    --             -- if not ruleModule then
+    --             --     g_ModuleMgr:AddModule(rule.moduleName, rule)
+    --             -- end
+    --             -- local dispatcher = g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE)
+    --             -- dispatcher:dispatch("OPEN_RULE_VIEW")
+    --         end
+    --     )
+    --     roomView.replayUnityViewNode:AddClick(
+    --         pauseBtn,
+    --         function()
+    --             dfReplay:onPause()
+    --         end
+    --     )
+    --     roomView.replayUnityViewNode:AddClick(
+    --         resumeBtn,
+    --         function()
+    --             dfReplay:onPauseResume()
+    --         end
+    --     )
+    --     roomView.replayUnityViewNode:AddClick(
+    --         speedUPBtn,
+    --         function()
+    --             dfReplay:increaseSpeed()
+    --         end
+    --     )
+    --     roomView.replayUnityViewNode:AddClick(
+    --         speedDownBtn,
+    --         function()
+    --             dfReplay:decreaseSpeed()
+    --         end
+    --     )
 
-        -- 战绩播放恢复界面
-        roomView.replayUnityViewNode.OnResume = function()
-            --g_commonModule:ShowTip("roomView.replayUnityViewNode.OnResume")
-            local WeixinInvitedContent = Native.GetWeixinInvitedContent()
-            if (WeixinInvitedContent and #WeixinInvitedContent > 0) then
-                local userData = g_dataModule:GetUserData()
-                local isWeixinInvited = userData:getWeixinInvited()
-                if isWeixinInvited == false then
-                    isWeixinInvited = true
-                    userData:setWeixinInvited(isWeixinInvited)
-                end
-                dfReplay:onExitReplay()
-            end
-        end
-    end
+    --     -- 战绩播放恢复界面
+    --     roomView.replayUnityViewNode.OnResume = function()
+    --         --g_commonModule:ShowTip("roomView.replayUnityViewNode.OnResume")
+    --         local WeixinInvitedContent = Native.GetWeixinInvitedContent()
+    --         if (WeixinInvitedContent and #WeixinInvitedContent > 0) then
+    --             local userData = g_dataModule:GetUserData()
+    --             local isWeixinInvited = userData:getWeixinInvited()
+    --             if isWeixinInvited == false then
+    --                 isWeixinInvited = true
+    --                 userData:setWeixinInvited(isWeixinInvited)
+    --             end
+    --             dfReplay:onExitReplay()
+    --         end
+    --     end
+    -- end
 
-    roomView:handleOnbackPress()
+    -- roomView:handleOnbackPress()
 
     -- if NeedHideForIos then
     --     roomView.roomNumberObject.localPosition = Vector3(0, 42, 0)
@@ -309,13 +281,13 @@ function RoomView:new(room)
     --     )
     -- end
 
-    roomView:registerBroadcast()
-    if g_dataModule:GetAntiAddiction() then
-        local data = g_dataModule:GetAntiAddiction()
-        roomView:AntiAddiction(data.fillIn, data.onlineTime)
-    end
-    logger.debug("进入子游戏关张房间完成，当前系统时间：" .. os.time())
-    return roomView
+    -- roomView:registerBroadcast()
+    -- if g_dataModule:GetAntiAddiction() then
+    --     local data = g_dataModule:GetAntiAddiction()
+    --     roomView:AntiAddiction(data.fillIn, data.onlineTime)
+    -- end
+    -- logger.debug("进入子游戏关张房间完成，当前系统时间：" .. os.time())
+    return setmetatable(roomView, mt)
 end
 --gps
 function RoomView:initDistanceView()
