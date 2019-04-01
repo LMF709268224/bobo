@@ -5,6 +5,7 @@ local RoomView = {}
 
 local fairy = require "lobby/lcore/fairygui"
 local PlayerView = require("scripts/playerView")
+local logger = require "lobby/lcore/logger"
 local mt = {__index = RoomView}
 -- local dfPath = "GuanZhang/Script/"
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
@@ -33,7 +34,6 @@ function RoomView.new(room)
     _ENV.thisMod:AddUIPackage("game1/setting/runfast_setting")
     local view = fairy.UIPackage.CreateObject("runfast", "desk")
     fairy.GRoot.inst:AddChild(view)
-    local operationPanel = view:GetChild("n31")
 
     local roomView = {}
 
@@ -43,7 +43,7 @@ function RoomView.new(room)
     -- 根据prefab中的位置，正中下方是Cards/P1，左手是Cards/P4，右手是Cards/P2，正中上方是Cards/P3
     local playerViews = {}
     for i = 1, 3 do
-        local playerView = PlayerView:new(roomView.unityViewNode, i)
+        local playerView = PlayerView.new(view, i)
         -- playerView:hideAll()
         playerViews[i] = playerView
     end
@@ -54,17 +54,18 @@ function RoomView.new(room)
     roomView.rightPlayerView = playerViews[2]
     roomView.downPlayerView = playerViews[1]
 
-    local unityViewNode = roomView.unityViewNode
-
-    local voiceBtn = unityViewNode:GetChild("voice")
+    local voiceBtn = view:GetChild("voice")
     voiceBtn.onClick:Add(onVoiceClick)
     voiceBtn.visible = false
 
-    local settingBtn = unityViewNode:GetChild("setting")
+    local settingBtn = view:GetChild("setting")
     settingBtn.onClick:Add(onSettingClick)
 
-    local infoBtn = unityViewNode:GetChild("info")
+    local infoBtn = view:GetChild("info")
     infoBtn.visible = true
+
+    roomView.readyButton = view:GetChild("ready")
+    roomView.readyButton.onClick:Add(onReadyButtonClick)
     -- -- 长按10秒上传日志文件
     -- unityViewNode:AddLongPressClick(
     --     roomView.PostLogBtn,
@@ -420,11 +421,11 @@ function RoomView:BackRoom()
 end
 
 function RoomView:show2ReadyButton()
-    self.readyButton:SetActive(true)
+    self.readyButton.visible = true
 end
 
 function RoomView:hide2ReadyButton()
-    self.readyButton:SetActive(false)
+    self.readyButton.visible = false
 end
 
 function RoomView:onReadyButtonClick()

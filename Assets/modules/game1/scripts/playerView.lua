@@ -5,6 +5,7 @@ local PlayerView = {}
 
 local mt = {__index = PlayerView}
 local fairy = require "lobby/lcore/fairygui"
+local logger = require "lobby/lcore/logger"
 local dfPath = "GuanZhang/Script/"
 --local AgariIndex = require "dfMahjong/AgariIndex"
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
@@ -92,13 +93,9 @@ local dfPath = "GuanZhang/Script/"
 -- @param viewUnityNode 根据viewUnityNode获得playerView需要控制
 -- 的所有节点
 -----------------------------------------------
-function PlayerView:new(viewUnityNode, viewChairID)
+function PlayerView.new(viewUnityNode, viewChairID)
     local playerView = {}
     setmetatable(playerView, mt)
-
-    playerView.viewChairID = viewChairID
-    playerView.viewUnityNode = viewUnityNode
-
     -- 先找到牌相关的节点
     -- 现在的牌相关是在一个独立的prefab里面
     -- 这个prefab在roomView构造是已经加载进来
@@ -107,12 +104,27 @@ function PlayerView:new(viewUnityNode, viewChairID)
     -- 的chair ID是多少，他都是居于正中下方，左手是上家，右手是下家，正中上方是对家
     -- 根据prefab中的位置，正中下方是Cards/1，左手是Cards/4，右手是Cards/2，正中上方是Cards/3
     -- local myTilesNode = viewUnityNode.transform:Find("Cards/" .. viewChairID)
-    local myTilesNode = fairy.UIPackage.CreateObject("runfast", "desk_view_mine")
-    if (viewChairID == 2) then
-        myTilesNode = fairy.UIPackage.CreateObject("runfast", "desk_view_right")
+    local view = nil
+    if (viewChairID == 1) then
+        view = viewUnityNode:GetChild("playerMine")
+        playerView.operationPanel = viewUnityNode:GetChild("operationPanel")
+    elseif (viewChairID == 2) then
+        view = viewUnityNode:GetChild("playerRight")
     elseif (viewChairID == 3) then
-        myTilesNode = fairy.UIPackage.CreateObject("runfast", "desk_view_left")
+        view = viewUnityNode:GetChild("playerLeft")
     end
+    playerView.viewChairID = viewChairID
+    playerView.viewUnityNode = viewUnityNode
+    local head = {}
+    local headImg = view:GetChild("head")
+    headImg.visible = false
+    local score = view:GetChild("score")
+    score.visible = true
+    local scoreText = view:GetChild("scoreText")
+    scoreText.visible = true
+
+    head.scoreText = scoreText
+    head.headImg = headImg
     -- myTilesNode.visible = true
     -- playerView.tilesRoot = myTilesNode
 
@@ -217,9 +229,10 @@ function PlayerView:new(viewUnityNode, viewChairID)
     -- -- 头像弹框
     -- playerView:initHeadPopup()
 
-    -- if viewChairID == 1 then
-    --     playerView:initOperationButtons()
-    -- end
+    if viewChairID == 1 then
+        playerView:initOperationButtons()
+    end
+    playerView.head = head
 
     return playerView
 end
@@ -237,61 +250,27 @@ end
 --保存操作按钮
 -------------------------------------------------
 function PlayerView:initOperationButtons()
-    local viewUnityNode = self.viewUnityNode
-
+    local viewUnityNode = self.operationPanel
     local pv = self
-
-    self.skipBtn = viewUnityNode.transform:Find("TsBtnGroup/GuoBtn") --过按钮
-    viewUnityNode:AddClick(
-        self.skipBtn,
+    self.skipBtn = viewUnityNode:GetChild("pass")
+    self.tipBtn = viewUnityNode:GetChild("tip")
+    self.discardBtn = viewUnityNode:GetChild("discard")
+    self.skipBtn.onClick:Add(
         function(obj)
             local player = pv.player
             player:onSkipBtnClick(false, obj)
         end
     )
-
-    self.tipBtn = viewUnityNode.transform:Find("TsBtnGroup/TipBtn") --提示按钮
-    viewUnityNode:AddClick(
-        self.tipBtn,
+    self.tipBtn.onClick:Add(
         function(obj)
             local player = pv.player
             player:onTipBtnClick(false, obj)
         end
     )
-
-    self.discardBtn = viewUnityNode.transform:Find("TsBtnGroup/ChuBtn") --出牌按钮
-    viewUnityNode:AddClick(
-        self.discardBtn,
+    self.discardBtn.onClick:Add(
         function(obj)
             local player = pv.player
             player:onDiscardBtnClick(false, obj)
-        end
-    )
-
-    self.discardHuiBtn = viewUnityNode.transform:Find("TsBtnGroup/ChuHuiBtn") --灰色出牌按钮
-    viewUnityNode:AddClick(
-        self.discardHuiBtn,
-        function(obj)
-            local player = pv.player
-            player:onDiscardBtnClick(true, obj)
-        end
-    )
-
-    self.skipHuiBtn = viewUnityNode.transform:Find("TsBtnGroup/GuoHuiBtn") --过按钮
-    viewUnityNode:AddClick(
-        self.skipHuiBtn,
-        function(obj)
-            local player = pv.player
-            player:onSkipBtnClick(true, obj)
-        end
-    )
-
-    self.tipHuiBtn = viewUnityNode.transform:Find("TsBtnGroup/TipHuiBtn") --提示按钮
-    viewUnityNode:AddClick(
-        self.tipHuiBtn,
-        function(obj)
-            local player = pv.player
-            player:onTipBtnClick(true, obj)
         end
     )
     self.operationButtons = {
@@ -325,7 +304,7 @@ function PlayerView:hideOperationButtons()
     -- 先隐藏掉所有按钮
     local buttons = self.operationButtons
     for _, b in pairs(buttons) do
-        b:SetActive(false)
+        b.visible = false
     end
 
     -- 隐藏根节点
@@ -2033,13 +2012,14 @@ function PlayerView:updateHeadEffectBox()
        return
     end
 
-    if self.head.headBox ~= nil and player.avatarID ~= nil and player.avatarID ~= 0 then
-        local imgPath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png",player.avatarID)
-        self.head.headBox.transform:SetImage(imgPath)
-        self.head.headBox.transform:GetComponent("Image"):SetNativeSize()
-        self.head.headBox.transform.localScale = Vector3(0.8,0.8,0.8)
-        self.head.effectBox.transform.localScale = Vector3(1.25,1.25,1.25)
-    end
+    self.head.headImg.visible = true
+    -- if self.head.headBox ~= nil and player.avatarID ~= nil and player.avatarID ~= 0 then
+    --     local imgPath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png",player.avatarID)
+    --     self.head.headBox.transform:SetImage(imgPath)
+    --     self.head.headBox.transform:GetComponent("Image"):SetNativeSize()
+    --     self.head.headBox.transform.localScale = Vector3(0.8,0.8,0.8)
+    --     self.head.effectBox.transform.localScale = Vector3(1.25,1.25,1.25)
+    -- end
 end
 
 return PlayerView
