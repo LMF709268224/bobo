@@ -6,6 +6,7 @@ local RoomView = {}
 local fairy = require "lobby/lcore/fairygui"
 local PlayerView = require("scripts/playerView")
 local logger = require "lobby/lcore/logger"
+local proto = require "scripts/proto/proto"
 local mt = {__index = RoomView}
 -- local dfPath = "GuanZhang/Script/"
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
@@ -17,8 +18,6 @@ local mt = {__index = RoomView}
 -- local configModule = g_ModuleMgr:GetModule("ConfigModule")
 -- local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
 
-pkproto2 = pkproto2
-
 local function onVoiceClick(context)
     print("you click on onVoiceClick ")
 end
@@ -28,14 +27,15 @@ local function onSettingClick(context)
 end
 
 function RoomView.new(room)
+    local roomView = {}
+    setmetatable(roomView, mt)
+
     _ENV.thisMod:AddUIPackage("lobby/fui_lobby_poker/lobby_poker")
     _ENV.thisMod:AddUIPackage("game1/bg/runfast_bg_2d")
     _ENV.thisMod:AddUIPackage("game1/fgui/runfast")
     _ENV.thisMod:AddUIPackage("game1/setting/runfast_setting")
     local view = fairy.UIPackage.CreateObject("runfast", "desk")
     fairy.GRoot.inst:AddChild(view)
-
-    local roomView = {}
 
     roomView.room = room
     roomView.unityViewNode = view
@@ -130,8 +130,8 @@ function RoomView.new(room)
     -- --房间温馨提示
     -- roomView:initRoomTip()
 
-    -- --房间状态事件初始化
-    -- roomView:initRoomStatus()
+    --房间状态事件初始化
+    roomView:initRoomStatus()
 
     -- -- 房间规则
     -- roomView:initRoomRule()
@@ -288,7 +288,7 @@ function RoomView.new(room)
     --     roomView:AntiAddiction(data.fillIn, data.onlineTime)
     -- end
     -- logger.debug("进入子游戏关张房间完成，当前系统时间：" .. os.time())
-    return setmetatable(roomView, mt)
+    return roomView
 end
 --gps
 function RoomView:initDistanceView()
@@ -1501,7 +1501,7 @@ function RoomView:initRoomStatus()
 
     -- 房间正在等待玩家准备
     local onWait = function()
-        roomView.wind:SetActive(false)
+        -- roomView.wind:SetActive(false)
         --等待状态重置上手牌遗留
         roomView.room:resetForNewHand()
         --roomView.tilesInWall:SetActive(false)
@@ -1520,7 +1520,7 @@ function RoomView:initRoomStatus()
             end
         end
 
-        roomView:updateLeaveAndDisbandButtons()
+        -- roomView:updateLeaveAndDisbandButtons()
     end
 
     --房间空闲，客户端永远看不到这个状态
@@ -1559,10 +1559,11 @@ function RoomView:initRoomStatus()
     end
 
     local status = {}
-    status[pkproto2.SRoomIdle] = onIdle
-    status[pkproto2.SRoomWaiting] = onWait
-    status[pkproto2.SRoomPlaying] = onPlay
-    status[pkproto2.SRoomDeleted] = onDelete
+
+    status[proto.pokerface.RoomState.SRoomIdle] = onIdle
+    status[proto.pokerface.RoomState.SRoomWaiting] = onWait
+    status[proto.pokerface.RoomState.SRoomPlaying] = onPlay
+    status[proto.pokerface.RoomState.SRoomDeleted] = onDelete
     self.statusHandlers = status
 end
 

@@ -7,6 +7,7 @@ local mt = {__index = PlayerView}
 local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
 local dfPath = "GuanZhang/Script/"
+local proto = require "scripts/proto/proto"
 --local AgariIndex = require "dfMahjong/AgariIndex"
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
 -- local Loader = require(dfPath .. "dfMahjong/spriteLoader")
@@ -130,11 +131,11 @@ function PlayerView.new(viewUnityNode, viewChairID)
 
     -- -- self.texiaoPos = myTilesNode.transform:Find("texiaoPos") --特效的位置
     -- local operationPanel = view:GetChild("n31")
-    -- -- 手牌列表
-    -- local hands = {}
+    -- 手牌列表
+    local hands = {}
     -- local handsOriginPos = {}
     -- local handsClickCtrls = {}
-    -- local myHandTilesNode = myTilesNode.transform:Find("Hands")
+    local myHandTilesNode = view:GetChild("hands")
     -- for i = 1, 16 do
     --     local h = myHandTilesNode.transform:Find(tostring(i))
     --     --h.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
@@ -179,7 +180,7 @@ function PlayerView.new(viewUnityNode, viewChairID)
     -- --用于显示手牌数量
     -- playerView.handsNumber = myHandTilesNode.transform:SubGet("1/handsNumber", "Text")
 
-    -- playerView.hands = hands
+    playerView.hands = hands
     -- playerView.handsOriginPos = handsOriginPos --记忆原始的手牌位置，以便点击手牌时可以往上弹起以及恢复
     -- playerView.handsClickCtrls = handsClickCtrls -- 手牌点击时控制数据结构
 
@@ -202,8 +203,8 @@ function PlayerView.new(viewUnityNode, viewChairID)
     -- end
     -- playerView.lights = lights
 
-    -- -- ready状态指示
-    -- playerView.readyIndicator = viewUnityNode.transform:Find("ReadyTips/" .. viewChairID)
+    -- ready状态指示
+    playerView.readyIndicator = view:GetChild("ready")
     -- -- 打出的牌放大显示
     -- playerView.discardTips = viewUnityNode.transform:Find("OneOuts/" .. viewChairID)
     -- playerView.discardTipsTile = playerView.discardTips:Find("Card")
@@ -223,8 +224,8 @@ function PlayerView.new(viewUnityNode, viewChairID)
     -- playerView.infoGroupEmpty = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID .. "empty")
     -- --playerView.infoGroupPos = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID .. "pos")
 
-    -- -- 头像相关
-    -- playerView:initHeadView()
+    -- 头像相关
+    playerView:initHeadView()
 
     -- -- 头像弹框
     -- playerView:initHeadPopup()
@@ -318,72 +319,72 @@ function PlayerView:initHeadView()
     --local viewChairID = self.viewChairID
     local viewUnityNode = self.viewUnityNode
 
-    local infoGroup = self.infoGroup
-    head.root = infoGroup
+    -- local infoGroup = self.infoGroup
+    -- head.root = infoGroup
     -- 文字聊天框
-    head.textChat = infoGroup.transform:Find("TextChat")
+    -- head.textChat = infoGroup.transform:Find("TextChat")
     -- 表情聊天
-    head.faceChat = infoGroup.transform:Find("FaceChat")
+    -- head.faceChat = infoGroup.transform:Find("FaceChat")
     -- 语音聊天
-    head.playerVoiceNode = infoGroup.transform:Find("VoiceImage")
-    head.playerVoiceTextNode = infoGroup.transform:Find("VoiceImage/LenText")
+    -- head.playerVoiceNode = infoGroup.transform:Find("VoiceImage")
+    -- head.playerVoiceTextNode = infoGroup.transform:Find("VoiceImage/LenText")
     -- 动画控制
-    head.playerVoiceAction = {}
+    -- head.playerVoiceAction = {}
 
     -- 房间拥有者标志
-    head.roomOwnerFlag = infoGroup.transform:Find("owner")
+    -- head.roomOwnerFlag = infoGroup.transform:Find("owner")
     -- 离开状态标志
-    head.stateLeave = infoGroup.transform:Find("Exit")
+    -- head.stateLeave = infoGroup.transform:Find("Exit")
     -- 离线状态标志
-    head.stateOffline = infoGroup.transform:Find("OffLine")
+    -- head.stateOffline = infoGroup.transform:Find("OffLine")
 
     --庄家标志
-    head.bankerFlag = infoGroup.transform:Find("BankerTag")
-    head.continuousBankerFlag = infoGroup.transform:Find("BankerContinuousTag")
+    -- head.bankerFlag = infoGroup.transform:Find("BankerTag")
+    -- head.continuousBankerFlag = infoGroup.transform:Find("BankerContinuousTag")
     --告警
 
     --把告警里面的特效 层级调高。。。
-    head.gaoJing = infoGroup.transform:Find("GaoJing")
-    head.gaoJingText = infoGroup.transform:SubGet("GaoJing/Number/Text", "Text")
-    local gaoJingTeXiao = infoGroup.transform:Find("GaoJing/Effects_zi_jingling")
-    local uiDepth = gaoJingTeXiao:GetComponent("UIDepth")
-    if not uiDepth then
-        uiDepth = gaoJingTeXiao:AddComponent(typeof(UIDepth))
-    end
-    uiDepth.canvasOrder = self.viewUnityNode.order + 1
+    -- head.gaoJing = infoGroup.transform:Find("GaoJing")
+    -- head.gaoJingText = infoGroup.transform:SubGet("GaoJing/Number/Text", "Text")
+    -- local gaoJingTeXiao = infoGroup.transform:Find("GaoJing/Effects_zi_jingling")
+    -- local uiDepth = gaoJingTeXiao:GetComponent("UIDepth")
+    -- if not uiDepth then
+    --     uiDepth = gaoJingTeXiao:AddComponent(typeof(UIDepth))
+    -- end
+    -- uiDepth.canvasOrder = self.viewUnityNode.order + 1
 
     --头像特效框
     --head.effectBox = infoGroup.transform:Find("HeadBox/Effects_tuxiangkuang")
-    head.headBox = infoGroup.transform:Find("HeadBox")
+    -- head.headBox = infoGroup.transform:Find("HeadBox")
 
         --生成默认的头像和框，用于刷新玩家头像
     --log("--log init default sprite")
-    local defaultNode = infoGroup.transform:Find("HeadImg")
-    local headImgNode = tool:UguiAddChild(infoGroup.transform, defaultNode, "defaultHeadImg")
-    headImgNode:SetActive(false)
-    head.defaultHeadImg = headImgNode:GetComponent("Image")
+    -- local defaultNode = infoGroup.transform:Find("HeadImg")
+    -- local headImgNode = tool:UguiAddChild(infoGroup.transform, defaultNode, "defaultHeadImg")
+    -- headImgNode:SetActive(false)
+    -- head.defaultHeadImg = headImgNode:GetComponent("Image")
 
-    local headBoxNode = tool:UguiAddChild(infoGroup.transform, defaultNode, "defaultHeadBox")
-    headBoxNode:SetActive(false)
-    head.defaultHeadBox = headBoxNode:GetComponent("Image")
-    head.defaultHeadBox.sprite = head.headBox:GetComponent("Image").sprite
+    -- local headBoxNode = tool:UguiAddChild(infoGroup.transform, defaultNode, "defaultHeadBox")
+    -- headBoxNode:SetActive(false)
+    -- head.defaultHeadBox = headBoxNode:GetComponent("Image")
+    -- head.defaultHeadBox.sprite = head.headBox:GetComponent("Image").sprite
 
-    head.effectBox = infoGroup.transform:Find("HeadBox/TeXiao")
-    local touxiangkuang = infoGroup.transform:Find("HeadBox/TeXiao/Effects_UI_touxiang")
-    local uiDepth2 = touxiangkuang:GetComponent("UIDepth")
-    if not uiDepth2 then
-        uiDepth2 = touxiangkuang:AddComponent(typeof(UIDepth))
-    end
-    uiDepth2.canvasOrder = self.viewUnityNode.order + 1
+    -- head.effectBox = infoGroup.transform:Find("HeadBox/TeXiao")
+    -- local touxiangkuang = infoGroup.transform:Find("HeadBox/TeXiao/Effects_UI_touxiang")
+    -- local uiDepth2 = touxiangkuang:GetComponent("UIDepth")
+    -- if not uiDepth2 then
+    --     uiDepth2 = touxiangkuang:AddComponent(typeof(UIDepth))
+    -- end
+    -- uiDepth2.canvasOrder = self.viewUnityNode.order + 1
     --头像
     --TODO: 微信用户需要拉取头像，参考原LZOnlineView2.lua
-    head.headImg = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/HeadImg", "Image")
+    -- head.headImg = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/HeadImg", "Image")
     --名字
     --TODO: 名字太长需要截断，参考原LZOnlineView2.lua
-    head.nameText = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/NameText", "Text")
+    -- head.nameText = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/NameText", "Text")
     --分数
-    head.goldText = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/GoldText", "Text")
-    head.goldText1 = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/GoldText1", "Text")
+    -- head.goldText = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/GoldText", "Text")
+    -- head.goldText1 = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/GoldText1", "Text")
 
     --重置位置
     -- local onReset = function (roomstate)
@@ -396,10 +397,10 @@ function PlayerView:initHeadView()
     --起始
     local onStart = function()
         logger.debug("llwant ,test onstart ")
-        head.root:SetActive(true)
-        head.stateOffline:SetActive(false)
-        self.infoGroupEmpty:SetActive(false)
-        self.readyIndicator:SetActive(false)
+        -- head.root:SetActive(true)
+        -- head.stateOffline:SetActive(false)
+        -- self.infoGroupEmpty:SetActive(false)
+        self.readyIndicator.visible = false
         if self.checkReadyHandBtn ~= nil then
             self.checkReadyHandBtn:SetActive(false)
         end
@@ -408,31 +409,31 @@ function PlayerView:initHeadView()
     --准备
     local onReady = function(roomstate)
         logger.debug("llwant ,test onReady ")
-        head.root:SetActive(true)
-        head.stateOffline:SetActive(false)
-        self.infoGroupEmpty:SetActive(false)
-        self.readyIndicator:SetActive(true)
-        self:showOwner()
+        -- head.root:SetActive(true)
+        -- head.stateOffline:SetActive(false)
+        -- self.infoGroupEmpty:SetActive(false)
+        self.readyIndicator.visible = true
+        -- self:showOwner()
         --onReset(roomstate)
     end
 
     --离线
     local onLeave = function(roomstate)
         logger.debug("llwant ,test onLeave ")
-        self.readyIndicator:SetActive(false)
-        self.infoGroupEmpty:SetActive(false)
-        head.stateOffline:SetActive(true)
+        self.readyIndicator.visible = false
+        -- self.infoGroupEmpty:SetActive(false)
+        -- head.stateOffline:SetActive(true)
         --onReset(roomstate)
     end
 
     --正在玩
     local onPlaying = function(roomstate)
         logger.debug("llwant ,test onPlaying ")
-        self.readyIndicator:SetActive(false)
-        self.infoGroupEmpty:SetActive(false)
-        head.root:SetActive(true)
-        head.stateOffline:SetActive(false)
-        self:showOwner()
+        self.readyIndicator.visible = false
+        -- self.infoGroupEmpty:SetActive(false)
+        -- head.root:SetActive(true)
+        -- head.stateOffline:SetActive(false)
+        -- self:showOwner()
         --onReset(roomstate)
     end
 
@@ -442,10 +443,10 @@ function PlayerView:initHeadView()
     -- PSOffline = 2
     -- PSPlaying = 3
     local status = {}
-    status[pkproto2.PSNone] = onStart
-    status[pkproto2.PSReady] = onReady
-    status[pkproto2.PSOffline] = onLeave
-    status[pkproto2.PSPlaying] = onPlaying
+    status[proto.pokerface.PlayerState.PSNone] = onStart
+    status[proto.pokerface.PlayerState.PSReady] = onReady
+    status[proto.pokerface.PlayerState.PSOffline] = onLeave
+    status[proto.pokerface.PlayerState.PSPlaying] = onPlaying
     self.onUpdateStatus = status
 
     --更新庄家UI
@@ -876,7 +877,7 @@ end
 function PlayerView:hideAll()
     self.tilesRoot:SetActive(false)
     self.head.root:SetActive(false)
-    self.readyIndicator:SetActive(false)
+    self.readyIndicator.visible = false
     self.headPopup.headInfobg:SetActive(false)
 end
 
@@ -885,14 +886,14 @@ end
 ------------------------------------
 function PlayerView:resetForNewHand()
     self:hideHands()
-    self:hideFlowers()
-    self:hideLights()
-    self:clearDiscardable()
-    self:hideDiscarded()
+    -- self:hideFlowers()
+    -- self:hideLights()
+    -- self:clearDiscardable()
+    -- self:hideDiscarded()
     --特效列表
     --self:cleanEffectObjLists()
     --self.head.ting:SetActive(false)
-    self:setHeadEffectBox(false)
+    -- self:setHeadEffectBox(false)
     self:hideGaoJing()
     --这里还要删除特效
     if self.viewChairID == 1 then
@@ -938,7 +939,7 @@ end
 -------------------------------------
 function PlayerView:hideHands()
     for _, h in ipairs(self.hands) do
-        h:SetActive(false)
+        h.visible = false
     end
 
     --TODO: 取消所有听牌、黄色遮罩等等
@@ -1065,17 +1066,17 @@ end
 
 --隐藏剩牌警告ui
 function PlayerView:hideGaoJing()
-    self.head.gaoJing:SetActive(false)
-    self.head.gaoJingText.text = "剩牌" .. tostring(cardCountOnHand) .. "张"
+    -- self.head.gaoJing:SetActive(false)
+    -- self.head.gaoJingText.text = "剩牌" .. tostring(cardCountOnHand) .. "张"
 end
 
 --显示剩牌警告ui （包括剩牌数量，告警灯）
 function PlayerView:showGaoJing(cardCountOnHand)
-    self.head.gaoJingText.text = "剩牌" .. tostring(cardCountOnHand) .. "张"
-    if self.head.gaoJing.activeSelf then
-        return
-    end
-    self.head.gaoJing:SetActive(true)
+    -- self.head.gaoJingText.text = "剩牌" .. tostring(cardCountOnHand) .. "张"
+    -- if self.head.gaoJing.activeSelf then
+    --     return
+    -- end
+    -- self.head.gaoJing:SetActive(true)
 end
 ---------------------------------------------
 --显示面子牌组

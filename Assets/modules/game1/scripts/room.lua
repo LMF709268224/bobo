@@ -478,7 +478,7 @@ function Room:resetForNewHand()
         p:resetForNewHand()
     end
     --隐藏箭头
-    self.roomView:setArrowHide()
+    -- self.roomView:setArrowHide()
 end
 
 ------------------------------------
