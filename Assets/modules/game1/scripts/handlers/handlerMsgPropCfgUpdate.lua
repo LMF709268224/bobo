@@ -10,7 +10,7 @@ local logger = require "lobby/lcore/logger"
 function Handler.onMsg(msgData, room)
     logger.debug(" update user game props cfg")
 
-    local msgUpdatePropCfg = proto.decodeGameMessageData("pokerface.MsgUpdatePropCfg", msgData)
+    local msgUpdatePropCfg = proto.decodeMessage("pokerface.MsgUpdatePropCfg", msgData)
     room:updatePropCfg(msgUpdatePropCfg)
 end
 

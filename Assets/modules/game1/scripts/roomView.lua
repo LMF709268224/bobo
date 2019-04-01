@@ -65,7 +65,13 @@ function RoomView.new(room)
     infoBtn.visible = true
 
     roomView.readyButton = view:GetChild("ready")
-    roomView.readyButton.onClick:Add(onReadyButtonClick)
+    roomView.readyButton.onClick:Add(
+        function()
+            roomView:onReadyButtonClick()
+        end
+    )
+
+    roomView.roundInfo = view:GetChild("top_room_info")
     -- -- 长按10秒上传日志文件
     -- unityViewNode:AddLongPressClick(
     --     roomView.PostLogBtn,
@@ -798,7 +804,7 @@ function RoomView:showGPSDistanceView(isSafe, updatePlayer)
             return
         end
     end
-    self:updateDistance()
+    -- self:updateDistance()
     --self.mLZDistanceView = ViewManager.OpenMessageBox("LZDistanceView", self.room)
 
     -- local viewModule = g_ModuleMgr:GetModule(ModuleName.VIEW_MODULE)
@@ -1529,29 +1535,28 @@ function RoomView:initRoomStatus()
 
     -- 游戏开始了
     local onPlay = function()
-        roomView.invitButton:SetActive(false)
-        roomView.returnHallBtn:SetActive(false)
+        -- roomView.invitButton:SetActive(false)
+        -- roomView.returnHallBtn:SetActive(false)
         --roomView.wind:SetActive(false) --发牌的时候，或者掉线恢复的时候会设置风圈因此此处不需要visible
 
         --if not room:isReplayMode() then
         --<color=#775D42FF>" .. formatStr .. "</color>
         local roundstr = "局数:<color=#e9bf89>%s/%s</color>"
         --roomView.tilesInWall:SetActive(true)
-        roomView.tipNode:SetActive(false)
-        roomView.ruleTipNode:SetActive(false)
-        roomView.roundInfo.text =
-            string.format(roundstr, tostring(self.room.handStartted), tostring((self.room.handNum)))
+        -- roomView.tipNode:SetActive(false)
+        -- roomView.ruleTipNode:SetActive(false)
+        roomView.roundInfo.text = string.format("局数:", tostring(self.room.handStartted), tostring((self.room.handNum)))
         -- else
         --     roomView.curRound:SetActive(false)
         --     roomView.totalRound:SetActive(false)
         -- end
 
-        roomView:updateLeaveAndDisbandButtons()
-        self.scrollTip:Hide()
-        self.unityViewNode:StopTimer("SHowTips")
-        self.unityViewNode:StopAction(self.fingerMoveAction)
-        self.unityViewNode:StopAction(self.fingerMoveAction1)
-        self:hideNoFriendTips()
+        -- roomView:updateLeaveAndDisbandButtons()
+        -- self.scrollTip:Hide()
+        -- self.unityViewNode:StopTimer("SHowTips")
+        -- self.unityViewNode:StopAction(self.fingerMoveAction)
+        -- self.unityViewNode:StopAction(self.fingerMoveAction1)
+        -- self:hideNoFriendTips()
     end
 
     --房间已经被删除，客户端永远看不到这个状态

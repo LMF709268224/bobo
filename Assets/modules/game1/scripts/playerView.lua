@@ -6,7 +6,6 @@ local PlayerView = {}
 local mt = {__index = PlayerView}
 local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
-local dfPath = "GuanZhang/Script/"
 local proto = require "scripts/proto/proto"
 --local AgariIndex = require "dfMahjong/AgariIndex"
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
@@ -133,31 +132,62 @@ function PlayerView.new(viewUnityNode, viewChairID)
     -- local operationPanel = view:GetChild("n31")
     -- 手牌列表
     local hands = {}
-    -- local handsOriginPos = {}
-    -- local handsClickCtrls = {}
-    local myHandTilesNode = view:GetChild("hands")
-    -- for i = 1, 16 do
-    --     local h = myHandTilesNode.transform:Find(tostring(i))
-    --     --h.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
-    --     hands[i] = h
-    --     local pos = {}
-    --     pos.x = h.x
-    --     pos.y = h.y
+    local handsOriginPos = {}
+    local handsClickCtrls = {}
+    if (viewChairID == 1) then
+        local myHandTilesNode = view:GetChild("hands")
+        for i = 1, 16 do
+            local cname = "n" .. i
+            local go = myHandTilesNode:GetChild(cname)
+            if go ~= nil then
+                local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
+                card.position = go.position
 
-    --     table.insert(handsOriginPos, pos)
-    --     table.insert(handsClickCtrls, {clickCount = 0, h = h})
+                -- if i == 1 then
+                --     local flag = card:GetChild("n2")
+                --     flag.url = "ui://p966ud2tef8pw"
+                -- end
 
-    --     --订阅点击事件
-    --     --TODO: 增加drag/drop
-    --     viewUnityNode:AddClick(
-    --         h,
-    --         function(obj)
-    --             playerView:onHandTileBtnClick(i)
-    --         end,
-    --         {isMute = true}
-    --     )
-    --     --playerView:onDrag(h, i)
-    -- end
+                myHandTilesNode:AddChild(card)
+                YY = card.y
+                local btn = card:GetChild("n0")
+                btn.onClick:Add(
+                    function(context)
+                        if card.y >= YY then
+                            card.y = card.y - 30
+                        else
+                            card.y = card.y + 30
+                        end
+                    end
+                )
+
+        -- local h = myHandTilesNode.transform:Find(tostring(i))
+                card.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
+                hands[i] = card
+                local pos = {}
+                pos.x = card.x
+                pos.y = card.y
+                table.insert(handsOriginPos, pos)
+                table.insert(handsClickCtrls, {clickCount = 0, h = card})
+            else
+                logger.error("can not found child:", cname)
+            end
+        --订阅点击事件
+        --TODO: 增加drag/drop
+        -- viewUnityNode:AddClick(
+        --     h,
+        --     function(obj)
+        --         playerView:onHandTileBtnClick(i)
+        --     end,
+        --     {isMute = true}
+        -- )
+        --playerView:onDrag(h, i)
+        end
+    else
+        --用于显示手牌数量
+        playerView.handsNumber =view:GetChild("handsNum")
+    end
+    playerView.hands = hands
     -- -- 滑动拖牌
     -- viewUnityNode:AddDrag(
     --     myHandTilesNode,
@@ -177,12 +207,9 @@ function PlayerView.new(viewUnityNode, viewChairID)
     --         playerView:OnItemDragEnd(cardObj, data)
     --     end
     -- )
-    -- --用于显示手牌数量
-    -- playerView.handsNumber = myHandTilesNode.transform:SubGet("1/handsNumber", "Text")
 
-    playerView.hands = hands
-    -- playerView.handsOriginPos = handsOriginPos --记忆原始的手牌位置，以便点击手牌时可以往上弹起以及恢复
-    -- playerView.handsClickCtrls = handsClickCtrls -- 手牌点击时控制数据结构
+    playerView.handsOriginPos = handsOriginPos --记忆原始的手牌位置，以便点击手牌时可以往上弹起以及恢复
+    playerView.handsClickCtrls = handsClickCtrls -- 手牌点击时控制数据结构
 
     -- -- 打出的牌列表
     -- local discards = {}
@@ -938,10 +965,15 @@ end
 --其实是把整行都隐藏了
 -------------------------------------
 function PlayerView:hideHands()
-    for _, h in ipairs(self.hands) do
-        h.visible = false
+    logger.debug("+ +++++++++++++++++  ",self.hands)
+    -- for _, h in ipairs(self.hands) do
+    --     h.visible = false
+    -- end
+    if self.viewChairID == 1 then
+        for i = 1, 16 do
+            self.hands[i].visible = false
+        end
     end
-
     --TODO: 取消所有听牌、黄色遮罩等等
     --self.na:SetActive(false)
 
@@ -1051,17 +1083,18 @@ function PlayerView:showHandsForOpponents()
     if self.hands == nil then
         return
     end
-    if cardCountOnHand > 3 then
-        --如果手牌数大于3  则只显示一张牌
-        self.hands[1]:SetActive(true)
-    else
-        --否则 有多少牌就显示多少牌
-        self:showGaoJing(cardCountOnHand)
-        for i = 1, cardCountOnHand do
-            self.hands[i]:SetActive(true)
-        end
-    end
+    -- if cardCountOnHand > 3 then
+    --     --如果手牌数大于3  则只显示一张牌
+    --     self.hands[1]:SetActive(true)
+    -- else
+    --     --否则 有多少牌就显示多少牌
+    --     self:showGaoJing(cardCountOnHand)
+    --     for i = 1, cardCountOnHand do
+    --         self.hands[i]:SetActive(true)
+    --     end
+    -- end
     self.handsNumber.text = tostring(cardCountOnHand)
+    self.handsNumber.visible = true
 end
 
 --隐藏剩牌警告ui
@@ -1509,7 +1542,8 @@ end
 function PlayerView:moveHandUp(index)
     local originPos = self.handsOriginPos[index]
     local h = self.handsClickCtrls[index].h
-    h.transform.localPosition = Vector3(originPos.x, originPos.y + 30, 0)
+    h.position.y = originPos.position.y + 30
+    -- h.transform.localPosition = Vector3(originPos.x, originPos.y + 30, 0)
     self.handsClickCtrls[index].clickCount = 1
     --self:setGray(h)
     self:clearGray(h)
@@ -1520,7 +1554,8 @@ end
 function PlayerView:restoreHandUp(index)
     local originPos = self.handsOriginPos[index]
     local h = self.handsClickCtrls[index].h
-    h.transform.localPosition = Vector3(originPos.x, originPos.y, 0)
+    h.position.y = originPos.position.y
+    -- h.transform.localPosition = Vector3(originPos.x, originPos.y, 0)
     self.handsClickCtrls[index].clickCount = 0
     self:clearGray(h)
 end
@@ -1550,46 +1585,47 @@ function PlayerView:showHeadImg()
         logError("showHeadIcon, self.head == nil")
         return
     end
+    self.head.headImg.visible = true
 
-    if self.head.headImg == nil then
-        logError("showHeadIcon, self.head.headImg == nil")
-        return
-    end
+    -- if self.head.headImg == nil then
+    --     logError("showHeadIcon, self.head.headImg == nil")
+    --     return
+    -- end
 
-    local player = self.player
-    if player == nil then
-        logError("showHeadIcon, player == nil")
-        return
-    end
+    -- local player = self.player
+    -- if player == nil then
+    --     logError("showHeadIcon, player == nil")
+    --     return
+    -- end
 
-    if player.sex == 1 then
-        self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/boy_img")
-    else
-        self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/girl_img")
-    end
+    -- if player.sex == 1 then
+    --     self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/boy_img")
+    -- else
+    --     self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/girl_img")
+    -- end
 
-    if player.headIconURI then
-        logger.debug("showHeadImg player.headIconURI = "..player.headIconURI)
-        tool:SetUrlImage(self.head.headImg.transform, player.headIconURI)
-    else
-        logError("showHeadIcon,  player.headIconURI == nil")
-    end
+    -- if player.headIconURI then
+    --     logger.debug("showHeadImg player.headIconURI = "..player.headIconURI)
+    --     tool:SetUrlImage(self.head.headImg.transform, player.headIconURI)
+    -- else
+    --     logError("showHeadIcon,  player.headIconURI == nil")
+    -- end
 
 
-    local boxImg = self.head.headBox.transform:GetComponent("Image")
-    boxImg.sprite = self.head.defaultHeadBox.sprite
-    boxImg:SetNativeSize()
+    -- local boxImg = self.head.headBox.transform:GetComponent("Image")
+    -- boxImg.sprite = self.head.defaultHeadBox.sprite
+    -- boxImg:SetNativeSize()
 
-    self.head.headBox.transform.localScale = Vector3(1,1,1)
-    self.head.effectBox.transform.localScale = Vector3(1,1,1)
+    -- self.head.headBox.transform.localScale = Vector3(1,1,1)
+    -- self.head.effectBox.transform.localScale = Vector3(1,1,1)
 
-    if self.head.headBox ~= nil and player.avatarID ~= nil and player.avatarID ~= 0 then
-        local imgPath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png",player.avatarID)
-        self.head.headBox.transform:SetImage(imgPath)
-        self.head.headBox.transform:GetComponent("Image"):SetNativeSize()
-        self.head.headBox.transform.localScale = Vector3(0.8,0.8,0.8)
-        self.head.effectBox.transform.localScale = Vector3(1.25,1.25,1.25)
-    end
+    -- if self.head.headBox ~= nil and player.avatarID ~= nil and player.avatarID ~= 0 then
+    --     local imgPath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png",player.avatarID)
+    --     self.head.headBox.transform:SetImage(imgPath)
+    --     self.head.headBox.transform:GetComponent("Image"):SetNativeSize()
+    --     self.head.headBox.transform.localScale = Vector3(0.8,0.8,0.8)
+    --     self.head.effectBox.transform.localScale = Vector3(1.25,1.25,1.25)
+    -- end
 end
 
 ----------------------------------------------------------

@@ -142,7 +142,7 @@ function DF:doEnterRoom(url, myUser, roomInfo)
         return
     end
 
-    enterRoomResult = proto.decodeGameMessageData("pokerface.MsgEnterRoomResult", enterRoomReplyMsg.Data)
+    enterRoomResult = proto.decodeMessage("pokerface.MsgEnterRoomResult", enterRoomReplyMsg.Data)
 
     if enterRoomResult == nil then
         -- 解码错误，已经在decodeEnterRoomResult中进行错误处理
@@ -418,22 +418,29 @@ end
 --向游戏服务器发送ready消息
 ------------------------------------------
 function DF:sendPlayerReadyMsg()
-    local gmsg = pokerfaceProto.GameMessage()
-    gmsg.Ops = pokerfaceProto.OPPlayerReady
+    -- local gmsg = pokerfaceProto.GameMessage()
+    -- gmsg.Ops = pokerfaceProto.OPPlayerReady
 
-    local buf = gmsg:SerializeToString()
-    self.ws:sendData(buf)
+    -- local buf = gmsg:SerializeToString()
+
+    local gmsg = {}
+    gmsg.Ops = proto.pokerface.MessageCode.OPPlayerReady
+    local buf = proto.encodeMessage("pokerface.GameMessage", gmsg)
+    self.ws:sendBinary(buf)
 end
 
 ------------------------------------------
 --向游戏服务器发送离开房间消息
 ------------------------------------------
 function DF:sendLeaveRoomMsg()
-    local gmsg = pokerfaceProto.GameMessage()
-    gmsg.Ops = pokerfaceProto.OPPlayerLeaveRoom
+    -- local gmsg = pokerfaceProto.GameMessage()
+    -- gmsg.Ops = pokerfaceProto.OPPlayerLeaveRoom
 
-    local buf = gmsg:SerializeToString()
-    self.ws:sendData(buf)
+    -- local buf = gmsg:SerializeToString()
+    local gmsg = {}
+    gmsg.Ops = proto.pokerface.MessageCode.OPPlayerLeaveRoom
+    local buf = proto.encodeMessage("pokerface.GameMessage", gmsg)
+    self.ws:sendBinary(buf)
 end
 
 ------------------------------------------

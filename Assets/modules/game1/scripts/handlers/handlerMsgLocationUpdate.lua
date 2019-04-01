@@ -10,7 +10,7 @@ local logger = require "lobby/lcore/logger"
 function Handler.onMsg(msgData, room)
     logger.debug(" update user gps")
 
-    local msgUpdateLocation = proto.decodeGameMessageData("pokerface.MsgUpdateLocation", msgData)
+    local msgUpdateLocation = proto.decodeMessage("pokerface.MsgUpdateLocation", msgData)
     room:updatePlayerLocation(msgUpdateLocation)
 end
 

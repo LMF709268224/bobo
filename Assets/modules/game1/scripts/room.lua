@@ -358,7 +358,7 @@ end
 ----------------------------------------------
 function Room:createPlayerByInfo(playerInfo)
     --TODO: 和createMyPlayer一起抽取一个共同的函数用于new一个基本player
-    local player = Player:new(playerInfo.userID, playerInfo.chairID, self)
+    local player = Player.new(playerInfo.userID, playerInfo.chairID, self)
     player.state = playerInfo.state
     player.nick = playerInfo.nick
     if player.nick == nil or player.nick == "" then
@@ -378,7 +378,7 @@ end
 -- 并绑定playerView
 ----------------------------------------------
 function Room:createMyPlayer(playerInfo)
-    local player = Player:new(playerInfo.userID, playerInfo.chairID, self)
+    local player = Player.new(playerInfo.userID, playerInfo.chairID, self)
     player.state = playerInfo.state
     player.nick = playerInfo.nick
     if player.nick == nil or player.nick == "" then
@@ -773,7 +773,7 @@ end
 -----------------------------------------------------------
 function Room:setBankerFlag()
     for _, v in pairs(self.players) do
-        v.playerView.head.onUpdateBankerFlag(v.chairID == self.bankerChairID, self.isContinuousBanker)
+        -- v.playerView.head.onUpdateBankerFlag(v.chairID == self.bankerChairID, self.isContinuousBanker)
     end
 end
 
@@ -1084,10 +1084,10 @@ function Room:updatePlayerLocation(msgUpdateLocation)
         return
     end
 
-    local distanceView = roomView.distanceView
-    if distanceView.activeSelf then
-        self.roomView:updateDistance()
-    end
+    -- local distanceView = roomView.distanceView
+    -- if distanceView.activeSelf then
+    --     self.roomView:updateDistance()
+    -- end
 end
 
 function Room:getPropCfg(index)

@@ -7,6 +7,7 @@ Player.VERSION = "1.0"
 
 local logger = require "lobby/lcore/logger"
 local mt = {__index = Player}
+local proto = require "scripts/proto/proto"
 -- local dfPath = "GuanZhang/Script/"
 -- local msgHelper = require(dfPath .. "dfMahjong/msgHelper")
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
@@ -32,7 +33,7 @@ local SoundDef = {
     Common = "effect_common"
 }
 
-function Player:new(userID, chairID, room)
+function Player.new(userID, chairID, room)
     local player = {userID = userID, chairID = chairID, room = room}
     setmetatable(player, mt)
 
@@ -103,11 +104,11 @@ function Player:sortHands(excludeLast)
         table.sort(
             self.cardsOnHand,
             function(x, y)
-                if x == pokerface.R2H then
+                if x == proto.pokerface.CardID.R2H then
                     --为了让 红桃2 排最后
                     return false
                 end
-                if y == pokerface.R2H then
+                if y == proto.pokerface.CardID.R2H then
                     --为了让 红桃2 排最后
                     return true
                 end
@@ -486,7 +487,7 @@ function Player:bindView(playerView)
     -- playerView.head.root:SetActive(true)
     -- playerView.tilesRoot:SetActive(true)
 
-    -- playerView:showHeadImg()
+    playerView:showHeadImg()
     -- playerView:showOwner()
 end
 

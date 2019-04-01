@@ -14,7 +14,7 @@ local logger = require "lobby/lcore/logger"
 function Handler.onMsg(msgData, room)
     logger.debug(" handle room update")
 
-    local msgRoomUpdate = proto.decodeGameMessageData("pokerface.MsgRoomInfo", msgData)
+    local msgRoomUpdate = proto.decodeMessage("pokerface.MsgRoomInfo", msgData)
     local msgPlayers = msgRoomUpdate.players
 
     -- 房间状态
@@ -105,12 +105,12 @@ function Handler.onMsg(msgData, room)
             room.roomView:hide2ReadyButton()
         end
         if updatePlayer ~= 0 then
-            room.roomView:updateDistance()
-            --玩家自己与其他玩家的关系
-            room.roomView:initPlayersRelation()
+        -- room.roomView:updateDistance()
+        --玩家自己与其他玩家的关系
+        -- room.roomView:initPlayersRelation()
         end
     elseif msgRoomUpdate.state == roomStateEnum.SRoomPlaying then
-        room.roomView:hideDistanceView()
+    -- room.roomView:hideDistanceView()
     end
     --是否需要更新GPS按钮(是否有警告)
     --新游戏 只有在room为等待状态的时候显示

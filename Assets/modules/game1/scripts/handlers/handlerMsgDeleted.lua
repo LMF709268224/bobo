@@ -11,7 +11,7 @@ function Handler.onMsg(msgData, room)
     logger.debug(" room deleted msg, msgData length:", #msgData, "room id:", room.id)
     room.isDestroy = true
 
-    local msgDelete = proto.decodeGameMessageData("pokerface.MsgRoomDelete", msgData)
+    local msgDelete = proto.decodeMessage("pokerface.MsgRoomDelete", msgData)
     local roomDeleteReasonEnum = proto.pokerface.RoomDeleteReason
 
     local msg = "房间已解散"

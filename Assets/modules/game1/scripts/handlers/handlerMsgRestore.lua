@@ -11,7 +11,7 @@ function Handler.onMsg(msgData, room)
     logger.debug(" handle room restore")
 
     --掉线恢复时，是通过MsgRestore下发的
-    local msgRestore = proto.decodeGameMessageData("pokerface.MsgRestore", msgData)
+    local msgRestore = proto.decodeMessage("pokerface.MsgRestore", msgData)
 
     --首先清空所有玩家的牌列表
     for _, p in pairs(room.players) do

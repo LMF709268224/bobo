@@ -10,7 +10,7 @@ local logger = require "lobby/lcore/logger"
 function Handler.onMsg(msg, room)
     --logger.debug(' Action allowed msg')
 
-    local allowedActionMsg = proto.decodeGameMessageData("pokerface.MsgAllowPlayerAction", msg)
+    local allowedActionMsg = proto.decodeMessage("pokerface.MsgAllowPlayerAction", msg)
     local targetChairID = allowedActionMsg.actionChairID
     local player = room:getPlayerByChairID(targetChairID)
 
