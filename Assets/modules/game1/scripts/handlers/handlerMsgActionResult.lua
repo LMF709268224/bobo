@@ -23,7 +23,7 @@ Handler.actionhandlers = initActoinHandlers()
 function Handler:onMsg(msg, room)
     --logger.debug(' Action result msg')
     --msg解析为MsgActionResultNotify
-    local actionResultMsg = proto.decodeGameMessageData("pokerface.MsgActionResultNotify", msg)
+    local actionResultMsg = proto.decodeMessage("pokerface.MsgActionResultNotify", msg)
 
     local action = actionResultMsg.action
     local handler = self.actionhandlers[action]

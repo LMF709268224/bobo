@@ -14,7 +14,7 @@ function Handler.onMsg(msgData, room)
     room:stopDiscardCountdown()
     room:hideDiscardedTips()
 
-    local msgHandOver = proto.decodeGameMessageData("pokerface.MsgHandOver", msgData)
+    local msgHandOver = proto.decodeMessage("pokerface.MsgHandOver", msgData)
 
     --把结果保存到 room
     room.msgHandOver = msgHandOver

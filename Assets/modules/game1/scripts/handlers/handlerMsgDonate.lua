@@ -10,7 +10,7 @@ local logger = require "lobby/lcore/logger"
 function Handler.onMsg(msgData, room)
     logger.debug("llwant Donate msg")
 
-    local msgDonate = proto.decodeGameMessageData("pokerface.MsgDonate", msgData)
+    local msgDonate = proto.decodeMessage("pokerface.MsgDonate", msgData)
     --
     --logError("-------------------- msgDonate item :"..tostring(msgDonate.itemID))
     --logError("-------------------- msgDonate toChairID :"..tostring(msgDonate.toChairID))

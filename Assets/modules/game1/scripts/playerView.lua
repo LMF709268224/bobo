@@ -5,7 +5,9 @@ local PlayerView = {}
 
 local mt = {__index = PlayerView}
 local fairy = require "lobby/lcore/fairygui"
-local dfPath = "GuanZhang/Script/"
+local logger = require "lobby/lcore/logger"
+local proto = require "scripts/proto/proto"
+local tileMounter = require("scripts/tileImageMounter")
 --local AgariIndex = require "dfMahjong/AgariIndex"
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
 -- local Loader = require(dfPath .. "dfMahjong/spriteLoader")
@@ -92,13 +94,9 @@ local dfPath = "GuanZhang/Script/"
 -- @param viewUnityNode 根据viewUnityNode获得playerView需要控制
 -- 的所有节点
 -----------------------------------------------
-function PlayerView:new(viewUnityNode, viewChairID)
+function PlayerView.new(viewUnityNode, viewChairID)
     local playerView = {}
     setmetatable(playerView, mt)
-
-    playerView.viewChairID = viewChairID
-    playerView.viewUnityNode = viewUnityNode
-
     -- 先找到牌相关的节点
     -- 现在的牌相关是在一个独立的prefab里面
     -- 这个prefab在roomView构造是已经加载进来
@@ -107,44 +105,91 @@ function PlayerView:new(viewUnityNode, viewChairID)
     -- 的chair ID是多少，他都是居于正中下方，左手是上家，右手是下家，正中上方是对家
     -- 根据prefab中的位置，正中下方是Cards/1，左手是Cards/4，右手是Cards/2，正中上方是Cards/3
     -- local myTilesNode = viewUnityNode.transform:Find("Cards/" .. viewChairID)
-    local myTilesNode = fairy.UIPackage.CreateObject("runfast", "desk_view_mine")
-    if (viewChairID == 2) then
-        myTilesNode = fairy.UIPackage.CreateObject("runfast", "desk_view_right")
+    local view = nil
+    if (viewChairID == 1) then
+        view = viewUnityNode:GetChild("playerMine")
+        playerView.operationPanel = viewUnityNode:GetChild("operationPanel")
+    elseif (viewChairID == 2) then
+        view = viewUnityNode:GetChild("playerRight")
     elseif (viewChairID == 3) then
-        myTilesNode = fairy.UIPackage.CreateObject("runfast", "desk_view_left")
+        view = viewUnityNode:GetChild("playerLeft")
     end
+    playerView.viewChairID = viewChairID
+    playerView.viewUnityNode = viewUnityNode
+    local head = {}
+    local headImg = view:GetChild("head")
+    headImg.visible = false
+    local score = view:GetChild("score")
+    score.visible = true
+    local scoreText = view:GetChild("scoreText")
+    scoreText.visible = true
+
+    head.scoreText = scoreText
+    head.headImg = headImg
     -- myTilesNode.visible = true
     -- playerView.tilesRoot = myTilesNode
 
     -- -- self.texiaoPos = myTilesNode.transform:Find("texiaoPos") --特效的位置
     -- local operationPanel = view:GetChild("n31")
-    -- -- 手牌列表
-    -- local hands = {}
-    -- local handsOriginPos = {}
-    -- local handsClickCtrls = {}
-    -- local myHandTilesNode = myTilesNode.transform:Find("Hands")
-    -- for i = 1, 16 do
-    --     local h = myHandTilesNode.transform:Find(tostring(i))
-    --     --h.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
-    --     hands[i] = h
-    --     local pos = {}
-    --     pos.x = h.x
-    --     pos.y = h.y
+    -- 手牌列表
+    local hands = {}
+    local handsOriginPos = {}
+    local handsClickCtrls = {}
+    if (viewChairID == 1) then
+        local myHandTilesNode = view:GetChild("hands")
+        for i = 1, 16 do
+            local cname = "n" .. i
+            local go = myHandTilesNode:GetChild(cname)
+            if go ~= nil then
+                local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
+                card.position = go.position
 
-    --     table.insert(handsOriginPos, pos)
-    --     table.insert(handsClickCtrls, {clickCount = 0, h = h})
+                -- if i == 1 then
+                --     local flag = card:GetChild("n2")
+                --     flag.url = "ui://p966ud2tef8pw"
+                -- end
 
-    --     --订阅点击事件
-    --     --TODO: 增加drag/drop
-    --     viewUnityNode:AddClick(
-    --         h,
-    --         function(obj)
-    --             playerView:onHandTileBtnClick(i)
-    --         end,
-    --         {isMute = true}
-    --     )
-    --     --playerView:onDrag(h, i)
-    -- end
+                myHandTilesNode:AddChild(card)
+                YY = card.y
+                local btn = card:GetChild("n0")
+                btn.onClick:Add(
+                    function(context)
+                        if card.y >= YY then
+                            card.y = card.y - 30
+                        else
+                            card.y = card.y + 30
+                        end
+                    end
+                )
+
+        -- local h = myHandTilesNode.transform:Find(tostring(i))
+                card.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
+                hands[i] = card
+                local pos = {}
+                pos.x = card.x
+                pos.y = card.y
+                table.insert(handsOriginPos, pos)
+                table.insert(handsClickCtrls, {clickCount = 0, h = card})
+            else
+                logger.error("can not found child:", cname)
+            end
+        --订阅点击事件
+        --TODO: 增加drag/drop
+        -- viewUnityNode:AddClick(
+        --     h,
+        --     function(obj)
+        --         playerView:onHandTileBtnClick(i)
+        --     end,
+        --     {isMute = true}
+        -- )
+        --playerView:onDrag(h, i)
+        end
+    else
+        --用于显示手牌数量
+        playerView.handsNumber =view:GetChild("handsNum")
+        hands[1] = view:GetChild("hands")
+    end
+    playerView.hands = hands
     -- -- 滑动拖牌
     -- viewUnityNode:AddDrag(
     --     myHandTilesNode,
@@ -164,12 +209,9 @@ function PlayerView:new(viewUnityNode, viewChairID)
     --         playerView:OnItemDragEnd(cardObj, data)
     --     end
     -- )
-    -- --用于显示手牌数量
-    -- playerView.handsNumber = myHandTilesNode.transform:SubGet("1/handsNumber", "Text")
 
-    -- playerView.hands = hands
-    -- playerView.handsOriginPos = handsOriginPos --记忆原始的手牌位置，以便点击手牌时可以往上弹起以及恢复
-    -- playerView.handsClickCtrls = handsClickCtrls -- 手牌点击时控制数据结构
+    playerView.handsOriginPos = handsOriginPos --记忆原始的手牌位置，以便点击手牌时可以往上弹起以及恢复
+    playerView.handsClickCtrls = handsClickCtrls -- 手牌点击时控制数据结构
 
     -- -- 打出的牌列表
     -- local discards = {}
@@ -190,8 +232,8 @@ function PlayerView:new(viewUnityNode, viewChairID)
     -- end
     -- playerView.lights = lights
 
-    -- -- ready状态指示
-    -- playerView.readyIndicator = viewUnityNode.transform:Find("ReadyTips/" .. viewChairID)
+    -- ready状态指示
+    playerView.readyIndicator = view:GetChild("ready")
     -- -- 打出的牌放大显示
     -- playerView.discardTips = viewUnityNode.transform:Find("OneOuts/" .. viewChairID)
     -- playerView.discardTipsTile = playerView.discardTips:Find("Card")
@@ -211,15 +253,16 @@ function PlayerView:new(viewUnityNode, viewChairID)
     -- playerView.infoGroupEmpty = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID .. "empty")
     -- --playerView.infoGroupPos = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID .. "pos")
 
-    -- -- 头像相关
-    -- playerView:initHeadView()
+    -- 头像相关
+    playerView:initHeadView()
 
     -- -- 头像弹框
     -- playerView:initHeadPopup()
 
-    -- if viewChairID == 1 then
-    --     playerView:initOperationButtons()
-    -- end
+    if viewChairID == 1 then
+        playerView:initOperationButtons()
+    end
+    playerView.head = head
 
     return playerView
 end
@@ -237,61 +280,27 @@ end
 --保存操作按钮
 -------------------------------------------------
 function PlayerView:initOperationButtons()
-    local viewUnityNode = self.viewUnityNode
-
+    local viewUnityNode = self.operationPanel
     local pv = self
-
-    self.skipBtn = viewUnityNode.transform:Find("TsBtnGroup/GuoBtn") --过按钮
-    viewUnityNode:AddClick(
-        self.skipBtn,
+    self.skipBtn = viewUnityNode:GetChild("pass")
+    self.tipBtn = viewUnityNode:GetChild("tip")
+    self.discardBtn = viewUnityNode:GetChild("discard")
+    self.skipBtn.onClick:Add(
         function(obj)
             local player = pv.player
             player:onSkipBtnClick(false, obj)
         end
     )
-
-    self.tipBtn = viewUnityNode.transform:Find("TsBtnGroup/TipBtn") --提示按钮
-    viewUnityNode:AddClick(
-        self.tipBtn,
+    self.tipBtn.onClick:Add(
         function(obj)
             local player = pv.player
             player:onTipBtnClick(false, obj)
         end
     )
-
-    self.discardBtn = viewUnityNode.transform:Find("TsBtnGroup/ChuBtn") --出牌按钮
-    viewUnityNode:AddClick(
-        self.discardBtn,
+    self.discardBtn.onClick:Add(
         function(obj)
             local player = pv.player
             player:onDiscardBtnClick(false, obj)
-        end
-    )
-
-    self.discardHuiBtn = viewUnityNode.transform:Find("TsBtnGroup/ChuHuiBtn") --灰色出牌按钮
-    viewUnityNode:AddClick(
-        self.discardHuiBtn,
-        function(obj)
-            local player = pv.player
-            player:onDiscardBtnClick(true, obj)
-        end
-    )
-
-    self.skipHuiBtn = viewUnityNode.transform:Find("TsBtnGroup/GuoHuiBtn") --过按钮
-    viewUnityNode:AddClick(
-        self.skipHuiBtn,
-        function(obj)
-            local player = pv.player
-            player:onSkipBtnClick(true, obj)
-        end
-    )
-
-    self.tipHuiBtn = viewUnityNode.transform:Find("TsBtnGroup/TipHuiBtn") --提示按钮
-    viewUnityNode:AddClick(
-        self.tipHuiBtn,
-        function(obj)
-            local player = pv.player
-            player:onTipBtnClick(true, obj)
         end
     )
     self.operationButtons = {
@@ -325,7 +334,7 @@ function PlayerView:hideOperationButtons()
     -- 先隐藏掉所有按钮
     local buttons = self.operationButtons
     for _, b in pairs(buttons) do
-        b:SetActive(false)
+        b.visible = false
     end
 
     -- 隐藏根节点
@@ -339,72 +348,72 @@ function PlayerView:initHeadView()
     --local viewChairID = self.viewChairID
     local viewUnityNode = self.viewUnityNode
 
-    local infoGroup = self.infoGroup
-    head.root = infoGroup
+    -- local infoGroup = self.infoGroup
+    -- head.root = infoGroup
     -- 文字聊天框
-    head.textChat = infoGroup.transform:Find("TextChat")
+    -- head.textChat = infoGroup.transform:Find("TextChat")
     -- 表情聊天
-    head.faceChat = infoGroup.transform:Find("FaceChat")
+    -- head.faceChat = infoGroup.transform:Find("FaceChat")
     -- 语音聊天
-    head.playerVoiceNode = infoGroup.transform:Find("VoiceImage")
-    head.playerVoiceTextNode = infoGroup.transform:Find("VoiceImage/LenText")
+    -- head.playerVoiceNode = infoGroup.transform:Find("VoiceImage")
+    -- head.playerVoiceTextNode = infoGroup.transform:Find("VoiceImage/LenText")
     -- 动画控制
-    head.playerVoiceAction = {}
+    -- head.playerVoiceAction = {}
 
     -- 房间拥有者标志
-    head.roomOwnerFlag = infoGroup.transform:Find("owner")
+    -- head.roomOwnerFlag = infoGroup.transform:Find("owner")
     -- 离开状态标志
-    head.stateLeave = infoGroup.transform:Find("Exit")
+    -- head.stateLeave = infoGroup.transform:Find("Exit")
     -- 离线状态标志
-    head.stateOffline = infoGroup.transform:Find("OffLine")
+    -- head.stateOffline = infoGroup.transform:Find("OffLine")
 
     --庄家标志
-    head.bankerFlag = infoGroup.transform:Find("BankerTag")
-    head.continuousBankerFlag = infoGroup.transform:Find("BankerContinuousTag")
+    -- head.bankerFlag = infoGroup.transform:Find("BankerTag")
+    -- head.continuousBankerFlag = infoGroup.transform:Find("BankerContinuousTag")
     --告警
 
     --把告警里面的特效 层级调高。。。
-    head.gaoJing = infoGroup.transform:Find("GaoJing")
-    head.gaoJingText = infoGroup.transform:SubGet("GaoJing/Number/Text", "Text")
-    local gaoJingTeXiao = infoGroup.transform:Find("GaoJing/Effects_zi_jingling")
-    local uiDepth = gaoJingTeXiao:GetComponent("UIDepth")
-    if not uiDepth then
-        uiDepth = gaoJingTeXiao:AddComponent(typeof(UIDepth))
-    end
-    uiDepth.canvasOrder = self.viewUnityNode.order + 1
+    -- head.gaoJing = infoGroup.transform:Find("GaoJing")
+    -- head.gaoJingText = infoGroup.transform:SubGet("GaoJing/Number/Text", "Text")
+    -- local gaoJingTeXiao = infoGroup.transform:Find("GaoJing/Effects_zi_jingling")
+    -- local uiDepth = gaoJingTeXiao:GetComponent("UIDepth")
+    -- if not uiDepth then
+    --     uiDepth = gaoJingTeXiao:AddComponent(typeof(UIDepth))
+    -- end
+    -- uiDepth.canvasOrder = self.viewUnityNode.order + 1
 
     --头像特效框
     --head.effectBox = infoGroup.transform:Find("HeadBox/Effects_tuxiangkuang")
-    head.headBox = infoGroup.transform:Find("HeadBox")
+    -- head.headBox = infoGroup.transform:Find("HeadBox")
 
         --生成默认的头像和框，用于刷新玩家头像
     --log("--log init default sprite")
-    local defaultNode = infoGroup.transform:Find("HeadImg")
-    local headImgNode = tool:UguiAddChild(infoGroup.transform, defaultNode, "defaultHeadImg")
-    headImgNode:SetActive(false)
-    head.defaultHeadImg = headImgNode:GetComponent("Image")
+    -- local defaultNode = infoGroup.transform:Find("HeadImg")
+    -- local headImgNode = tool:UguiAddChild(infoGroup.transform, defaultNode, "defaultHeadImg")
+    -- headImgNode:SetActive(false)
+    -- head.defaultHeadImg = headImgNode:GetComponent("Image")
 
-    local headBoxNode = tool:UguiAddChild(infoGroup.transform, defaultNode, "defaultHeadBox")
-    headBoxNode:SetActive(false)
-    head.defaultHeadBox = headBoxNode:GetComponent("Image")
-    head.defaultHeadBox.sprite = head.headBox:GetComponent("Image").sprite
+    -- local headBoxNode = tool:UguiAddChild(infoGroup.transform, defaultNode, "defaultHeadBox")
+    -- headBoxNode:SetActive(false)
+    -- head.defaultHeadBox = headBoxNode:GetComponent("Image")
+    -- head.defaultHeadBox.sprite = head.headBox:GetComponent("Image").sprite
 
-    head.effectBox = infoGroup.transform:Find("HeadBox/TeXiao")
-    local touxiangkuang = infoGroup.transform:Find("HeadBox/TeXiao/Effects_UI_touxiang")
-    local uiDepth2 = touxiangkuang:GetComponent("UIDepth")
-    if not uiDepth2 then
-        uiDepth2 = touxiangkuang:AddComponent(typeof(UIDepth))
-    end
-    uiDepth2.canvasOrder = self.viewUnityNode.order + 1
+    -- head.effectBox = infoGroup.transform:Find("HeadBox/TeXiao")
+    -- local touxiangkuang = infoGroup.transform:Find("HeadBox/TeXiao/Effects_UI_touxiang")
+    -- local uiDepth2 = touxiangkuang:GetComponent("UIDepth")
+    -- if not uiDepth2 then
+    --     uiDepth2 = touxiangkuang:AddComponent(typeof(UIDepth))
+    -- end
+    -- uiDepth2.canvasOrder = self.viewUnityNode.order + 1
     --头像
     --TODO: 微信用户需要拉取头像，参考原LZOnlineView2.lua
-    head.headImg = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/HeadImg", "Image")
+    -- head.headImg = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/HeadImg", "Image")
     --名字
     --TODO: 名字太长需要截断，参考原LZOnlineView2.lua
-    head.nameText = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/NameText", "Text")
+    -- head.nameText = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/NameText", "Text")
     --分数
-    head.goldText = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/GoldText", "Text")
-    head.goldText1 = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/GoldText1", "Text")
+    -- head.goldText = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/GoldText", "Text")
+    -- head.goldText1 = viewUnityNode:SubGet("PlayInfoGroup/" .. self.viewChairID .. "/GoldText1", "Text")
 
     --重置位置
     -- local onReset = function (roomstate)
@@ -417,10 +426,10 @@ function PlayerView:initHeadView()
     --起始
     local onStart = function()
         logger.debug("llwant ,test onstart ")
-        head.root:SetActive(true)
-        head.stateOffline:SetActive(false)
-        self.infoGroupEmpty:SetActive(false)
-        self.readyIndicator:SetActive(false)
+        -- head.root:SetActive(true)
+        -- head.stateOffline:SetActive(false)
+        -- self.infoGroupEmpty:SetActive(false)
+        self.readyIndicator.visible = false
         if self.checkReadyHandBtn ~= nil then
             self.checkReadyHandBtn:SetActive(false)
         end
@@ -429,31 +438,31 @@ function PlayerView:initHeadView()
     --准备
     local onReady = function(roomstate)
         logger.debug("llwant ,test onReady ")
-        head.root:SetActive(true)
-        head.stateOffline:SetActive(false)
-        self.infoGroupEmpty:SetActive(false)
-        self.readyIndicator:SetActive(true)
-        self:showOwner()
+        -- head.root:SetActive(true)
+        -- head.stateOffline:SetActive(false)
+        -- self.infoGroupEmpty:SetActive(false)
+        self.readyIndicator.visible = true
+        -- self:showOwner()
         --onReset(roomstate)
     end
 
     --离线
     local onLeave = function(roomstate)
         logger.debug("llwant ,test onLeave ")
-        self.readyIndicator:SetActive(false)
-        self.infoGroupEmpty:SetActive(false)
-        head.stateOffline:SetActive(true)
+        self.readyIndicator.visible = false
+        -- self.infoGroupEmpty:SetActive(false)
+        -- head.stateOffline:SetActive(true)
         --onReset(roomstate)
     end
 
     --正在玩
     local onPlaying = function(roomstate)
         logger.debug("llwant ,test onPlaying ")
-        self.readyIndicator:SetActive(false)
-        self.infoGroupEmpty:SetActive(false)
-        head.root:SetActive(true)
-        head.stateOffline:SetActive(false)
-        self:showOwner()
+        self.readyIndicator.visible = false
+        -- self.infoGroupEmpty:SetActive(false)
+        -- head.root:SetActive(true)
+        -- head.stateOffline:SetActive(false)
+        -- self:showOwner()
         --onReset(roomstate)
     end
 
@@ -463,10 +472,10 @@ function PlayerView:initHeadView()
     -- PSOffline = 2
     -- PSPlaying = 3
     local status = {}
-    status[pkproto2.PSNone] = onStart
-    status[pkproto2.PSReady] = onReady
-    status[pkproto2.PSOffline] = onLeave
-    status[pkproto2.PSPlaying] = onPlaying
+    status[proto.pokerface.PlayerState.PSNone] = onStart
+    status[proto.pokerface.PlayerState.PSReady] = onReady
+    status[proto.pokerface.PlayerState.PSOffline] = onLeave
+    status[proto.pokerface.PlayerState.PSPlaying] = onPlaying
     self.onUpdateStatus = status
 
     --更新庄家UI
@@ -897,7 +906,7 @@ end
 function PlayerView:hideAll()
     self.tilesRoot:SetActive(false)
     self.head.root:SetActive(false)
-    self.readyIndicator:SetActive(false)
+    self.readyIndicator.visible = false
     self.headPopup.headInfobg:SetActive(false)
 end
 
@@ -906,14 +915,14 @@ end
 ------------------------------------
 function PlayerView:resetForNewHand()
     self:hideHands()
-    self:hideFlowers()
-    self:hideLights()
-    self:clearDiscardable()
-    self:hideDiscarded()
+    -- self:hideFlowers()
+    -- self:hideLights()
+    -- self:clearDiscardable()
+    -- self:hideDiscarded()
     --特效列表
     --self:cleanEffectObjLists()
     --self.head.ting:SetActive(false)
-    self:setHeadEffectBox(false)
+    -- self:setHeadEffectBox(false)
     self:hideGaoJing()
     --这里还要删除特效
     if self.viewChairID == 1 then
@@ -939,8 +948,10 @@ end
 ------------------------------------
 function PlayerView:hideDiscarded()
     local discards = self.discards
-    for _, d in ipairs(discards) do
-        d:SetActive(false)
+    if discards then
+        for _, d in ipairs(discards) do
+            d:SetActive(false)
+        end
     end
 end
 
@@ -958,10 +969,17 @@ end
 --其实是把整行都隐藏了
 -------------------------------------
 function PlayerView:hideHands()
+    -- logger.debug("+ +++++++++++++++++  ",self.hands)
+    -- if self.viewChairID == 1 then
     for _, h in ipairs(self.hands) do
-        h:SetActive(false)
+        h.visible = false
     end
-
+    -- end
+    -- if self.viewChairID == 1 then
+    --     for i = 1, 16 do
+    --         self.hands[i].visible = false
+    --     end
+    -- end
     --TODO: 取消所有听牌、黄色遮罩等等
     --self.na:SetActive(false)
 
@@ -1071,32 +1089,34 @@ function PlayerView:showHandsForOpponents()
     if self.hands == nil then
         return
     end
-    if cardCountOnHand > 3 then
-        --如果手牌数大于3  则只显示一张牌
-        self.hands[1]:SetActive(true)
-    else
-        --否则 有多少牌就显示多少牌
-        self:showGaoJing(cardCountOnHand)
-        for i = 1, cardCountOnHand do
-            self.hands[i]:SetActive(true)
-        end
-    end
+    self.hands[1].visible = true
+    -- if cardCountOnHand > 3 then
+    --     --如果手牌数大于3  则只显示一张牌
+    --     self.hands[1]:SetActive(true)
+    -- else
+    --     --否则 有多少牌就显示多少牌
+    --     self:showGaoJing(cardCountOnHand)
+    --     for i = 1, cardCountOnHand do
+    --         self.hands[i]:SetActive(true)
+    --     end
+    -- end
     self.handsNumber.text = tostring(cardCountOnHand)
+    self.handsNumber.visible = true
 end
 
 --隐藏剩牌警告ui
 function PlayerView:hideGaoJing()
-    self.head.gaoJing:SetActive(false)
-    self.head.gaoJingText.text = "剩牌" .. tostring(cardCountOnHand) .. "张"
+    -- self.head.gaoJing:SetActive(false)
+    -- self.head.gaoJingText.text = "剩牌" .. tostring(cardCountOnHand) .. "张"
 end
 
 --显示剩牌警告ui （包括剩牌数量，告警灯）
 function PlayerView:showGaoJing(cardCountOnHand)
-    self.head.gaoJingText.text = "剩牌" .. tostring(cardCountOnHand) .. "张"
-    if self.head.gaoJing.activeSelf then
-        return
-    end
-    self.head.gaoJing:SetActive(true)
+    -- self.head.gaoJingText.text = "剩牌" .. tostring(cardCountOnHand) .. "张"
+    -- if self.head.gaoJing.activeSelf then
+    --     return
+    -- end
+    -- self.head.gaoJing:SetActive(true)
 end
 ---------------------------------------------
 --显示面子牌组
@@ -1166,13 +1186,13 @@ function PlayerView:showHandsForMe(wholeMove, isShow)
     for i = begin, endd do
         local h = self.hands[i]
         tileMounter:mountTileImage(h, cardsOnHand[j])
-        h:SetActive(isShow)
+        h.visible = isShow
         handsClickCtrls[i].tileID = cardsOnHand[j]
         j = j + 1
     end
 
     if cardCountOnHand < 4 then
-        self:showGaoJing(cardCountOnHand)
+        -- self:showGaoJing(cardCountOnHand)
     end
 end
 
@@ -1529,7 +1549,8 @@ end
 function PlayerView:moveHandUp(index)
     local originPos = self.handsOriginPos[index]
     local h = self.handsClickCtrls[index].h
-    h.transform.localPosition = Vector3(originPos.x, originPos.y + 30, 0)
+    h.position.y = originPos.y + 30
+    -- h.transform.localPosition = Vector3(originPos.x, originPos.y + 30, 0)
     self.handsClickCtrls[index].clickCount = 1
     --self:setGray(h)
     self:clearGray(h)
@@ -1540,7 +1561,8 @@ end
 function PlayerView:restoreHandUp(index)
     local originPos = self.handsOriginPos[index]
     local h = self.handsClickCtrls[index].h
-    h.transform.localPosition = Vector3(originPos.x, originPos.y, 0)
+    h.position.y = originPos.y
+    -- h.transform.localPosition = Vector3(originPos.x, originPos.y, 0)
     self.handsClickCtrls[index].clickCount = 0
     self:clearGray(h)
 end
@@ -1570,46 +1592,47 @@ function PlayerView:showHeadImg()
         logError("showHeadIcon, self.head == nil")
         return
     end
+    self.head.headImg.visible = true
 
-    if self.head.headImg == nil then
-        logError("showHeadIcon, self.head.headImg == nil")
-        return
-    end
+    -- if self.head.headImg == nil then
+    --     logError("showHeadIcon, self.head.headImg == nil")
+    --     return
+    -- end
 
-    local player = self.player
-    if player == nil then
-        logError("showHeadIcon, player == nil")
-        return
-    end
+    -- local player = self.player
+    -- if player == nil then
+    --     logError("showHeadIcon, player == nil")
+    --     return
+    -- end
 
-    if player.sex == 1 then
-        self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/boy_img")
-    else
-        self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/girl_img")
-    end
+    -- if player.sex == 1 then
+    --     self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/boy_img")
+    -- else
+    --     self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/girl_img")
+    -- end
 
-    if player.headIconURI then
-        logger.debug("showHeadImg player.headIconURI = "..player.headIconURI)
-        tool:SetUrlImage(self.head.headImg.transform, player.headIconURI)
-    else
-        logError("showHeadIcon,  player.headIconURI == nil")
-    end
+    -- if player.headIconURI then
+    --     logger.debug("showHeadImg player.headIconURI = "..player.headIconURI)
+    --     tool:SetUrlImage(self.head.headImg.transform, player.headIconURI)
+    -- else
+    --     logError("showHeadIcon,  player.headIconURI == nil")
+    -- end
 
 
-    local boxImg = self.head.headBox.transform:GetComponent("Image")
-    boxImg.sprite = self.head.defaultHeadBox.sprite
-    boxImg:SetNativeSize()
+    -- local boxImg = self.head.headBox.transform:GetComponent("Image")
+    -- boxImg.sprite = self.head.defaultHeadBox.sprite
+    -- boxImg:SetNativeSize()
 
-    self.head.headBox.transform.localScale = Vector3(1,1,1)
-    self.head.effectBox.transform.localScale = Vector3(1,1,1)
+    -- self.head.headBox.transform.localScale = Vector3(1,1,1)
+    -- self.head.effectBox.transform.localScale = Vector3(1,1,1)
 
-    if self.head.headBox ~= nil and player.avatarID ~= nil and player.avatarID ~= 0 then
-        local imgPath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png",player.avatarID)
-        self.head.headBox.transform:SetImage(imgPath)
-        self.head.headBox.transform:GetComponent("Image"):SetNativeSize()
-        self.head.headBox.transform.localScale = Vector3(0.8,0.8,0.8)
-        self.head.effectBox.transform.localScale = Vector3(1.25,1.25,1.25)
-    end
+    -- if self.head.headBox ~= nil and player.avatarID ~= nil and player.avatarID ~= 0 then
+    --     local imgPath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png",player.avatarID)
+    --     self.head.headBox.transform:SetImage(imgPath)
+    --     self.head.headBox.transform:GetComponent("Image"):SetNativeSize()
+    --     self.head.headBox.transform.localScale = Vector3(0.8,0.8,0.8)
+    --     self.head.effectBox.transform.localScale = Vector3(1.25,1.25,1.25)
+    -- end
 end
 
 ----------------------------------------------------------
@@ -1913,10 +1936,10 @@ function PlayerView:setGray(btn)
     --     imageB.color = Color(120/255, 122/255, 122/255, 1)
     -- end
 
-    if btn ~= nil then
-        local hImg = btn:Find("gray")
-        hImg:SetActive(true)
-    end
+    -- if btn ~= nil then
+    --     local hImg = btn:Find("gray")
+    --     hImg:SetActive(true)
+    -- end
 end
 
 --恢复灰度
@@ -1929,10 +1952,10 @@ function PlayerView:clearGray(btn)
     --     imageB.color = Color(1, 1, 1, 1)
     -- end
 
-    if btn ~= nil then
-        local hImg = btn:Find("gray")
-        hImg:SetActive(false)
-    end
+    -- if btn ~= nil then
+    --     local hImg = btn:Find("gray")
+    --     hImg:SetActive(false)
+    -- end
 end
 
 ----------------------------------------------------------
@@ -2033,13 +2056,14 @@ function PlayerView:updateHeadEffectBox()
        return
     end
 
-    if self.head.headBox ~= nil and player.avatarID ~= nil and player.avatarID ~= 0 then
-        local imgPath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png",player.avatarID)
-        self.head.headBox.transform:SetImage(imgPath)
-        self.head.headBox.transform:GetComponent("Image"):SetNativeSize()
-        self.head.headBox.transform.localScale = Vector3(0.8,0.8,0.8)
-        self.head.effectBox.transform.localScale = Vector3(1.25,1.25,1.25)
-    end
+    self.head.headImg.visible = true
+    -- if self.head.headBox ~= nil and player.avatarID ~= nil and player.avatarID ~= 0 then
+    --     local imgPath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png",player.avatarID)
+    --     self.head.headBox.transform:SetImage(imgPath)
+    --     self.head.headBox.transform:GetComponent("Image"):SetNativeSize()
+    --     self.head.headBox.transform.localScale = Vector3(0.8,0.8,0.8)
+    --     self.head.effectBox.transform.localScale = Vector3(1.25,1.25,1.25)
+    -- end
 end
 
 return PlayerView

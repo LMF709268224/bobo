@@ -10,12 +10,12 @@ local logger = require "lobby/lcore/logger"
 function Handler.onMsg(msgData, room)
     logger.debug(" deal msg")
 
-    local msgDeal = proto.decodeGameMessageData("pokerface.MsgDeal", msgData)
+    local msgDeal = proto.decodeMessage("pokerface.MsgDeal", msgData)
 
     room:resetForNewHand()
 
     --隐藏gps
-    room.roomView.distanceView:SetActive(false)
+    -- room.roomView.distanceView:SetActive(false)
 
     --保存一些房间属性
     room.bankerChairID = msgDeal.bankerChairID
@@ -39,7 +39,7 @@ function Handler.onMsg(msgData, room)
     --根据风圈修改
     --room.roomView:setRoundMask(1)
     --修改庄家标志
-    room:setBankerFlag()
+    -- room:setBankerFlag()
 
     local player1 = nil
     local player2 = nil
@@ -81,7 +81,7 @@ function Handler.onMsg(msgData, room)
     end
 
     --播放发牌动画，并使用coroutine等待动画完成
-    room.roomView:dealAnimation(mySelf, player1, player2)
+    -- room.roomView:dealAnimation(mySelf, player1, player2)
 
     --等待庄家出牌
     local bankerPlayer = room:getPlayerByChairID(room.bankerChairID)

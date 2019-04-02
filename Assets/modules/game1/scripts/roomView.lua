@@ -5,6 +5,8 @@ local RoomView = {}
 
 local fairy = require "lobby/lcore/fairygui"
 local PlayerView = require("scripts/playerView")
+local logger = require "lobby/lcore/logger"
+local proto = require "scripts/proto/proto"
 local mt = {__index = RoomView}
 -- local dfPath = "GuanZhang/Script/"
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
@@ -16,8 +18,6 @@ local mt = {__index = RoomView}
 -- local configModule = g_ModuleMgr:GetModule("ConfigModule")
 -- local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
 
-pkproto2 = pkproto2
-
 local function onVoiceClick(context)
     print("you click on onVoiceClick ")
 end
@@ -27,15 +27,15 @@ local function onSettingClick(context)
 end
 
 function RoomView.new(room)
+    local roomView = {}
+    setmetatable(roomView, mt)
+
     _ENV.thisMod:AddUIPackage("lobby/fui_lobby_poker/lobby_poker")
     _ENV.thisMod:AddUIPackage("game1/bg/runfast_bg_2d")
     _ENV.thisMod:AddUIPackage("game1/fgui/runfast")
     _ENV.thisMod:AddUIPackage("game1/setting/runfast_setting")
     local view = fairy.UIPackage.CreateObject("runfast", "desk")
     fairy.GRoot.inst:AddChild(view)
-    local operationPanel = view:GetChild("n31")
-
-    local roomView = {}
 
     roomView.room = room
     roomView.unityViewNode = view
@@ -43,7 +43,7 @@ function RoomView.new(room)
     -- 根据prefab中的位置，正中下方是Cards/P1，左手是Cards/P4，右手是Cards/P2，正中上方是Cards/P3
     local playerViews = {}
     for i = 1, 3 do
-        local playerView = PlayerView:new(roomView.unityViewNode, i)
+        local playerView = PlayerView.new(view, i)
         -- playerView:hideAll()
         playerViews[i] = playerView
     end
@@ -54,17 +54,24 @@ function RoomView.new(room)
     roomView.rightPlayerView = playerViews[2]
     roomView.downPlayerView = playerViews[1]
 
-    local unityViewNode = roomView.unityViewNode
-
-    local voiceBtn = unityViewNode:GetChild("voice")
+    local voiceBtn = view:GetChild("voice")
     voiceBtn.onClick:Add(onVoiceClick)
     voiceBtn.visible = false
 
-    local settingBtn = unityViewNode:GetChild("setting")
+    local settingBtn = view:GetChild("setting")
     settingBtn.onClick:Add(onSettingClick)
 
-    local infoBtn = unityViewNode:GetChild("info")
+    local infoBtn = view:GetChild("info")
     infoBtn.visible = true
+
+    roomView.readyButton = view:GetChild("ready")
+    roomView.readyButton.onClick:Add(
+        function()
+            roomView:onReadyButtonClick()
+        end
+    )
+
+    roomView.roundInfo = view:GetChild("top_room_info")
     -- -- 长按10秒上传日志文件
     -- unityViewNode:AddLongPressClick(
     --     roomView.PostLogBtn,
@@ -129,8 +136,8 @@ function RoomView.new(room)
     -- --房间温馨提示
     -- roomView:initRoomTip()
 
-    -- --房间状态事件初始化
-    -- roomView:initRoomStatus()
+    --房间状态事件初始化
+    roomView:initRoomStatus()
 
     -- -- 房间规则
     -- roomView:initRoomRule()
@@ -287,7 +294,7 @@ function RoomView.new(room)
     --     roomView:AntiAddiction(data.fillIn, data.onlineTime)
     -- end
     -- logger.debug("进入子游戏关张房间完成，当前系统时间：" .. os.time())
-    return setmetatable(roomView, mt)
+    return roomView
 end
 --gps
 function RoomView:initDistanceView()
@@ -420,11 +427,11 @@ function RoomView:BackRoom()
 end
 
 function RoomView:show2ReadyButton()
-    self.readyButton:SetActive(true)
+    self.readyButton.visible = true
 end
 
 function RoomView:hide2ReadyButton()
-    self.readyButton:SetActive(false)
+    self.readyButton.visible = false
 end
 
 function RoomView:onReadyButtonClick()
@@ -797,7 +804,7 @@ function RoomView:showGPSDistanceView(isSafe, updatePlayer)
             return
         end
     end
-    self:updateDistance()
+    -- self:updateDistance()
     --self.mLZDistanceView = ViewManager.OpenMessageBox("LZDistanceView", self.room)
 
     -- local viewModule = g_ModuleMgr:GetModule(ModuleName.VIEW_MODULE)
@@ -853,7 +860,7 @@ end
 function RoomView:dealAnimation(me, player1, player2)
     local waitCo = coroutine.running()
 
-    dfCompatibleAPI:soundPlay("effect/effect_fapai")
+    -- dfCompatibleAPI:soundPlay("effect/effect_fapai")
 
     --self.FaPaiAniObj:Show()
     me.playerView:deal()
@@ -1500,7 +1507,7 @@ function RoomView:initRoomStatus()
 
     -- 房间正在等待玩家准备
     local onWait = function()
-        roomView.wind:SetActive(false)
+        -- roomView.wind:SetActive(false)
         --等待状态重置上手牌遗留
         roomView.room:resetForNewHand()
         --roomView.tilesInWall:SetActive(false)
@@ -1519,7 +1526,7 @@ function RoomView:initRoomStatus()
             end
         end
 
-        roomView:updateLeaveAndDisbandButtons()
+        -- roomView:updateLeaveAndDisbandButtons()
     end
 
     --房间空闲，客户端永远看不到这个状态
@@ -1528,29 +1535,28 @@ function RoomView:initRoomStatus()
 
     -- 游戏开始了
     local onPlay = function()
-        roomView.invitButton:SetActive(false)
-        roomView.returnHallBtn:SetActive(false)
+        -- roomView.invitButton:SetActive(false)
+        -- roomView.returnHallBtn:SetActive(false)
         --roomView.wind:SetActive(false) --发牌的时候，或者掉线恢复的时候会设置风圈因此此处不需要visible
 
         --if not room:isReplayMode() then
         --<color=#775D42FF>" .. formatStr .. "</color>
         local roundstr = "局数:<color=#e9bf89>%s/%s</color>"
         --roomView.tilesInWall:SetActive(true)
-        roomView.tipNode:SetActive(false)
-        roomView.ruleTipNode:SetActive(false)
-        roomView.roundInfo.text =
-            string.format(roundstr, tostring(self.room.handStartted), tostring((self.room.handNum)))
+        -- roomView.tipNode:SetActive(false)
+        -- roomView.ruleTipNode:SetActive(false)
+        roomView.roundInfo.text = string.format("局数:", tostring(self.room.handStartted), tostring((self.room.handNum)))
         -- else
         --     roomView.curRound:SetActive(false)
         --     roomView.totalRound:SetActive(false)
         -- end
 
-        roomView:updateLeaveAndDisbandButtons()
-        self.scrollTip:Hide()
-        self.unityViewNode:StopTimer("SHowTips")
-        self.unityViewNode:StopAction(self.fingerMoveAction)
-        self.unityViewNode:StopAction(self.fingerMoveAction1)
-        self:hideNoFriendTips()
+        -- roomView:updateLeaveAndDisbandButtons()
+        -- self.scrollTip:Hide()
+        -- self.unityViewNode:StopTimer("SHowTips")
+        -- self.unityViewNode:StopAction(self.fingerMoveAction)
+        -- self.unityViewNode:StopAction(self.fingerMoveAction1)
+        -- self:hideNoFriendTips()
     end
 
     --房间已经被删除，客户端永远看不到这个状态
@@ -1558,10 +1564,11 @@ function RoomView:initRoomStatus()
     end
 
     local status = {}
-    status[pkproto2.SRoomIdle] = onIdle
-    status[pkproto2.SRoomWaiting] = onWait
-    status[pkproto2.SRoomPlaying] = onPlay
-    status[pkproto2.SRoomDeleted] = onDelete
+
+    status[proto.pokerface.RoomState.SRoomIdle] = onIdle
+    status[proto.pokerface.RoomState.SRoomWaiting] = onWait
+    status[proto.pokerface.RoomState.SRoomPlaying] = onPlay
+    status[proto.pokerface.RoomState.SRoomDeleted] = onDelete
     self.statusHandlers = status
 end
 

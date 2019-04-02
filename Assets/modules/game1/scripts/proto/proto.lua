@@ -40,8 +40,16 @@ local function loadProtofile()
     end
 end
 
-function PROTO.decodeGameMessageData(t, gmsgData)
-    return protobuf.decode(t, gmsgData)
+-- function PROTO.decodeMessage(t, gmsgData)
+--     return protobuf.decode(t, gmsgData)
+-- end
+
+function PROTO.decodeMessage(t, msgData)
+    return protobuf.decode(t, msgData)
+end
+
+function PROTO.encodeMessage(t, msgObj)
+    return protobuf.encode(t, msgObj)
 end
 
 function PROTO.decodeGameMessage(msgData)

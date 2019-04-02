@@ -18,7 +18,7 @@ function Handler.onMsg(msgData, room)
 
     --
 
-    local msgGameOver = proto.decodeGameMessageData("pokerface.MsgGameOver", msgData)
+    local msgGameOver = proto.decodeMessage("pokerface.MsgGameOver", msgData)
 
     --把结果保存到 room
     room.msgGameOver = msgGameOver

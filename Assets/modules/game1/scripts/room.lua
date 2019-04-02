@@ -358,7 +358,7 @@ end
 ----------------------------------------------
 function Room:createPlayerByInfo(playerInfo)
     --TODO: 和createMyPlayer一起抽取一个共同的函数用于new一个基本player
-    local player = Player:new(playerInfo.userID, playerInfo.chairID, self)
+    local player = Player.new(playerInfo.userID, playerInfo.chairID, self)
     player.state = playerInfo.state
     player.nick = playerInfo.nick
     if player.nick == nil or player.nick == "" then
@@ -378,7 +378,7 @@ end
 -- 并绑定playerView
 ----------------------------------------------
 function Room:createMyPlayer(playerInfo)
-    local player = Player:new(playerInfo.userID, playerInfo.chairID, self)
+    local player = Player.new(playerInfo.userID, playerInfo.chairID, self)
     player.state = playerInfo.state
     player.nick = playerInfo.nick
     if player.nick == nil or player.nick == "" then
@@ -478,7 +478,7 @@ function Room:resetForNewHand()
         p:resetForNewHand()
     end
     --隐藏箭头
-    self.roomView:setArrowHide()
+    -- self.roomView:setArrowHide()
 end
 
 ------------------------------------
@@ -773,7 +773,7 @@ end
 -----------------------------------------------------------
 function Room:setBankerFlag()
     for _, v in pairs(self.players) do
-        v.playerView.head.onUpdateBankerFlag(v.chairID == self.bankerChairID, self.isContinuousBanker)
+        -- v.playerView.head.onUpdateBankerFlag(v.chairID == self.bankerChairID, self.isContinuousBanker)
     end
 end
 
@@ -781,7 +781,7 @@ end
 --执行自动打牌操作
 -----------------------------------------------------------
 function Room:stopDiscardCountdown()
-    self.roomView.unityViewNode:StopTimer("timer_djs")
+    -- self.roomView.unityViewNode:StopTimer("timer_djs")
     self.roomView.countdown:SetActive(false)
     --self.roomView.CountDownText.text = ""
 end
@@ -791,34 +791,34 @@ end
 -----------------------------------------------------------
 function Room:startDiscardCountdown(player)
     --重置定时器
-    self.roomView.unityViewNode:StopTimer("timer_djs")
+    -- self.roomView.unityViewNode:StopTimer("timer_djs")
 
     local nGetRoomCountDown = 0
     --if countDown then nGetRoomCountDown = countDown end
     local djsCnt = 1
-    self.roomView.countdownText.text = tostring(djsCnt)
-    self.roomView.countdown:SetActive(true)
-    self.roomView.countdown.transform.localPosition = player.playerView.countdownPos.transform.localPosition
+    -- self.roomView.countdownText.text = tostring(djsCnt)
+    -- self.roomView.countdown:SetActive(true)
+    -- self.roomView.countdown.transform.localPosition = player.playerView.countdownPos.transform.localPosition
 
-    self.roomView.unityViewNode:StartTimer(
-        "timer_djs",
-        1,
-        function()
-            djsCnt = djsCnt + 1
-            if djsCnt > 9 then
-                self.roomView.countdownText.text = tostring(djsCnt)
-            else
-                self.roomView.countdownText.text = "0" .. djsCnt
-            end
-            if djsCnt > 998 then
-                self.roomView.unityViewNode:StopTimer("timer_djs")
-            end
-            if djsCnt == 3 then
-            --来个抖动效果
-            end
-        end,
-        0
-    )
+    -- self.roomView.unityViewNode:StartTimer(
+    --     "timer_djs",
+    --     1,
+    --     function()
+    --         djsCnt = djsCnt + 1
+    --         if djsCnt > 9 then
+    --             self.roomView.countdownText.text = tostring(djsCnt)
+    --         else
+    --             self.roomView.countdownText.text = "0" .. djsCnt
+    --         end
+    --         if djsCnt > 998 then
+    --             self.roomView.unityViewNode:StopTimer("timer_djs")
+    --         end
+    --         if djsCnt == 3 then
+    --         --来个抖动效果
+    --         end
+    --     end,
+    --     0
+    -- )
 end
 
 ---------------------------------------
@@ -1084,10 +1084,10 @@ function Room:updatePlayerLocation(msgUpdateLocation)
         return
     end
 
-    local distanceView = roomView.distanceView
-    if distanceView.activeSelf then
-        self.roomView:updateDistance()
-    end
+    -- local distanceView = roomView.distanceView
+    -- if distanceView.activeSelf then
+    --     self.roomView:updateDistance()
+    -- end
 end
 
 function Room:getPropCfg(index)

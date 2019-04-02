@@ -10,7 +10,7 @@ local logger = require "lobby/lcore/logger"
 function Handler.onMsg(msgData, room)
     logger.debug(" room show tips msg, room id", room.id)
 
-    local msgRoomShowTips = proto.decodeGameMessageData("pokerface.MsgRoomShowTips", msgData)
+    local msgRoomShowTips = proto.decodeMessage("pokerface.MsgRoomShowTips", msgData)
 
     if msgRoomShowTips.tipCode == proto.pokerface.TipCode.TCNone then
         logger.debug("<<<" .. msgRoomShowTips.tips .. ">>>")

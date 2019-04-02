@@ -13,7 +13,7 @@ function Handler.onMsg(msgData, room)
     --先清除room的msgDisbandNotify
     room.disbandLocked = false
 
-    local msgDisbandNotify = proto.decodeGameMessageData("pokerface.MsgDisbandNotify", msgData)
+    local msgDisbandNotify = proto.decodeMessage("pokerface.MsgDisbandNotify", msgData)
     local disbandStateEnum = proto.pokerface.DisbandState
 
     local ignore = {

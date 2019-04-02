@@ -112,4 +112,8 @@ function WS:onBestHTTPWebsocketPong(ms)
     self.ms = ms
 end
 
+function WS:sendBinary(msg)
+    self.ws:SendBinary(msg)
+end
+
 return WS

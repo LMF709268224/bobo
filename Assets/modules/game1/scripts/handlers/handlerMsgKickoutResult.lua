@@ -10,7 +10,7 @@ local logger = require "lobby/lcore/logger"
 function Handler.onMsg(msgData, room)
     logger.debug(" room kickout msg")
 
-    local msgKickoutResult = proto.decodeGameMessageData("pokerface.MsgKickoutResult", msgData)
+    local msgKickoutResult = proto.decodeMessage("pokerface.MsgKickoutResult", msgData)
 
     local msg = ""
     local kickoutResultEnum = proto.pokerface.MsgKickoutResult
