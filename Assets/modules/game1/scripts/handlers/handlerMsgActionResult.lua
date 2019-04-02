@@ -18,15 +18,15 @@ local function initActoinHandlers()
     return handlers
 end
 
-Handler.actionhandlers = initActoinHandlers()
+local actionhandlers = initActoinHandlers()
 
-function Handler:onMsg(msg, room)
-    --logger.debug(' Action result msg')
+function Handler.onMsg(msgData, room)
+    logger.debug(" Action result msg, length:", #msgData)
     --msg解析为MsgActionResultNotify
-    local actionResultMsg = proto.decodeMessage("pokerface.MsgActionResultNotify", msg)
+    local actionResultMsg = proto.decodeMessage("pokerface.MsgActionResultNotify", msgData)
 
     local action = actionResultMsg.action
-    local handler = self.actionhandlers[action]
+    local handler = actionhandlers[action]
 
     if handler == nil then
         logger.debug(" no action handler for:" .. action)

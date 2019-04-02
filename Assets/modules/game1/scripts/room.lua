@@ -159,7 +159,6 @@ end
 -- 主要处理最外层的GameMessage消息结构
 -------------------------------------------
 function Room:dispatchWeboscketMessage(gmsg)
-    logger.debug(" room dispatch msg, op:", gmsg.Ops, #gmsg.Data)
     self:dispatchGameMessage(gmsg)
 end
 
@@ -174,8 +173,10 @@ function Room:dispatchGameMessage(gmsg)
         return
     end
 
+    local msgData = gmsg.Data
+    logger.debug(" room dispatch msg, op:", gmsg.Ops, ",data size:", #msgData)
     -- 调用handler的onMsg
-    handler.onMsg(gmsg.Data, self)
+    handler.onMsg(msgData, self)
 end
 
 ----------------------------------------------
@@ -568,10 +569,7 @@ function Room:onChatMsg(msgChat)
             g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE):DestroyAllChilds(oCurTextChat)
             if not self.emoji[emojiName] then
                 --local emojiObj = resMgr.LoadAsset("LanZhouMaJiang/prefab/bund1/",emojiName)
-                local emojiObj =
-                    ResourceManager:LoadPrefab(
-                    "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund1/" .. emojiName .. ".prefab"
-                )
+                local emojiObj = ResourceManager:LoadPrefab("GameModule/GuanZhang/_AssetsBundleRes/prefab/bund1/" .. emojiName .. ".prefab")
                 emojiObj:SetParent(self.roomView.unityViewNode.transform, false)
                 emojiObj:Hide()
                 if emojiObj then
