@@ -81,7 +81,7 @@ function Handler.onMsg(msgData, room)
     end
 
     --播放发牌动画，并使用coroutine等待动画完成
-    room.roomView:dealAnimation(mySelf, player1, player2)
+    -- room.roomView:dealAnimation(mySelf, player1, player2)
 
     --等待庄家出牌
     local bankerPlayer = room:getPlayerByChairID(room.bankerChairID)

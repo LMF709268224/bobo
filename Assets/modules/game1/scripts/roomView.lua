@@ -860,7 +860,7 @@ end
 function RoomView:dealAnimation(me, player1, player2)
     local waitCo = coroutine.running()
 
-    dfCompatibleAPI:soundPlay("effect/effect_fapai")
+    -- dfCompatibleAPI:soundPlay("effect/effect_fapai")
 
     --self.FaPaiAniObj:Show()
     me.playerView:deal()

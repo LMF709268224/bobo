@@ -7,6 +7,7 @@ local mt = {__index = PlayerView}
 local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
+local tileMounter = require("scripts/tileImageMounter")
 --local AgariIndex = require "dfMahjong/AgariIndex"
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
 -- local Loader = require(dfPath .. "dfMahjong/spriteLoader")
@@ -186,6 +187,7 @@ function PlayerView.new(viewUnityNode, viewChairID)
     else
         --用于显示手牌数量
         playerView.handsNumber =view:GetChild("handsNum")
+        hands[1] = view:GetChild("hands")
     end
     playerView.hands = hands
     -- -- 滑动拖牌
@@ -946,8 +948,10 @@ end
 ------------------------------------
 function PlayerView:hideDiscarded()
     local discards = self.discards
-    for _, d in ipairs(discards) do
-        d:SetActive(false)
+    if discards then
+        for _, d in ipairs(discards) do
+            d:SetActive(false)
+        end
     end
 end
 
@@ -965,15 +969,17 @@ end
 --其实是把整行都隐藏了
 -------------------------------------
 function PlayerView:hideHands()
-    logger.debug("+ +++++++++++++++++  ",self.hands)
-    -- for _, h in ipairs(self.hands) do
-    --     h.visible = false
-    -- end
-    if self.viewChairID == 1 then
-        for i = 1, 16 do
-            self.hands[i].visible = false
-        end
+    -- logger.debug("+ +++++++++++++++++  ",self.hands)
+    -- if self.viewChairID == 1 then
+    for _, h in ipairs(self.hands) do
+        h.visible = false
     end
+    -- end
+    -- if self.viewChairID == 1 then
+    --     for i = 1, 16 do
+    --         self.hands[i].visible = false
+    --     end
+    -- end
     --TODO: 取消所有听牌、黄色遮罩等等
     --self.na:SetActive(false)
 
@@ -1083,6 +1089,7 @@ function PlayerView:showHandsForOpponents()
     if self.hands == nil then
         return
     end
+    self.hands[1].visible = true
     -- if cardCountOnHand > 3 then
     --     --如果手牌数大于3  则只显示一张牌
     --     self.hands[1]:SetActive(true)
@@ -1179,13 +1186,13 @@ function PlayerView:showHandsForMe(wholeMove, isShow)
     for i = begin, endd do
         local h = self.hands[i]
         tileMounter:mountTileImage(h, cardsOnHand[j])
-        h:SetActive(isShow)
+        h.visible = isShow
         handsClickCtrls[i].tileID = cardsOnHand[j]
         j = j + 1
     end
 
     if cardCountOnHand < 4 then
-        self:showGaoJing(cardCountOnHand)
+        -- self:showGaoJing(cardCountOnHand)
     end
 end
 
@@ -1542,7 +1549,7 @@ end
 function PlayerView:moveHandUp(index)
     local originPos = self.handsOriginPos[index]
     local h = self.handsClickCtrls[index].h
-    h.position.y = originPos.position.y + 30
+    h.position.y = originPos.y + 30
     -- h.transform.localPosition = Vector3(originPos.x, originPos.y + 30, 0)
     self.handsClickCtrls[index].clickCount = 1
     --self:setGray(h)
@@ -1554,7 +1561,7 @@ end
 function PlayerView:restoreHandUp(index)
     local originPos = self.handsOriginPos[index]
     local h = self.handsClickCtrls[index].h
-    h.position.y = originPos.position.y
+    h.position.y = originPos.y
     -- h.transform.localPosition = Vector3(originPos.x, originPos.y, 0)
     self.handsClickCtrls[index].clickCount = 0
     self:clearGray(h)
@@ -1929,10 +1936,10 @@ function PlayerView:setGray(btn)
     --     imageB.color = Color(120/255, 122/255, 122/255, 1)
     -- end
 
-    if btn ~= nil then
-        local hImg = btn:Find("gray")
-        hImg:SetActive(true)
-    end
+    -- if btn ~= nil then
+    --     local hImg = btn:Find("gray")
+    --     hImg:SetActive(true)
+    -- end
 end
 
 --恢复灰度
@@ -1945,10 +1952,10 @@ function PlayerView:clearGray(btn)
     --     imageB.color = Color(1, 1, 1, 1)
     -- end
 
-    if btn ~= nil then
-        local hImg = btn:Find("gray")
-        hImg:SetActive(false)
-    end
+    -- if btn ~= nil then
+    --     local hImg = btn:Find("gray")
+    --     hImg:SetActive(false)
+    -- end
 end
 
 ----------------------------------------------------------

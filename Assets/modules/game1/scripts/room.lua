@@ -781,7 +781,7 @@ end
 --执行自动打牌操作
 -----------------------------------------------------------
 function Room:stopDiscardCountdown()
-    self.roomView.unityViewNode:StopTimer("timer_djs")
+    -- self.roomView.unityViewNode:StopTimer("timer_djs")
     self.roomView.countdown:SetActive(false)
     --self.roomView.CountDownText.text = ""
 end
@@ -791,34 +791,34 @@ end
 -----------------------------------------------------------
 function Room:startDiscardCountdown(player)
     --重置定时器
-    self.roomView.unityViewNode:StopTimer("timer_djs")
+    -- self.roomView.unityViewNode:StopTimer("timer_djs")
 
     local nGetRoomCountDown = 0
     --if countDown then nGetRoomCountDown = countDown end
     local djsCnt = 1
-    self.roomView.countdownText.text = tostring(djsCnt)
-    self.roomView.countdown:SetActive(true)
-    self.roomView.countdown.transform.localPosition = player.playerView.countdownPos.transform.localPosition
+    -- self.roomView.countdownText.text = tostring(djsCnt)
+    -- self.roomView.countdown:SetActive(true)
+    -- self.roomView.countdown.transform.localPosition = player.playerView.countdownPos.transform.localPosition
 
-    self.roomView.unityViewNode:StartTimer(
-        "timer_djs",
-        1,
-        function()
-            djsCnt = djsCnt + 1
-            if djsCnt > 9 then
-                self.roomView.countdownText.text = tostring(djsCnt)
-            else
-                self.roomView.countdownText.text = "0" .. djsCnt
-            end
-            if djsCnt > 998 then
-                self.roomView.unityViewNode:StopTimer("timer_djs")
-            end
-            if djsCnt == 3 then
-            --来个抖动效果
-            end
-        end,
-        0
-    )
+    -- self.roomView.unityViewNode:StartTimer(
+    --     "timer_djs",
+    --     1,
+    --     function()
+    --         djsCnt = djsCnt + 1
+    --         if djsCnt > 9 then
+    --             self.roomView.countdownText.text = tostring(djsCnt)
+    --         else
+    --             self.roomView.countdownText.text = "0" .. djsCnt
+    --         end
+    --         if djsCnt > 998 then
+    --             self.roomView.unityViewNode:StopTimer("timer_djs")
+    --         end
+    --         if djsCnt == 3 then
+    --         --来个抖动效果
+    --         end
+    --     end,
+    --     0
+    -- )
 end
 
 ---------------------------------------
