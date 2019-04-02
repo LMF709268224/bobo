@@ -54,25 +54,25 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
     local playerView = player.playerView
 
     --local needShowOperationButtons = true
-    playerView.discardHuiBtn:SetActive(true)
-    playerView.tipBtn:SetActive(true) --提示按钮
-    playerView.skipHuiBtn:SetActive(true)
+    -- playerView.discardHuiBtn:SetActive(true)
+    playerView.tipBtn.visible = true --提示按钮
+    -- playerView.skipHuiBtn:SetActive(true)
     logger.debug(" processMyAllowedReActions actions : " .. tostring(actions))
 
     --如果可以过
     if proto.actionsHasAction(actions, proto.prunfast.ActionType.enumActionType_SKIP) then
         logger.debug(" can skip")
         --needShowOperationButtons = true
-        playerView.skipHuiBtn:SetActive(false)
-        playerView.skipBtn:SetActive(true)
+        -- playerView.skipHuiBtn:SetActive(false)
+        playerView.skipBtn.visible = true
     end
 
     --出牌
     if proto.actionsHasAction(actions, proto.prunfast.ActionType.enumActionType_DISCARD) then
         logger.debug(" can discard")
         --needShowOperationButtons = true
-        playerView.discardHuiBtn:SetActive(false)
-        playerView.discardBtn:SetActive(true)
+        -- playerView.discardHuiBtn:SetActive(false)
+        playerView.discardBtn.visible = true
     end
 end
 

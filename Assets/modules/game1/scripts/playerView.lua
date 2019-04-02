@@ -131,65 +131,8 @@ function PlayerView.new(viewUnityNode, viewChairID)
 
     -- -- self.texiaoPos = myTilesNode.transform:Find("texiaoPos") --特效的位置
     -- local operationPanel = view:GetChild("n31")
-    -- 手牌列表
-    local hands = {}
-    local handsOriginPos = {}
-    local handsClickCtrls = {}
-    if (viewChairID == 1) then
-        local myHandTilesNode = view:GetChild("hands")
-        for i = 1, 16 do
-            local cname = "n" .. i
-            local go = myHandTilesNode:GetChild(cname)
-            if go ~= nil then
-                local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
-                card.position = go.position
-
-                -- if i == 1 then
-                --     local flag = card:GetChild("n2")
-                --     flag.url = "ui://p966ud2tef8pw"
-                -- end
-
-                myHandTilesNode:AddChild(card)
-                YY = card.y
-                local btn = card:GetChild("n0")
-                btn.onClick:Add(
-                    function(context)
-                        if card.y >= YY then
-                            card.y = card.y - 30
-                        else
-                            card.y = card.y + 30
-                        end
-                    end
-                )
-
-        -- local h = myHandTilesNode.transform:Find(tostring(i))
-                card.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
-                hands[i] = card
-                local pos = {}
-                pos.x = card.x
-                pos.y = card.y
-                table.insert(handsOriginPos, pos)
-                table.insert(handsClickCtrls, {clickCount = 0, h = card})
-            else
-                logger.error("can not found child:", cname)
-            end
-        --订阅点击事件
-        --TODO: 增加drag/drop
-        -- viewUnityNode:AddClick(
-        --     h,
-        --     function(obj)
-        --         playerView:onHandTileBtnClick(i)
-        --     end,
-        --     {isMute = true}
-        -- )
-        --playerView:onDrag(h, i)
-        end
-    else
-        --用于显示手牌数量
-        playerView.handsNumber =view:GetChild("handsNum")
-        hands[1] = view:GetChild("hands")
-    end
-    playerView.hands = hands
+    playerView:initHands(view)
+    playerView:initDiscards(view)
     -- -- 滑动拖牌
     -- viewUnityNode:AddDrag(
     --     myHandTilesNode,
@@ -210,17 +153,6 @@ function PlayerView.new(viewUnityNode, viewChairID)
     --     end
     -- )
 
-    playerView.handsOriginPos = handsOriginPos --记忆原始的手牌位置，以便点击手牌时可以往上弹起以及恢复
-    playerView.handsClickCtrls = handsClickCtrls -- 手牌点击时控制数据结构
-
-    -- -- 打出的牌列表
-    -- local discards = {}
-    -- local myDicardTilesNode = myTilesNode.transform:Find("Outs")
-    -- for i = 1, 16 do
-    --     local h = myDicardTilesNode.transform:Find(tostring(i))
-    --     discards[i] = h
-    -- end
-    -- playerView.discards = discards
     -- --用于保存所有关张的loop特效（不要，三带二，炸弹，顺子等等特效，后面便于清理）
     -- --playerView.effectObjLists = {}
     -- -- 下面这个Light得到的牌表，是用于结局时摊开牌给其他人看 (也可用于明牌)
@@ -265,6 +197,83 @@ function PlayerView.new(viewUnityNode, viewChairID)
     playerView.head = head
 
     return playerView
+end
+
+function PlayerView:initHands(view)
+    -- 手牌列表
+    local hands = {}
+    local handsOriginPos = {}
+    local handsClickCtrls = {}
+    if (self.viewChairID == 1) then
+        local myHandTilesNode = view:GetChild("hands")
+        for i = 1, 16 do
+            local cname = "n" .. i
+            local go = myHandTilesNode:GetChild(cname)
+            if go ~= nil then
+                local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
+                card.position = go.position
+                myHandTilesNode:AddChild(card)
+                YY = card.y
+                local btn = card:GetChild("n0")
+                btn.onClick:Add(
+                    function(context)
+                        if card.y >= YY then
+                            card.y = card.y - 30
+                        else
+                            card.y = card.y + 30
+                        end
+                    end
+                )
+                card.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
+                hands[i] = card
+                local pos = {}
+                pos.x = card.x
+                pos.y = card.y
+                table.insert(handsOriginPos, pos)
+                table.insert(handsClickCtrls, {clickCount = 0, h = card})
+            else
+                logger.error("can not found child:", cname)
+            end
+            --订阅点击事件
+            --TODO: 增加drag/drop
+            -- viewUnityNode:AddClick(
+            --     h,
+            --     function(obj)
+            --         playerView:onHandTileBtnClick(i)
+            --     end,
+            --     {isMute = true}
+            -- )
+            --playerView:onDrag(h, i)
+        end
+    else
+        --用于显示手牌数量
+        self.handsNumber = view:GetChild("handsNum")
+        hands[1] = view:GetChild("hands")
+    end
+    self.hands = hands
+    self.handsOriginPos = handsOriginPos --记忆原始的手牌位置，以便点击手牌时可以往上弹起以及恢复
+    self.handsClickCtrls = handsClickCtrls -- 手牌点击时控制数据结构
+end
+function PlayerView:initDiscards(view)
+    -- 打出的牌列表
+    local discards = {}
+    local myHandTilesNode = view:GetChild("discards")
+    for i = 1, 16 do
+        local cname = "n" .. i
+        local go = myHandTilesNode:GetChild(cname)
+        if go ~= nil then
+            local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
+            card.scale = {0.5,0.5}
+            logger.debug("card.scale -------------- ",card.scale)
+            card.position = go.position
+            myHandTilesNode:AddChild(card)
+            card.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
+            discards[i] = card
+        else
+            logger.error("can not found child:", cname)
+        end
+    end
+    self.discards = discards
 end
 --把胡按钮里面的特效 层级调高。。。
 -- function PlayerView:huBtnOrderAdd(view)
@@ -918,7 +927,7 @@ function PlayerView:resetForNewHand()
     -- self:hideFlowers()
     -- self:hideLights()
     -- self:clearDiscardable()
-    -- self:hideDiscarded()
+    self:hideDiscarded()
     --特效列表
     --self:cleanEffectObjLists()
     --self.head.ting:SetActive(false)
@@ -948,10 +957,8 @@ end
 ------------------------------------
 function PlayerView:hideDiscarded()
     local discards = self.discards
-    if discards then
-        for _, d in ipairs(discards) do
-            d:SetActive(false)
-        end
+    for _, d in ipairs(discards) do
+        d.visible = false
     end
 end
 
@@ -1044,7 +1051,7 @@ function PlayerView:showDiscarded(tilesDiscarded)
         local tileID = tilesDiscarded[j]
         --dianShu = tileID
         tileMounter:mountTileImage(d, tileID)
-        d:SetActive(true)
+        d.visible = true
         j = j + 1
     end
     --这里的 dianShu 只在 单个跟对的时候  有用

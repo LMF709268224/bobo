@@ -67,7 +67,7 @@ function Handler.onMsg(msgData, room)
     end
 
     --播放发牌动画，并使用coroutine等待动画完成
-    --room.roomView:dealAnimation()
+    -- room.roomView:dealAnimation()
 
     --自己手牌排一下序
     local mySelf = room:me()
@@ -76,7 +76,7 @@ function Handler.onMsg(msgData, room)
     --显示各个玩家的手牌（对手只显示暗牌）和花牌
     for _, p in pairs(players) do
         logger.debug(" 显示各个玩家的手牌")
-        p:hand2UI(false, false)
+        p:hand2UI(false, true)
         --p:flower2UI()
     end
 
