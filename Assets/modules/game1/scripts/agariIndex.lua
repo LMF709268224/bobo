@@ -10,9 +10,12 @@ AgariIndex.VERSION = "1.0"
 --local pokerface = require (scriptPath.."Proto/game_pokerface_pb")
 -- require(scriptPath .. "Proto/game_pokerface_rf_pb")
 -- local pokerfacerf = game_pokerface_rf_pb
-
+local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local pokerface = proto.pokerface
+local pokerfacerf = proto.prunfast
+local agariTable = require "scripts/agariTable"
+
 local slots = {}
 local indexMap = {
     [pokerface.CardID.R2H] = 0, --H 红桃
@@ -132,9 +135,9 @@ function AgariIndex.calcKey(hai)
         local s = slots[i]
         if s > 0 then
             --logger.debug("calcKey, s:"..s..",i:"..i)
-            s = bit.blshift(s, (i - 1) * 3)
+            s = s << ((i - 1) * 3)
             --logger.debug("bit.blshift, s:"..s)
-            key = bit.bor(key, s)
+            key = key | s
         end
     end
 
@@ -257,57 +260,57 @@ function AgariIndex.agariGreatThan(prevCardHand, current)
     return math.floor(current.cards[1] / 4) > math.floor(prevCardHand.cards[1] / 4)
 end
 --寻找三个  或者三带二
-function searchUseableTripletOrTripletPair(hands)
-    cardHands = {}
-    resetSlots(hands)
+-- local function searchUseableTripletOrTripletPair(hands)
+--     local cardHands = {}
+--     resetSlots(hands)
 
-    local right = math.floor(pokerface.AH / 4)
-    for newBombSuitID = 2, right + 1 do
-        local testBombRankID = newBombSuitID
-        local found = true
-        for i = 1, 2 do
-            if (slots[testBombRankID - i] < 3) then
-                newBombSuitID = newBombSuitID + 1
-                found = false
-                break
-            end
-            if (found) then
-                local cardHand = {}
-                local xcards = AgariIndex.extractCardsByRank(hands, newBombSuitID, 3)
-                cardHand.cards = xcards
+--     local right = math.floor(pokerface.AH / 4)
+--     for newBombSuitID = 2, right + 1 do
+--         local testBombRankID = newBombSuitID
+--         local found = true
+--         for i = 1, 2 do
+--             if (slots[testBombRankID - i] < 3) then
+--                 newBombSuitID = newBombSuitID + 1
+--                 found = false
+--                 break
+--             end
+--             if (found) then
+--                 local cardHand = {}
+--                 local xcards = AgariIndex.extractCardsByRank(hands, newBombSuitID, 3)
+--                 cardHand.cards = xcards
 
-                local left = newBombSuitID
-                local right = newBombSuitID
+--                 local left = newBombSuitID
+--                 local right = newBombSuitID
 
-                local pairCount = 0
-                local pairAble = {}
-                for testPair = 1, left do
-                    if (slots[testPair] > 1) then
-                        pairCount = pairCount + 1
-                        table.insert(pairAble, testPair)
-                    end
-                end
-                local job = math.floor(pokerface.JOB / 4)
-                for testPair = right + 1, job do
-                    if (slots[testPair] > 1) then
-                        pairCount = pairCount + 1
-                        table.insert(pairAble, testPair)
-                    end
-                end
+--                 local pairCount = 0
+--                 local pairAble = {}
+--                 for testPair = 1, left do
+--                     if (slots[testPair] > 1) then
+--                         pairCount = pairCount + 1
+--                         table.insert(pairAble, testPair)
+--                     end
+--                 end
+--                 local job = math.floor(pokerface.JOB / 4)
+--                 for testPair = right + 1, job do
+--                     if (slots[testPair] > 1) then
+--                         pairCount = pairCount + 1
+--                         table.insert(pairAble, testPair)
+--                     end
+--                 end
 
-                if (pairCount > 0) then
-                    -- 此处不再遍历各个对子
-                    local xcards = AgariIndex.extractCardsByRank(hands, pairAble[1], 2)
-                    table.insert(cardHand.cards, xcards)
-                end
-                table.insert(cardHands, cardHand)
+--                 if (pairCount > 0) then
+--                     -- 此处不再遍历各个对子
+--                     local xcards = AgariIndex.extractCardsByRank(hands, pairAble[1], 2)
+--                     table.insert(cardHand.cards, xcards)
+--                 end
+--                 table.insert(cardHands, cardHand)
 
-                newBombSuitID = newBombSuitID + 1
-            end
-        end
-    end
-    return cardHands
-end
+--                 newBombSuitID = newBombSuitID + 1
+--             end
+--         end
+--     end
+--     return cardHands
+-- end
 
 --寻找单个
 local function searchUseableSingle(hands)
@@ -356,7 +359,7 @@ function AgariIndex.searchLongestDiscardCardHand(hands, specialCardID)
     local needR3h = specialCardID >= 0
     if (needR3h) then
         for i = 1, #tt do
-            for j = 1, j < #tt[i].cards do
+            for j = 1, (#tt[i].cards - 1) do
                 if (tt[i].cards[j] == pokerface.R3H) then
                     return tt[i]
                 end
