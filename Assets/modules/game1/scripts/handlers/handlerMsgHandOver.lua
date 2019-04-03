@@ -98,6 +98,6 @@ function Handler.onHandOver(msgHandOver, room)
     -- room.roomView:handOverAnimation()
 
     --显示手牌输赢结果
-    room:loadHandResultView()
+    -- room:loadHandResultView()
 end
 return Handler
