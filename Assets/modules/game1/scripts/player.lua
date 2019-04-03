@@ -608,7 +608,8 @@ end
 function Player:onDiscardBtnClick(isHui, btnObj)
     if isHui then
         --提示。。。无牌可出
-        dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDS)
+        logger.error("ERR_ROOM_NOTDISCARDS")
+        -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDS)
         return
     end
     --出牌逻辑
@@ -773,7 +774,8 @@ function Player:onPlayerDiscardCards(disCards)
         if self.haveR3H then
             --此时必须出 红桃3
             if not r3h then
-                dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR3H)
+                logger.error("ERR_ROOM_NOTDISCARDSR3H")
+                -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR3H)
                 return
             end
             self.haveR3H = false
@@ -786,13 +788,15 @@ function Player:onPlayerDiscardCards(disCards)
         if self.discardR2H then
             --此时必须出2
             if #disCards ~= 1 or disCards[1] ~= pokerface.CardID.R2H then
-                dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR2H)
+                logger.error("ERR_ROOM_NOTDISCARDSR2H")
+                -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR2H)
                 return
             end
             self.discardR2H = false
         end
         if not agariIndex.agariGreatThan(prevActionHand, current) then
-            dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_DISCARDISSMALL)
+            logger.error("ERR_ROOM_DISCARDISSMALL")
+            -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_DISCARDISSMALL)
             return
         end
     end
