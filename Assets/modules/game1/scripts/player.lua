@@ -8,15 +8,15 @@ Player.VERSION = "1.0"
 local logger = require "lobby/lcore/logger"
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
+local agariIndex = require("scripts/AgariIndex")
 -- local dfPath = "GuanZhang/Script/"
 -- local msgHelper = require(dfPath .. "dfMahjong/msgHelper")
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
--- local agariIndex = require(dfPath .. "dfMahjong/AgariIndex")
 -- local acc = g_ModuleMgr:GetModule("AccModule")
 -- local userDataModule = g_ModuleMgr:GetModule(ModuleName.DATASTORAGE_MODULE)
 -- local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
 -- require(dfPath .. "Proto/game_pokerface_rf_pb")
--- local pokerfaceRf = game_pokerface_rf_pb
+local pokerfaceRf = proto.prunfast
 -- require(dfPath .. "Proto/game_pokerface_pb")
 -- local pokerface = game_pokerface_pb
 -- local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
@@ -275,35 +275,35 @@ end
 function Player:showCardHandType(cardHandType, discardTileId)
     local tip = ""
     local effectName = "" -- 音效
-    if cardHandType == pokerfaceRf.Flush then
+    if cardHandType == pokerfaceRf.CardHandType.Flush then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_SHUNZI
         --顺子
         effectName = "sunzi"
-    elseif cardHandType == pokerfaceRf.Bomb then
+    elseif cardHandType == pokerfaceRf.CardHandType.Bomb then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_ZHADAN
         --炸弹
         effectName = "zhadan"
-    elseif cardHandType == pokerfaceRf.Single then
+    elseif cardHandType == pokerfaceRf.CardHandType.Single then
         tip = "" --单张
         self:playReadTileSound(discardTileId, false)
-    elseif cardHandType == pokerfaceRf.Pair then
+    elseif cardHandType == pokerfaceRf.CardHandType.Pair then
         tip = "" --对子
         self:playReadTileSound(discardTileId, true)
     elseif cardHandType == pokerfaceRf.Pair2X then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_LIANDUI
         --连对
         effectName = "liandui"
-    elseif cardHandType == pokerfaceRf.Triplet then
+    elseif cardHandType == pokerfaceRf.CardHandType.Triplet then
         tip = ""
         --三张
         self:playSound("sange")
-    elseif cardHandType == pokerfaceRf.TripletPair then
+    elseif cardHandType == pokerfaceRf.CardHandType.TripletPair then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_SANDAIER --三带二
         effectName = "sandaiyi"
-    elseif cardHandType == pokerfaceRf.Triplet2X then
+    elseif cardHandType == pokerfaceRf.CardHandType.Triplet2X then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_SANLIANDUI -- 飞机
         effectName = "feiji"
-    elseif cardHandType == pokerfaceRf.Triplet2X2Pair then
+    elseif cardHandType == pokerfaceRf.CardHandType.Triplet2X2Pair then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_HANG --夯加飞机
         effectName = "feijidaicibang"
     end
@@ -682,11 +682,11 @@ function Player:onSkipBtnClick(isHui, btnObj)
 
     local discardAble = false
 
-    local actionMsg = pokerface.MsgPlayerAction()
+    local actionMsg = {} -- pokerface.MsgPlayerAction()
     actionMsg.qaIndex = self.allowedReActionMsg.qaIndex
-    actionMsg.action = pokerfaceRf.enumActionType_SKIP
-
-    room:sendActionMsg(actionMsg)
+    actionMsg.action = pokerfaceRf.ActionType.enumActionType_SKIP
+    local actionMsgBuf = proto.encodeMessage("pokerface.MsgPlayerAction", actionMsg)
+    room:sendActionMsg(actionMsgBuf)
 
     self.playerView:clearAllowedActionsView(discardAble)
     --重置手牌位置
@@ -695,7 +695,7 @@ function Player:onSkipBtnClick(isHui, btnObj)
     self.waitSkip = false
 
     --隐藏包牌文字警告
-    self.room.roomView.baopai:SetActive(false)
+    -- self.room.roomView.baopai:SetActive(false)
 end
 
 -----------------------------------------------------------
@@ -742,14 +742,16 @@ function Player:onPlayerDiscardCards(disCards)
     logger.debug(" onPlayerDiscardCards tile .")
     --dump(disCards , "----------------- disCards ---------------------------")
     if disCards == nil or #disCards < 1 then
-        dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSELECTCARDS)
+        logger.error(" ERR_ROOM_NOTSELECTCARDS .")
+        -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSELECTCARDS)
         return
     end
-    local actionMsg = pokerface.MsgPlayerAction()
+    local actionMsg = {} -- pokerface.MsgPlayerAction()
     local r3h = false
     local current = agariIndex.agariConvertMsgCardHand(disCards)
     if current == nil then
-        dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_CARDSNOTDIS)
+        logger.error(" ERR_ROOM_CARDSNOTDIS .")
+        -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_CARDSNOTDIS)
         return
     end
 
@@ -763,7 +765,7 @@ function Player:onPlayerDiscardCards(disCards)
         --actionMsg.cards.append(1)
         table.insert(actionMsg.cards, disCard)
     end
-    actionMsg.action = pokerfaceRf.enumActionType_DISCARD
+    actionMsg.action = pokerfaceRf.ActionType.enumActionType_DISCARD
     if self.allowedActionMsg ~= nil then
         actionMsg.qaIndex = self.allowedActionMsg.qaIndex
         if self.haveR3H then
@@ -792,7 +794,8 @@ function Player:onPlayerDiscardCards(disCards)
             return
         end
     end
-    self.room:sendActionMsg(actionMsg)
+    local actionMsgBuf = proto.encodeMessage("pokerface.MsgPlayerAction", actionMsg)
+    self.room:sendActionMsg(actionMsgBuf)
     self.playerView:clearAllowedActionsView()
 
     --隐藏包牌文字警告
@@ -805,7 +808,7 @@ function Player:onPlayerDiscardTile(tileID)
     if self.allowedActionMsg ~= nil then
         local actionMsg = pokerface.MsgPlayerAction()
         actionMsg.qaIndex = self.allowedActionMsg.qaIndex
-        actionMsg.action = pokerfaceRf.enumActionType_DISCARD
+        actionMsg.action = pokerfaceRf.ActionType.enumActionType_DISCARD
         actionMsg.cards = {tileID}
         -- if self.flagsTing then
         --     actionMsg.flags = 1

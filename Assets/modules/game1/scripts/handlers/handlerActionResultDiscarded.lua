@@ -27,7 +27,7 @@ function Handler.onMsg(actionResultMsg, room)
     --更新UI
     player:hand2UI()
     player:discarded2UI(discardTileIds)
-    player:showCardHandType(actionResultMsg.actionHand.cardHandType, discardTileIds[1])
+    -- player:showCardHandType(actionResultMsg.actionHand.cardHandType, discardTileIds[1])
 
     --出牌音效
     -- dfCompatibleAPI:soundPlay("effect/effect_chupai")

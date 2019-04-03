@@ -159,7 +159,6 @@ end
 -- 主要处理最外层的GameMessage消息结构
 -------------------------------------------
 function Room:dispatchWeboscketMessage(gmsg)
-    logger.debug(" room dispatch msg, op:", gmsg.Ops, #gmsg.Data)
     self:dispatchGameMessage(gmsg)
 end
 
@@ -174,8 +173,10 @@ function Room:dispatchGameMessage(gmsg)
         return
     end
 
+    local msgData = gmsg.Data
+    logger.debug(" room dispatch msg, op:", gmsg.Ops, ",data size:", #msgData)
     -- 调用handler的onMsg
-    handler.onMsg(gmsg.Data, self)
+    handler.onMsg(msgData, self)
 end
 
 ----------------------------------------------
@@ -441,7 +442,7 @@ end
 --往服务器发送action消息
 ----------------------------------------
 function Room:sendActionMsg(msgAction)
-    self:sendMsg(pokerfaceProto.OPAction, msgAction)
+    self:sendMsg(proto.pokerface.MessageCode.OPAction, msgAction)
 end
 
 ----------------------------------------
@@ -457,16 +458,24 @@ function Room:sendMsg(opCode, msg)
     if ws == nil then
         return
     end
+    -- local gmsg = pokerfaceProto.GameMessage()
+    -- gmsg.Ops = opCode
 
-    local gmsg = pokerfaceProto.GameMessage()
+    -- if msg ~= nil then
+    --     gmsg.Data = msg:SerializeToString()
+    -- end
+
+    -- local pbData = gmsg:SerializeToString()
+    -- ws:sendData(pbData)
+    local gmsg = {}
     gmsg.Ops = opCode
 
     if msg ~= nil then
-        gmsg.Data = msg:SerializeToString()
+        gmsg.Data = msg
     end
 
-    local pbData = gmsg:SerializeToString()
-    ws:sendData(pbData)
+    local buf = proto.encodeMessage("pokerface.GameMessage", gmsg)
+    ws:sendBinary(buf)
 end
 
 --------------------------------------

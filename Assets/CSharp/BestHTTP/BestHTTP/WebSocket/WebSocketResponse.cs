@@ -491,8 +491,6 @@ namespace BestHTTP.WebSocket
                                 if (!frame.IsFinal)
                                     goto case WebSocketFrameTypes.Continuation;
 
-                                // copy ping data, resend to peer
-                                Send(new WebSocketFrame(this.WebSocket, WebSocketFrameTypes.Pong, frame.Data));
                                 break;
                         }
                     }

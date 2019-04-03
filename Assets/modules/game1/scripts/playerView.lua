@@ -222,6 +222,7 @@ function PlayerView:initHands(view)
                         else
                             card.y = card.y + 30
                         end
+                        self:onHandTileBtnClick(i)
                     end
                 )
                 card.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
@@ -1391,7 +1392,7 @@ function PlayerView:onHandTileBtnClick(index)
     end
      --播放选牌音效
     local handsClickCtrls = self.handsClickCtrls
-    dfCompatibleAPI:soundPlay("effect/effect_xuanpai")
+    -- dfCompatibleAPI:soundPlay("effect/effect_xuanpai")
 
     local clickCtrl = handsClickCtrls[index]
 
@@ -1560,7 +1561,7 @@ function PlayerView:moveHandUp(index)
     -- h.transform.localPosition = Vector3(originPos.x, originPos.y + 30, 0)
     self.handsClickCtrls[index].clickCount = 1
     --self:setGray(h)
-    self:clearGray(h)
+    -- self:clearGray(h)
 end
 -------------------------------------------------
 --把手牌还原位置
@@ -1571,7 +1572,7 @@ function PlayerView:restoreHandUp(index)
     h.position.y = originPos.y
     -- h.transform.localPosition = Vector3(originPos.x, originPos.y, 0)
     self.handsClickCtrls[index].clickCount = 0
-    self:clearGray(h)
+    -- self:clearGray(h)
 end
 -------------------------------------------------
 --让所有的手牌都不可以点击
@@ -1827,7 +1828,7 @@ end
 function PlayerView:playSkipAnimation()
     --local waitCo = coroutine.running()
 
-    self:playerOperationEffectWhitGZ(dfConfig.EFF_DEFINE.SUB_GUANZHANG_BUYAO, "buyao")
+    -- self:playerOperationEffectWhitGZ(dfConfig.EFF_DEFINE.SUB_GUANZHANG_BUYAO, "buyao")
 
     --self.player:playSound("hua")
     -- self.viewUnityNode:DelayRun(
