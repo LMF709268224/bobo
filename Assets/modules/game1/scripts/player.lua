@@ -9,19 +9,8 @@ local logger = require "lobby/lcore/logger"
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
 local agariIndex = require("scripts/AgariIndex")
--- local dfPath = "GuanZhang/Script/"
--- local msgHelper = require(dfPath .. "dfMahjong/msgHelper")
--- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
--- local acc = g_ModuleMgr:GetModule("AccModule")
--- local userDataModule = g_ModuleMgr:GetModule(ModuleName.DATASTORAGE_MODULE)
--- local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
--- require(dfPath .. "Proto/game_pokerface_rf_pb")
 local pokerfaceRf = proto.prunfast
 local pokerface = proto.pokerface
--- require(dfPath .. "Proto/game_pokerface_pb")
--- local pokerface = game_pokerface_pb
--- local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
--- local agariIndex = require(dfPath .. "dfMahjong/agariIndex")
 
 --音效文件定义
 local SoundDef = {
@@ -179,50 +168,6 @@ function Player:addHandTiles(tiles)
 end
 
 ------------------------------------
---增加一个落地面子牌组
-------------------------------------
-function Player:addMeld(meld)
-    --插入到队列尾部
-    table.insert(self.melds, meld)
-end
-
-------------------------------------
---利用服务器发下来的暗杠牌组的id列表（明牌）
---更新本地的暗杠牌组列表
-------------------------------------
-function Player:refreshConcealedMelds(concealedKongIDs)
-    -- local i = 1
-    -- for _, m in ipairs(self.melds) do
-    --     if m.meldType == pokerface.enumMeldTypeConcealedKong then
-    --         m.tile1 = concealedKongIDs[i]
-    --         i = i + 1
-    --     end
-    -- end
-end
-
-------------------------------------
---增加多个落地面子牌组
-------------------------------------
-function Player:addMelds(melds)
-    -- for _, v in ipairs(melds) do
-    --     --插入到队列尾部
-    --     table.insert(self.melds, v)
-    -- end
-end
-
-------------------------------------
---获取一个落地面子牌组
-------------------------------------
-function Player:getMeld(tileID, meldType)
-    for _, v in pairs(self.melds) do
-        if v.tile1 == tileID and v.meldType == meldType then
-            return v
-        end
-    end
-    return nil
-end
-
-------------------------------------
 --把手牌列表显示到界面上
 --对于自己的手牌，需要排序显示，排序仅用于显示
 --排序并不修改手牌列表
@@ -252,17 +197,6 @@ function Player:hand2Exposed()
     playerView:hideHands()
 
     playerView:hand2Exposed()
-end
-
-------------------------------------
---把花牌列表显示到界面上
-------------------------------------
-function Player:flower2UI()
-    --先取消所有花牌显示
-    local playerView = self.playerView
-    playerView:hideFlowers()
-
-    playerView:showFlowers()
 end
 
 ------------------------------------
@@ -329,94 +263,6 @@ function Player:hideDiscardedTips()
 end
 
 ------------------------------------
---听牌标志
-------------------------------------
-function Player:richiIconShow(showOrHide)
-    self.isRichi = showOrHide
-    local playerView = self.playerView
-    --playerView.head.ting:SetActive(showOrHide)
-end
-------------------------------------
---播放吃牌动画
-------------------------------------
-function Player:chowResultAnimation()
-    if self:isMe() then
-        --隐藏牌组
-        self.playerView:hideHands()
-        self.playerView:showHandsForMe(true)
-    end
-
-    --播放对应音效
-    self:playOperationSound(SoundDef.Chow)
-
-    self.playerView:playChowResultAnimation()
-end
-
-------------------------------------
---播放碰牌动画
-------------------------------------
-function Player:pongResultAnimation()
-    if self:isMe() then
-        --隐藏牌组
-        self.playerView:hideHands()
-        self.playerView:showHandsForMe(true)
-    end
-
-    --播放对应音效
-    self:playOperationSound(SoundDef.Pong)
-
-    self.playerView:playPongResultAnimation()
-end
-
-------------------------------------
---播放明杠动画
-------------------------------------
-function Player:exposedKongResultAnimation()
-    if self:isMe() then
-        --隐藏牌组
-        self.playerView:hideHands()
-        self.playerView:showHandsForMe(true)
-    end
-
-    --播放对应音效
-    self:playOperationSound(SoundDef.Kong)
-
-    self.playerView:playExposedKongResultAnimation()
-end
-
-------------------------------------
---播放暗杠动画
-------------------------------------
-function Player:concealedKongResultAnimation()
-    if self:isMe() then
-        --隐藏牌组
-        self.playerView:hideHands()
-        self.playerView:showHandsForMe(true)
-    end
-
-    --播放对应音效
-    self:playOperationSound(SoundDef.Kong)
-
-    self.playerView:playConcealedKongResultAnimation()
-end
-
-------------------------------------
---播放加杠动画
-------------------------------------
-function Player:triplet2KongResultAnimation()
-    if self:isMe() then
-        --隐藏牌组
-        self.playerView:hideHands()
-        self.playerView:showHandsForMe(true)
-    end
-
-    --播放对应音效
-    self:playOperationSound(SoundDef.Kong)
-
-    self.playerView:playTriplet2KongResultAnimation()
-end
-
-------------------------------------
 --播放音效
 ------------------------------------
 function Player:playSound(effectName)
@@ -437,17 +283,6 @@ function Player:playSound(effectName)
         -- end
         dfCompatibleAPI:soundPlay(path .. asset)
     end
-end
-
-------------------------------------
---播放起手听牌特效
-------------------------------------
-function Player:readyHandEffect()
-    --播放对应音效
-    -- TODO:没有这个音效，暂时注销 by陈日光
-    -- self:playOperationSound(SoundDef.Ting)
-
-    self.playerView:playReadyHandEffect()
 end
 
 ------------------------------------
@@ -590,19 +425,6 @@ function Player:onTipBtnClick(isHui, btnObj)
     end
 end
 ----------------------------------------
--- 玩家选择了起手听牌
--- 上下文必然是allowedActionMsg
-----------------------------------------
-function Player:onReadyHandBtnClick2(btnObj)
-end
-----------------------------------------
--- 玩家选择了吃牌
--- 上下文必然是allowedReActionMsg
-----------------------------------------
-function Player:onChowBtnClick(btnObj)
-end
-
-----------------------------------------
 -- 玩家选择出牌
 ----------------------------------------
 function Player:onDiscardBtnClick(isHui, btnObj)
@@ -624,45 +446,6 @@ function Player:onDiscardBtnClick(isHui, btnObj)
         end
     end
     self:onPlayerDiscardCards(discardCards)
-end
-
-----------------------------------------
--- 玩家选择了杠牌
--- 当上下文是allowedActionMsg时，表示加杠或者暗杠
--- 当上下文是allowedReActionMsg时，表示明杠
-----------------------------------------
-function Player:onKongBtnClick(btnObj)
-end
-
-----------------------------------------
--- 选择如何吃牌，杠牌界面  exp:吃的时候是3，杠的时候是4
-----------------------------------------
-function Player:showMultiOps(datas, actionMsg2, exp)
-end
-----------------------------------------
--- 玩家选择了胡牌
--- 当上下文是allowedActionMsg时，表示自摸胡牌
--- 当上下文是allowedReActionMsg时，表示吃铳胡牌
-----------------------------------------
-function Player:onWinBtnClick(btnObj)
-    local room = self.room
-
-    if self.allowedActionMsg ~= nil then
-        local actionMsg = pokerface.MsgPlayerAction()
-        actionMsg.qaIndex = self.allowedActionMsg.qaIndex
-        actionMsg.action = pokerfaceRf.enumActionType_WIN_SelfDrawn
-
-        room:sendActionMsg(actionMsg)
-    elseif self.allowedReActionMsg ~= nil then
-    -- local actionMsg = pokerface.MsgPlayerAction()
-    -- actionMsg.qaIndex = self.allowedReActionMsg.qaIndex
-    -- actionMsg.action = pokerface.enumActionType_WIN_Chuck
-    -- actionMsg.tile = self.allowedReActionMsg.victimTileID
-
-    -- room:sendActionMsg(actionMsg)
-    end
-
-    self.playerView:clearAllowedActionsView()
 end
 
 ----------------------------------------

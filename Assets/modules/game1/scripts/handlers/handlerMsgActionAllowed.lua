@@ -72,7 +72,7 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
         logger.debug(" can discard")
         needShowOperationButtons = true
         playerView.discardBtn.visible = true
-    -- playerView.tipBtn.visible = true
+        playerView.tipBtn.visible = true
     end
 
     if needShowOperationButtons then

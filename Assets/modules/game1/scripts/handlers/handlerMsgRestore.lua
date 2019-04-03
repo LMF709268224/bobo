@@ -30,8 +30,6 @@ function Handler.onMsg(msgData, room)
     --room:updateTilesInWallUI()
     --重连
     --room.roomView:onReconnect()
-    --TODO:修改庄家标志
-    room:setBankerFlag()
     --保存每一个玩家的牌列表
     local playerCardLists = msgDeal.playerCardLists
     for _, v in ipairs(playerCardLists) do
@@ -67,8 +65,6 @@ function Handler.onMsg(msgData, room)
                 end
             end
         end
-        --填充面子牌列表
-        --player:addMelds(playerTileList.melds)
 
         if player.chairID == room.bankerChairID then
             room.roomView:setWaitingPlayer(player)
@@ -83,7 +79,6 @@ function Handler.onMsg(msgData, room)
     for _, p in pairs(room.players) do
         p:hand2UI()
 
-        --p:flower2UI()
         --local newDiscarded = false
         if p.chairID == msgRestore.prevActionChairID then
             room.roomView:setWaitingPlayer(p)

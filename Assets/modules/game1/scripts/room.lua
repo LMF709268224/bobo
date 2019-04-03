@@ -778,15 +778,6 @@ function Room:destroyRoomView()
 end
 
 -----------------------------------------------------------
---设置庄家标志
------------------------------------------------------------
-function Room:setBankerFlag()
-    for _, v in pairs(self.players) do
-        -- v.playerView.head.onUpdateBankerFlag(v.chairID == self.bankerChairID, self.isContinuousBanker)
-    end
-end
-
------------------------------------------------------------
 --执行自动打牌操作
 -----------------------------------------------------------
 function Room:stopDiscardCountdown()

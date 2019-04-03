@@ -57,7 +57,7 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
     -- playerView.discardHuiBtn:SetActive(true)
     playerView.skipBtn.visible = false
     playerView.discardBtn.visible = false
-    playerView.tipBtn.visible = false
+    playerView.tipBtn.visible = true
     -- playerView.skipHuiBtn:SetActive(true)
     logger.debug(" processMyAllowedReActions actions : " .. tostring(actions))
 

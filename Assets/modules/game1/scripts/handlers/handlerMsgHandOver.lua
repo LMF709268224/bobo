@@ -29,11 +29,6 @@ function Handler.onMsg(msgData, room)
         player.cardsOnHand = {}
         player:addHandTiles(playerTileList.cardsOnHand)
 
-        --重置面子牌列表
-        --填充面子牌列表
-        --player.melds = {}
-        --player:addMelds(playerTileList.melds)
-
         --player.playerTileList = playerTileList
     end
 
