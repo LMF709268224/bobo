@@ -17,6 +17,7 @@ local agariIndex = require("scripts/AgariIndex")
 -- local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
 -- require(dfPath .. "Proto/game_pokerface_rf_pb")
 local pokerfaceRf = proto.prunfast
+local pokerface = proto.pokerface
 -- require(dfPath .. "Proto/game_pokerface_pb")
 -- local pokerface = game_pokerface_pb
 -- local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
@@ -104,11 +105,11 @@ function Player:sortHands(excludeLast)
         table.sort(
             self.cardsOnHand,
             function(x, y)
-                if x == proto.pokerface.CardID.R2H then
+                if x == pokerface.CardID.R2H then
                     --为了让 红桃2 排最后
                     return false
                 end
-                if y == proto.pokerface.CardID.R2H then
+                if y == pokerface.CardID.R2H then
                     --为了让 红桃2 排最后
                     return true
                 end
@@ -734,7 +735,7 @@ function Player:autoDiscard()
         -- self.discardR2H = false
         -- self.playerView:clearAllowedActionsView()
 
-        local disCards = {pokerface.R2H}
+        local disCards = {pokerface.CardID.R2H}
         self:onPlayerDiscardCards(disCards)
     end
 end
@@ -756,9 +757,10 @@ function Player:onPlayerDiscardCards(disCards)
     end
 
     local cards_ = {}
+    actionMsg.cards = {}
     for i = 1, #disCards do
         local disCard = disCards[i]
-        if disCard == pokerface.R3H then
+        if disCard == pokerface.CardID.R3H then
             r3h = true
         end
         --cards_.append(disCard)
@@ -783,7 +785,7 @@ function Player:onPlayerDiscardCards(disCards)
         local prevActionHand = self.allowedReActionMsg.prevActionHand
         if self.discardR2H then
             --此时必须出2
-            if #disCards ~= 1 or disCards[1] ~= pokerface.R2H then
+            if #disCards ~= 1 or disCards[1] ~= pokerface.CardID.R2H then
                 dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR2H)
                 return
             end
@@ -799,7 +801,7 @@ function Player:onPlayerDiscardCards(disCards)
     self.playerView:clearAllowedActionsView()
 
     --隐藏包牌文字警告
-    self.room.roomView.baopai:SetActive(false)
+    -- self.room.roomView.baopai:SetActive(false)
 end
 
 function Player:onPlayerDiscardTile(tileID)

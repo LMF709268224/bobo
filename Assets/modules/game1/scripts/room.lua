@@ -680,11 +680,11 @@ end
 --背景声音
 function Room:resumeBackMusicVolume(backMusicVolume)
     --if self:DelayRunCanceled() then
-    if backMusicVolume then
-        soundMgr:SetBackMusicVolume(backMusicVolume)
-    else
-        soundMgr:SetBackMusicVolume(soundModule.backMusicVolume)
-    end
+    -- if backMusicVolume then
+    --     soundMgr:SetBackMusicVolume(backMusicVolume)
+    -- else
+    --     soundMgr:SetBackMusicVolume(soundModule.backMusicVolume)
+    -- end
     --end
 end
 
@@ -791,7 +791,7 @@ end
 -----------------------------------------------------------
 function Room:stopDiscardCountdown()
     -- self.roomView.unityViewNode:StopTimer("timer_djs")
-    self.roomView.countdown:SetActive(false)
+    -- self.roomView.countdown:SetActive(false)
     --self.roomView.CountDownText.text = ""
 end
 

@@ -156,7 +156,8 @@ function AgariIndex.agariConvertMsgCardHand(hai)
     end
 
     --var ct = (pokerface.CardHandType)(agari & 0x0f)
-    local ct = bit.band(agari, 0x0f)
+    -- local ct = bit.band(agari, 0x0f)
+    local ct = agari & 0x0f
     local msgCardHand = {}
     msgCardHand.cardHandType = ct
 
@@ -170,15 +171,15 @@ function AgariIndex.agariConvertMsgCardHand(hai)
 
     local cardsNew
 
-    if ct == pokerfacerf.Flush then
+    if ct == pokerfacerf.CardHandType.Flush then
         cardsNew = stupidTableClone(hai)
         --如果ACE绕过来，那需要把ACE放到屁股背后
-        if 0 ~= bit.band(agari, 0x0100) then -- 0x0100 这个标志现在已经没了（table里面），所以现在不会绕回来
+        if 0 ~= agari & 0x0f then -- 0x0100 这个标志现在已经没了（table里面），所以现在不会绕回来
             local swp = cardsNew[1]
             table.remove(cardsNew, 1)
             table.insert(cardsNew, swp)
         end
-    elseif ct == pokerfacerf.TripletPair or ct == pokerfacerf.Triplet2X2Pair then
+    elseif ct == pokerfacerf.CardHandType.TripletPair or ct == pokerfacerf.CardHandType.Triplet2X2Pair then
         cardsNew = {}
         for _, v in ipairs(hai) do
             local idx = math.floor(v / 4)
@@ -201,13 +202,13 @@ function AgariIndex.agariConvertMsgCardHand(hai)
     msgCardHand.cards = cardsNew
     local count = 0
     for _, v in ipairs(cardsNew) do
-        if math.floor(v / 4) == math.floor(pokerface.R3H / 4) and v ~= pokerface.R3H then
+        if math.floor(v / 4) == math.floor(pokerface.CardID.R3H / 4) and v ~= pokerface.CardID.R3H then
             count = count + 1
         end
     end
 
     if count == 3 then
-        msgCardHand.cardHandType = pokerfacerf.Bomb
+        msgCardHand.cardHandType = pokerfacerf.CardHandType.Bomb
     end
 
     return msgCardHand
@@ -220,9 +221,9 @@ end
 ----------------------------------
 function AgariIndex.agariGreatThan(prevCardHand, current)
     -- 如果当前的是炸弹
-    if current.cardHandType == pokerfacerf.Bomb then
+    if current.cardHandType == pokerfacerf.CardHandType.Bomb then
         -- 上一手不是炸弹
-        if prevCardHand.cardHandType ~= pokerfacerf.Bomb then
+        if prevCardHand.cardHandType ~= pokerfacerf.CardHandType.Bomb then
             return true
         end
 
@@ -231,7 +232,7 @@ function AgariIndex.agariGreatThan(prevCardHand, current)
     end
 
     -- 如果上一手牌是炸弹
-    if (prevCardHand.cardHandType == pokerfacerf.Bomb) then
+    if (prevCardHand.cardHandType == pokerfacerf.CardHandType.Bomb) then
         return false
     end
 
@@ -246,7 +247,7 @@ function AgariIndex.agariGreatThan(prevCardHand, current)
     end
 
     -- 单张时，2是最大的
-    if prevCardHand.cardHandType == pokerfacerf.Single then
+    if prevCardHand.cardHandType == pokerfacerf.CardHandType.Single then
         if math.floor(prevCardHand.cards[1] / 4) == 0 then
             return false
         end
@@ -316,12 +317,12 @@ end
 local function searchUseableSingle(hands)
     local cardHands = {}
     resetSlots(hands)
-    local right = math.floor(pokerface.AH / 4)
+    local right = math.floor(pokerface.CardID.AH / 4)
     -- 找一个较大的单张
     for newBombSuitID = 1, right do
         if (slots[newBombSuitID + 1] > 0) then
             local cardHand = {}
-            cardHand.cardHandType = pokerfacerf.Single
+            cardHand.cardHandType = pokerfacerf.CardHandType.Single
             local xcards = AgariIndex.extractCardsByRank(hands, newBombSuitID, 1)
             cardHand.cards = xcards
             table.insert(cardHands, cardHand)
@@ -330,7 +331,7 @@ local function searchUseableSingle(hands)
     -- 自己有2，那就是最大
     if (slots[1] > 0) then
         local cardHand = {}
-        cardHand.cardHandType = pokerfacerf.Single
+        cardHand.cardHandType = pokerfacerf.CardHandType.Single
         local xcards = AgariIndex.extractCardsByRank(hands, 0, 1)
         cardHand.cards = xcards
         table.insert(cardHands, cardHand)
@@ -360,7 +361,7 @@ function AgariIndex.searchLongestDiscardCardHand(hands, specialCardID)
     if (needR3h) then
         for i = 1, #tt do
             for j = 1, (#tt[i].cards - 1) do
-                if (tt[i].cards[j] == pokerface.R3H) then
+                if (tt[i].cards[j] == pokerface.CardID.R3H) then
                     return tt[i]
                 end
             end
@@ -384,45 +385,45 @@ function AgariIndex.findAllGreatThanCardHands(prev, hands, specialCardID)
 
     if specialCardID >= 0 then
         local cardHand = {}
-        cardHand.cardHandType = pokerfacerf.Single
+        cardHand.cardHandType = pokerfacerf.CardHandType.Single
         --目前这种情况只有红桃2，也即是rank == 0
         cardHand.cards = AgariIndex.extractCardsByRank(hands, 0, 1)
         table.insert(tt, cardHand)
         return tt
     end
 
-    if prevCT == pokerfacerf.Bomb then
+    if prevCT == pokerfacerf.CardHandType.Bomb then
         isBomb = true
     end
 
     local fnMaps = {
-        [pokerfacerf.Bomb] = function(prev2, hands2)
+        [pokerfacerf.CardHandType.Bomb] = function(prev2, hands2)
             return AgariIndex.findBombGreatThan(prev2, hands2)
         end,
-        [pokerfacerf.Flush] = function(prev2, hands2)
+        [pokerfacerf.CardHandType.Flush] = function(prev2, hands2)
             ---修改
             return AgariIndex.findFlushGreatThan(prev2, hands2)
         end,
-        [pokerfacerf.Single] = function(prev2, hands2)
+        [pokerfacerf.CardHandType.Single] = function(prev2, hands2)
             return AgariIndex.findSingleGreatThan(prev2, hands2)
         end,
-        [pokerfacerf.Pair] = function(prev2, hands2)
+        [pokerfacerf.CardHandType.Pair] = function(prev2, hands2)
             return AgariIndex.findPairGreatThan(prev2, hands2)
         end,
-        [pokerfacerf.Pair2X] = function(prev2, hands2)
+        [pokerfacerf.CardHandType.Pair2X] = function(prev2, hands2)
             return AgariIndex.findPair2XGreatThan(prev2, hands2)
         end,
-        [pokerfacerf.Triplet] = function(prev2, hands2)
+        [pokerfacerf.CardHandType.Triplet] = function(prev2, hands2)
             return AgariIndex.findTripletGreatThan(prev2, hands2)
         end,
-        [pokerfacerf.Triplet2X] = function(prev2, hands2)
+        [pokerfacerf.CardHandType.Triplet2X] = function(prev2, hands2)
             return AgariIndex.findTriplet2XGreatThan(prev2, hands2)
         end,
-        [pokerfacerf.Triplet2X2Pair] = function(prev2, hands2)
+        [pokerfacerf.CardHandType.Triplet2X2Pair] = function(prev2, hands2)
             ---修改
             return AgariIndex.findTriplet2X2PairGreatThan(prev2, hands2)
         end,
-        [pokerfacerf.TripletPair] = function(prev2, hands2)
+        [pokerfacerf.CardHandType.TripletPair] = function(prev2, hands2)
             return AgariIndex.findTripletPairGreatThan(prev2, hands2)
         end
     }
@@ -445,39 +446,39 @@ function AgariIndex.findBomb(hands)
     local cardHands = {}
     resetSlots(hands)
 
-    local right = math.floor(pokerface.AH / 4)
+    local right = math.floor(pokerface.CardID.AH / 4)
     --跳过2和3，因为四个3是非法牌型
     for newBombSuitID = 2, right do
         if slots[newBombSuitID + 1] > 3 then
             local cardHand = {}
-            cardHand.cardHandType = pokerfacerf.Bomb
+            cardHand.cardHandType = pokerfacerf.CardHandType.Bomb
             cardHand.cards = AgariIndex.extractCardsByRank(hands, newBombSuitID, 4)
             table.insert(cardHands, cardHand)
         end
     end
 
     -- 如果有3个ACE，也是炸弹
-    local aceRank = math.floor(pokerface.AH / 4)
+    local aceRank = math.floor(pokerface.CardID.AH / 4)
     if (slots[aceRank + 1] > 2) then
         local cardHand = {}
-        cardHand.cardHandType = pokerfacerf.Bomb
+        cardHand.cardHandType = pokerfacerf.CardHandType.Bomb
         cardHand.cards = AgariIndex.extractCardsByRank(hands, aceRank, 4)
         table.insert(cardHands, cardHand)
     end
 
     -- 如果手上还有三张3，也算是炸弹，而且不算红桃3
-    local r3Rank = math.floor(pokerface.R3H / 4)
+    local r3Rank = math.floor(pokerface.CardID.R3H / 4)
     if (slots[r3Rank + 1] > 2) then
         local cards = {}
         for _, v in ipairs(hands) do
-            if math.floor(v / 4) == r3Rank and v ~= pokerface.R3H then
+            if math.floor(v / 4) == r3Rank and v ~= pokerface.CardID.R3H then
                 table.insert(cards, v)
             end
         end
 
         if #cards == 3 then
             local cardHand = {}
-            cardHand.cardHandType = pokerfacerf.Bomb
+            cardHand.cardHandType = pokerfacerf.CardHandType.Bomb
             cardHand.cards = cards
             table.insert(cardHands, cardHand)
         end
@@ -494,7 +495,7 @@ function AgariIndex.findTriplet2X2PairGreatThan(prev, hands)
 
     local seqLength = #prev.cards / 5 -- #prev.cards - 4 -- 减去2个对子
     local bombCardRankID = math.floor(prev.cards[1] / 4)
-    local rightMost = math.floor(pokerface.AH / 4)
+    local rightMost = math.floor(pokerface.CardID.AH / 4)
     local newBombSuitID = bombCardRankID + 1
 
     while newBombSuitID <= rightMost do
@@ -522,7 +523,7 @@ function AgariIndex.findTriplet2X2PairGreatThan(prev, hands)
                 end
             end
 
-            local uppon = math.floor(pokerface.AH / 4)
+            local uppon = math.floor(pokerface.CardID.AH / 4)
             for testPair = right + 1, uppon do
                 if (slots[testPair + 1] > 1) then
                     pairCount = pairCount + 1
@@ -533,7 +534,7 @@ function AgariIndex.findTriplet2X2PairGreatThan(prev, hands)
             if (pairCount >= seqLength) then
                 -- 此处不在遍历各种对子组合
                 local cardHand = {}
-                cardHand.cardHandType = pokerfacerf.Triplet2X2Pair
+                cardHand.cardHandType = pokerfacerf.CardHandType.Triplet2X2Pair
 
                 local xcards = AgariIndex.extractCardsByRanks(hands, left, right, 3)
                 cardHand.cards = stupidTableAddRange(cardHand.cards, xcards)
@@ -566,7 +567,7 @@ function AgariIndex.findTripletPairGreatThan(prev, hands)
     local bombCardRankID = math.floor(prev.cards[1] / 4)
     local seqLength = math.floor(flushLen / 3)
     local newBombSuitID = bombCardRankID + 1
-    local rightMost = math.floor(pokerface.AH / 4)
+    local rightMost = math.floor(pokerface.CardID.AH / 4)
     while newBombSuitID <= rightMost do
         local testBombRankID = newBombSuitID
         local found = true
@@ -592,7 +593,7 @@ function AgariIndex.findTripletPairGreatThan(prev, hands)
                 end
             end
 
-            local uppon = math.floor(pokerface.AH / 4)
+            local uppon = math.floor(pokerface.CardID.AH / 4)
             for testPair = right + 1, uppon do
                 if (slots[testPair + 1] > 1) then
                     pairCount = pairCount + 1
@@ -603,7 +604,7 @@ function AgariIndex.findTripletPairGreatThan(prev, hands)
             if (pairCount > 0) then
                 -- 此处不再遍历各个对子
                 local cardHand = {}
-                cardHand.cardHandType = pokerfacerf.TripletPair
+                cardHand.cardHandType = pokerfacerf.CardHandType.TripletPair
                 local xcards = AgariIndex.extractCardsByRank(hands, left, 3)
                 cardHand.cards = stupidTableAddRange(cardHand.cards, xcards)
                 xcards = AgariIndex.extractCardsByRank(hands, pairAble[1], 2)
@@ -626,12 +627,12 @@ function AgariIndex.findTripletGreatThan(prev, hands)
     resetSlots(hands)
 
     local bombCardRankID = math.floor(prev.cards[1] / 4)
-    local rightMost = math.floor(pokerface.AH / 4)
+    local rightMost = math.floor(pokerface.CardID.AH / 4)
     -- 找一个较大的三张
     for newBombSuitID = bombCardRankID + 1, rightMost do
         if (slots[newBombSuitID + 1] > 2) then
             local cardHand = {}
-            cardHand.cardHandType = pokerfacerf.Triplet
+            cardHand.cardHandType = pokerfacerf.CardHandType.Triplet
             local xcards = AgariIndex.extractCardsByRank(hands, newBombSuitID, 3)
             cardHand.cards = xcards
             table.insert(cardHands, cardHand)
@@ -652,7 +653,7 @@ function AgariIndex.findTriplet2XGreatThan(prev, hands)
     local bombCardRankID = math.floor(prev.cards[1] / 4) -- 最大的顺子牌rank
     local seqLength = math.floor(flushLen / 3)
     local newBombSuitID = bombCardRankID + 1
-    local rightMost = math.floor(pokerface.AH / 4)
+    local rightMost = math.floor(pokerface.CardID.AH / 4)
     while newBombSuitID <= rightMost do
         local testBombRankID = newBombSuitID
         local found = true
@@ -667,7 +668,7 @@ function AgariIndex.findTriplet2XGreatThan(prev, hands)
         -- 找到了
         if (found) then
             local cardHand = {}
-            cardHand.cardHandType = pokerfacerf.Triplet2X
+            cardHand.cardHandType = pokerfacerf.CardHandType.Triplet2X
             local xcards = AgariIndex.extractCardsByRanks(hands, testBombRankID - seqLength + 1, testBombRankID, 3)
             cardHand.cards = xcards
             table.insert(cardHands, cardHand)
@@ -690,7 +691,7 @@ function AgariIndex.findPair2XGreatThan(prev, hands)
     local bombCardRankID = math.floor(prev.cards[1] / 4) -- 最大的顺子牌rank
     local seqLength = math.floor(flushLen / 2)
     local newBombSuitID = bombCardRankID + 1
-    local rightMost = math.floor(pokerface.AH / 4)
+    local rightMost = math.floor(pokerface.CardID.AH / 4)
     while newBombSuitID <= rightMost do
         local testBombRankID = newBombSuitID
         local found = true
@@ -706,7 +707,7 @@ function AgariIndex.findPair2XGreatThan(prev, hands)
         -- 找到了
         if (found) then
             local cardHand = {}
-            cardHand.cardHandType = pokerfacerf.Pair2X
+            cardHand.cardHandType = pokerfacerf.CardHandType.Pair2X
             local xcards = AgariIndex.extractCardsByRanks(hands, testBombRankID - seqLength + 1, testBombRankID, 2)
             cardHand.cards = xcards
 
@@ -728,11 +729,11 @@ function AgariIndex.findPairGreatThan(prev, hands)
     local bombCardRankID = math.floor(prev.cards[1] / 4)
 
     -- 找一个较大的对子
-    local rightMost = math.floor(pokerface.AH / 4)
+    local rightMost = math.floor(pokerface.CardID.AH / 4)
     for newBombSuitID = bombCardRankID + 1, rightMost do
         if (slots[newBombSuitID + 1] > 1) then
             local cardHand = {}
-            cardHand.cardHandType = pokerfacerf.Pair
+            cardHand.cardHandType = pokerfacerf.CardHandType.Pair
             local xcards = AgariIndex.extractCardsByRank(hands, newBombSuitID, 2)
             cardHand.cards = xcards
             table.insert(cardHands, cardHand)
@@ -756,12 +757,12 @@ function AgariIndex.findSingleGreatThan(prev, hands)
     end
 
     -- 找一个较大的单张
-    local rightMost = math.floor(pokerface.AH / 4)
+    local rightMost = math.floor(pokerface.CardID.AH / 4)
     local newBombSuitID = bombCardRankID + 1
     while newBombSuitID <= rightMost do
         if (slots[newBombSuitID + 1] > 0) then
             local cardHand = {}
-            cardHand.cardHandType = pokerfacerf.Single
+            cardHand.cardHandType = pokerfacerf.CardHandType.Single
             local xcards = AgariIndex.extractCardsByRank(hands, newBombSuitID, 1)
             cardHand.cards = xcards
             table.insert(cardHands, cardHand)
@@ -773,7 +774,7 @@ function AgariIndex.findSingleGreatThan(prev, hands)
     --自己有2，那就是最大
     if (slots[1] > 0) then
         local cardHand = {}
-        cardHand.cardHandType = pokerfacerf.Single
+        cardHand.cardHandType = pokerfacerf.CardHandType.Single
         local xcards = AgariIndex.extractCardsByRank(hands, 0, 1)
         cardHand.cards = xcards
         table.insert(cardHands, cardHand)
@@ -793,7 +794,7 @@ function AgariIndex.findFlushGreatThan(prev, hands)
     local bombCardRankID = math.floor(prev.cards[1] / 4) -- 最大的顺子牌rank
     local seqLength = flushLen
     local newBombSuitID = bombCardRankID + 1
-    local rightMost = math.floor(pokerface.AH / 4) -- AH 改为 R3H  20180201 mufan
+    local rightMost = math.floor(pokerface.CardID.AH / 4) -- AH 改为 R3H  20180201 mufan
     while newBombSuitID <= rightMost do
         local testBombRankID = newBombSuitID
         local found = true
@@ -809,7 +810,7 @@ function AgariIndex.findFlushGreatThan(prev, hands)
         -- 找到了
         if (found) then
             local cardHand = {}
-            cardHand.cardHandType = pokerfacerf.Flush
+            cardHand.cardHandType = pokerfacerf.CardHandType.Flush
             local xcards = AgariIndex.extractCardsByRanks(hands, testBombRankID - seqLength + 1, testBombRankID, 1)
             cardHand.cards = xcards
             table.insert(cardHands, cardHand)
@@ -831,12 +832,12 @@ function AgariIndex.findBombGreatThan(prev, hands)
     resetSlots(hands)
 
     local bombCardRankID = math.floor(prev.cards[1] / 4)
-    local rightMost = math.floor(pokerface.AH / 4)
+    local rightMost = math.floor(pokerface.CardID.AH / 4)
     --4张的是炸弹
     for newBombSuitID = bombCardRankID + 1, rightMost do
         if (slots[newBombSuitID + 1] > 3) then
             local cardHand = {}
-            cardHand.cardHandType = pokerfacerf.Bomb
+            cardHand.cardHandType = pokerfacerf.CardHandType.Bomb
             local xcards = AgariIndex.extractCardsByRank(hands, newBombSuitID, 4)
             cardHand.cards = xcards
             table.insert(cardHands, cardHand)
@@ -846,7 +847,7 @@ function AgariIndex.findBombGreatThan(prev, hands)
     -- 如果有3个ACE，也是炸弹
     if (slots[rightMost + 1] > 2) then
         local cardHand = {}
-        cardHand.cardHandType = pokerfacerf.Bomb
+        cardHand.cardHandType = pokerfacerf.CardHandType.Bomb
         local xcards = AgariIndex.extractCardsByRank(hands, rightMost, 4)
         cardHand.cards = xcards
         table.insert(cardHands, cardHand)

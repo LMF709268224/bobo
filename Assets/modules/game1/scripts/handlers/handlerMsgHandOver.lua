@@ -88,14 +88,14 @@ function Handler.onHandOver(msgHandOver, room)
     --播放声音
     --dfCompatibleAPI:soundPlay("effect/" .. soundName)
 
-    room.roomView.unityViewNode:DelayRun(
-        3,
-        function()
-            room:resumeBackMusicVolume()
-        end
-    )
+    -- room.roomView.unityViewNode:DelayRun(
+    --     3,
+    --     function()
+    --         room:resumeBackMusicVolume()
+    --     end
+    -- )
     --本局结束动画（现在是特效，是一个需要等待的特效）
-    room.roomView:handOverAnimation()
+    -- room.roomView:handOverAnimation()
 
     --显示手牌输赢结果
     room:loadHandResultView()

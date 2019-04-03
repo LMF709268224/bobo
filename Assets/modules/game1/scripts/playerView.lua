@@ -213,15 +213,15 @@ function PlayerView:initHands(view)
                 local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
                 card.position = go.position
                 myHandTilesNode:AddChild(card)
-                YY = card.y
+                -- YY = card.y
                 local btn = card:GetChild("n0")
                 btn.onClick:Add(
                     function(context)
-                        if card.y >= YY then
-                            card.y = card.y - 30
-                        else
-                            card.y = card.y + 30
-                        end
+                        -- if card.y >= YY then
+                        --     card.y = card.y - 30
+                        -- else
+                        --     card.y = card.y + 30
+                        -- end
                         self:onHandTileBtnClick(i)
                     end
                 )
@@ -264,8 +264,7 @@ function PlayerView:initDiscards(view)
         local go = myHandTilesNode:GetChild(cname)
         if go ~= nil then
             local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
-            card.scale = {0.5,0.5}
-            logger.debug("card.scale -------------- ",card.scale)
+            card.scale = go.scale
             card.position = go.position
             myHandTilesNode:AddChild(card)
             card.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
@@ -1557,7 +1556,7 @@ end
 function PlayerView:moveHandUp(index)
     local originPos = self.handsOriginPos[index]
     local h = self.handsClickCtrls[index].h
-    h.position.y = originPos.y + 30
+    h.y = originPos.y - 30
     -- h.transform.localPosition = Vector3(originPos.x, originPos.y + 30, 0)
     self.handsClickCtrls[index].clickCount = 1
     --self:setGray(h)
@@ -1569,7 +1568,7 @@ end
 function PlayerView:restoreHandUp(index)
     local originPos = self.handsOriginPos[index]
     local h = self.handsClickCtrls[index].h
-    h.position.y = originPos.y
+    h.y = originPos.y
     -- h.transform.localPosition = Vector3(originPos.x, originPos.y, 0)
     self.handsClickCtrls[index].clickCount = 0
     -- self:clearGray(h)
