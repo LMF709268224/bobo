@@ -20,9 +20,6 @@ function Handler.onMsg(actionResultMsg, room)
         player:hand2UI()
     end
 
-    --room.tilesInWall = actionResultMsg.tilesInWall
-    --room:updateTilesInWallUI()
-
     room:hideDiscardedTips()
 end
 

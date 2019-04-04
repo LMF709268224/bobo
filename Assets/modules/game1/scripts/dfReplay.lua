@@ -133,8 +133,6 @@ function DFReplay:gogogo(isShare)
     -- 取消游戏模块的逻辑监听
     -- require "DFMJGame"
     -- DFMJGame.Close()
-    --销毁播放界面
-    room.roomView:unInitialize()
     -- room.roomView:destroyReplayView()
     dfSingleton.room = nil
 
@@ -330,11 +328,6 @@ function DFReplay:deal()
         end
     end
 
-    --根据风圈修改
-    --room.roomView:setRoundMask(1)
-    --修改庄家标志
-    room:setBankerFlag()
-
     local drawCount = 0
     --保存每一个玩家的牌列表
     for _, v in ipairs(deals) do
@@ -350,9 +343,6 @@ function DFReplay:deal()
         --填充花牌列表
         --player:addFlowerTiles(v.tilesFlower)
     end
-
-    --room.tilesInWall = 144 - drawCount
-    --room:updateTilesInWallUI()
 
     --TODO: 播放投色子动画
     --对局开始动画

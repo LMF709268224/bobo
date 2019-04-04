@@ -27,19 +27,12 @@ function Handler.onMsg(msgData, room)
     --logger.debug("msgDeal.markup : " .. msgDeal.markup)
     room.markup = msgDeal.markup
     --logger.debug("handlerMsgRestore ---------------"..tostring(msgDeal.markup))
-    --room:updateTilesInWallUI()
 
     local players = room.players
     --隐藏复制按钮
     --room.roomView.copyRoomNumber:SetActive(false)
     --对局开始动画
     -- room.roomView:gameStartAnimation()
-    --TODO: 播放投色子动画
-    --room.roomView:touZiStartAnimation(msgDeal.dice1 , msgDeal.dice2)
-    --根据风圈修改
-    --room.roomView:setRoundMask(1)
-    --修改庄家标志
-    -- room:setBankerFlag()
 
     local player1 = nil
     local player2 = nil

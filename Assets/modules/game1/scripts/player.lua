@@ -353,14 +353,14 @@ function Player:updateByPlayerInfo(playerInfo)
     player.charm = playerInfo.charm
     player.avatarID = playerInfo.avatarID
     player.groupIds = playerInfo.clubIDs
-    logger.debug("player.avatarID:" .. tostring(player.avatarID))
+    -- logger.debug("player.avatarID:" .. tostring(player.avatarID))
     -- if self:isMe() and not self.room:isReplayMode() then
     --     local singleton = acc
     --     singleton.charm = playerInfo.charm
     --     g_dataModule:GetUserData():SetCharm(playerInfo.charm)
     -- end
     self.state = playerInfo.state
-    logger.debug("player id:" .. player.userID .. ", avatarID:" .. player.avatarID)
+    -- logger.debug("player id:" .. player.userID .. ", avatarID:" .. player.avatarID)
     self:updateHeadEffectBox()
 end
 

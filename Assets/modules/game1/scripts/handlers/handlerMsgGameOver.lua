@@ -23,7 +23,7 @@ function Handler.onMsg(msgData, room)
     --把结果保存到 room
     room.msgGameOver = msgGameOver
     --显示游戏最后结果()
-    room:loadGameOverResultView()
+    -- room:loadGameOverResultView()
 end
 
 return Handler

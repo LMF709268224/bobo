@@ -27,7 +27,6 @@ function Handler.onMsg(msgData, room)
     room.markup = msgDeal.markup
     -- end
 
-    --room:updateTilesInWallUI()
     --重连
     --room.roomView:onReconnect()
     --保存每一个玩家的牌列表

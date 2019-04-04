@@ -180,177 +180,26 @@ function Room:dispatchGameMessage(gmsg)
 end
 
 ----------------------------------------------
--- 显示道具动画
-----------------------------------------------
-function Room:showDonate(msgDonate)
-    if msgDonate then
-        local itemID = msgDonate.itemID
-        local propCfg = self:getPropCfg(itemID)
-        if propCfg == nil then
-            logger.debug("propCfg == nil ")
-            return
-        end
-        itemID = propCfg["propID"]
-
-        local oCurOpObj = self.roomView.donateMoveObj
-        local obj = oCurOpObj:Find("Donate")
-
-        local donate = tool:UguiAddChild(oCurOpObj, obj, obj.name)
-        local image = donate:SubGet("Image", "Image")
-
-        local fromPlayer = self:getPlayerByChairID(msgDonate.fromChairID)
-        local toPlayer = self:getPlayerByChairID(msgDonate.toChairID)
-        if fromPlayer == nil or toPlayer == nil then
-            logger.debug(" fromPlayer or toPlayer is nil...")
-            return
-        end
-        if msgDonate.toChairID == self.curActiveChairID then
-            --更新界面信息  to的player 主要更新 红心数量
-            toPlayer.playerView:updateHeadPopup()
-            toPlayer.playerView:updatePropNum(msgDonate.itemID)
-        end
-        if msgDonate.fromChairID == self.curActiveChairID then
-            --更新界面信息  from的player 主要更新 钻石数量
-            fromPlayer.playerView:updateHeadPopup()
-            fromPlayer.playerView:updatePropNum(msgDonate.itemID)
-        end
-        donate.localPosition = fromPlayer.playerView.infoGroup.localPosition
-        local vTargetPos = toPlayer.playerView.infoGroup.localPosition
-        image.transform:SetActive(true)
-        donate:SetActive(true)
-        local sprite = dfCompatibleAPI:loadCommonDynPic("prop/" .. itemID)
-        local effobjSUB = itemID
-        local sound = itemID
-        if sprite == nil or effobjSUB == nil then
-            logger.debug(" sprite or effobjSUB is nil...")
-            return
-        end
-        image.sprite = sprite
-        --飞动画
-        self.roomView.unityViewNode:DelayRun(
-            0.5,
-            function()
-                --oCurOpObj.transform 飞的图片
-                self.roomView.unityViewNode:RunAction(
-                    donate,
-                    {
-                        "localMoveTo",
-                        vTargetPos.x,
-                        vTargetPos.y,
-                        1,
-                        function()
-                            --飞完之后的回调
-                            --飞完之后 关闭oCurOpObj
-                            image.transform:SetActive(false)
-                            --播放特效
-                            effobj =
-                                Animator.Play(
-                                "Component/CommonComponent/Bundle/prefab/prop/" .. effobjSUB .. ".prefab",
-                                self.roomView.unityViewNode.order,
-                                nil,
-                                function()
-                                    --动效完成后回调
-                                    donate.gameObject:Destroy()
-                                end
-                            )
-                            effobj.name = "sub"
-                            effobj:SetParent(donate, false)
-                            effobj.localPosition = Vector3(0, 0, 0)
-                            --播放声音
-                            if sound ~= nil then
-                                dfCompatibleAPI:soundCommonPlay("prop/" .. sound)
-                            end
-                        end
-                    }
-                )
-            end
-        )
-    end
-end
-
-----------------------------------------------
 -- 加载房间的view
 -- TODO:暂时用着LZOnlineView这个prefab
 ----------------------------------------------
 function Room:loadRoomView()
-    -- 当前的view（大厅view）替换为LZOnlineView
-    -- ResourceManager:LoadFontAssetBundle("GameModule/GuanZhang/_AssetsBundleRes/Fonts/FZSXSLKJW.ttf")
-
-    -- g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE):register("LZOnlineViewInitFinish", self, self.InitRoomView)
-    -- local starttime = os.clock()
-    -- local roomCfg = {
-    --     luaPath = "View/LZOnlineView",
-    --     resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund3/LZOnlineView.prefab"
-    -- }
-    -- local function cb(view)
-    --     self.roomViewObj = view
-    -- end
-    self:initRoomView()
-    -- g_ModuleMgr:GetModule(ModuleName.SCENE_MODULE):EnterScene("Room", roomCfg, cb)
-
-    -- log(string.format("-----Room:loadRoomView--ReplaceView---cost time  : %.4f", os.clock() - starttime))
-end
-
-function Room:initRoomView()
     local starttime = os.clock()
     local roomView = RoomView.new(self)
     self.roomView = roomView
     self.initRoomViewFinish = true
-
-    -- log(string.format("------Room:loadRoomView--InitRoomView---cost time  : %.4f", os.clock() - starttime))
-
-    -- g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE):unregister("LZOnlineViewInitFinish", self, self.InitRoomView)
 end
 
 ----------------------------------------------
 -- 加载一手牌结束后，显示结果的view
 ----------------------------------------------
 function Room:loadHandResultView()
-    local viewObj =
-        viewModule:CreatePanel(
-        {
-            luaPath = "View/DFResultView",
-            resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/DFResultView.prefab",
-            superClass = self.roomView.unityViewNode,
-            parentNode = self.roomView.unityViewNode.transform
-        }
-    )
-    local uiDepth = viewObj:GetComponent("UIDepth")
-    if not uiDepth then
-        uiDepth = viewObj:AddComponent(UIDepth)
-    end
-    uiDepth.canvasOrder = self.roomView.unityViewNode.order + 2
-    if self:isReplayMode() then
-        local handResultView = HandResultView:new(self, viewObj, waitCo)
-        self.handResultView = handResultView
-        return
-    end
-
-    --local handResultView = HandResultView:new(self, "LZResultView")
-    --local waitCo = coroutine.running()
-    local handResultView = HandResultView:new(self, viewObj, waitCo)
-    self.handResultView = handResultView
-
-    self:beginWait(pokerfaceProto.OPDisbandNotify)
-    --coroutine.yield()
 end
 
 ----------------------------------------------
 -- 加载游戏结束后，显示结果的view
 ----------------------------------------------
 function Room:loadGameOverResultView()
-    local viewObj =
-        viewModule:OpenMsgBox(
-        {
-            luaPath = "View/DFOverView",
-            resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/DFOverView.prefab"
-        },
-        self
-    )
-    local gameOverResultView = GameOverResultView:new(self, viewObj, waitCo)
-    self.gameOverResultView = gameOverResultView
-    --coroutine.yield()
-    self:beginWait(pokerfaceProto.OPDisbandNotify)
 end
 
 ----------------------------------------------
@@ -397,6 +246,10 @@ function Room:createMyPlayer(playerInfo)
 
     -- 隐藏空椅子
     --self.roomView:hideEmptyChair(player.chairID)
+end
+
+function Room:onReadyButtonClick()
+    self.host:sendPlayerReadyMsg()
 end
 
 function Room:playerCount()
@@ -458,15 +311,6 @@ function Room:sendMsg(opCode, msg)
     if ws == nil then
         return
     end
-    -- local gmsg = pokerfaceProto.GameMessage()
-    -- gmsg.Ops = opCode
-
-    -- if msg ~= nil then
-    --     gmsg.Data = msg:SerializeToString()
-    -- end
-
-    -- local pbData = gmsg:SerializeToString()
-    -- ws:sendData(pbData)
     local gmsg = {}
     gmsg.Ops = opCode
 
@@ -487,15 +331,6 @@ function Room:resetForNewHand()
         p:resetForNewHand()
     end
     --隐藏箭头
-    -- self.roomView:setArrowHide()
-end
-
-------------------------------------
---把tilesInWall显示到房间的剩余牌数中
-------------------------------------
-function Room:updateTilesInWallUI()
-    -- local str = "剩牌：%s"
-    -- self.roomView.tilesInWall.text = string.format(str, tostring(self.tilesInWall))
 end
 
 ------------------------------------
@@ -515,14 +350,6 @@ function Room:unInitialize()
 
     self.emoji = nil
 
-    -- --< 这部分可以去掉,因为有下面的CloseMessageBox
-    -- if self.handResultView ~= nil then
-    --     self.handResultView:destroy()
-    -- end
-
-    -- if self.gameOverResultView ~= nil then
-    --     self.gameOverResultView:destroy()
-    -- end -->
     -- --退出房间清除弹窗
     -- ViewManager.CloseMessageBox(true)
 end
@@ -961,86 +788,6 @@ function Room:getRule()
     return rule
 end
 
-----------------------------------------------------------
---获取GPS数据
-----------------------------------------------------------
--- local indexes = {
--- [1] = {1, 2},
--- [2] = {1, 3},
--- [3] = {1, 4},
--- [4] = {2, 3},
--- [5] = {2, 4},
--- [6] = {3, 4}}
---loc:{"address":
---    {"city":"阿拉善盟","province":"内蒙古自治区","adcode":"152921","district":"阿拉善左旗","street":"",
---           "country_code":0,"town":"","direction":"","distance":"","street_number":"","country":"中国"},
---    "lat":39.007715452216,
---    "formatAddress":"内蒙古自治区阿拉善盟阿拉善左旗",
---    "IsGPS":true,"lng":105.574113517}
--- 解析GPS地址, 安全距离的情况下只显示到 district （保护玩家隐私）
-function Room:getDistance(locations, ips)
-    --用于记录player距离安不安全
-    local safeLocations = {
-        [1] = true,
-        [2] = true,
-        [3] = true
-    }
-    --安全距离
-    local safeDistance = 20
-    -- -1 空 ， 0 安全 ，1 距离20 ，2 ip相同 ，3 ip与距离
-    local distance = {}
-    local index = 1
-    for i = 1, 3 do
-        for j = i + 1, 3 do
-            local x = locations[i]
-            local y = locations[j]
-            local ip1 = ips[i]
-            local ip2 = ips[j]
-            distance[index] = 0
-            --如果 ip相同 或者 距离小于20   则红线
-            --如果 ip不同 且 距离大于20     则绿线
-            --如果 ip为空，                 则不连线 （显示灰色gps图标，提示，暂无用户）
-            --如果 ip不为空，（显示黄色gps图标 ，如果location 为空 提示 未开启GPS）
-            if ip1 == nil or ip2 == nil then
-                distance[index] = -1
-            else
-                if x.IsGPS and y.IsGPS then
-                    --logError("test distance = "..i..", "..j..", " ..dt)
-                    --local dt = BaiduMapWeb.CalDistance(x.lng, x.lat, y.lng, y.lat)
-                    local dt = Native.CalculateLineDistance(x.lat, x.lng, y.lat, y.lng)
-                    local isSafe = dt >= safeDistance
-                    distance[index] = 1
-                    if isSafe then
-                        distance[index] = 0
-                    end
-                    --distance[index] = distance[index] + disType
-                    --当保存的距离为false的时候，就不再改变
-                    if safeLocations[i] then
-                        safeLocations[i] = isSafe
-                    end
-                    if safeLocations[j] then
-                        safeLocations[j] = isSafe
-                    end
-                else
-                    --距离如果安全的话，就不考虑Ip
-                    if ip1 == ip2 then
-                        safeLocations[i] = false
-                        safeLocations[j] = false
-                        distance[index] = distance[index] + 2
-                    end
-                end
-            end
-            index = index + 1
-        end
-    end
-    self.safeLocations = safeLocations
-    return distance
-end
---大丰自己的弹框
-function Room:openMessageBoxFromDaFengNoOrder(viewName, ...)
-    return self:openMessageBoxFromDaFeng(viewName, nil, ...)
-end
-
 function Room:openMessageBoxFromDaFeng(viewName, order, ...)
     local viewObj =
         viewModule:CreatePanel(
@@ -1056,13 +803,6 @@ end
 
 function Room:ShowMessageBoxFromDaFeng(str, order, okFunc, noFunc)
     return dfCompatibleAPI:openDialog(str, okFunc, noFunc)
-end
-
-function Room:UIAction(target)
-    local gameObject = target.transform.gameObject
-    target.transform = gameObject.transform
-    target.transform.size = Vector2(3000, 3000)
-    target.transform:SetParent(self.roomView.unityViewNode.transform, false)
 end
 
 function Room:updatePlayerLocation(msgUpdateLocation)
@@ -1083,71 +823,6 @@ function Room:updatePlayerLocation(msgUpdateLocation)
     if roomView.distanceView == nil then
         return
     end
-
-    -- local distanceView = roomView.distanceView
-    -- if distanceView.activeSelf then
-    --     self.roomView:updateDistance()
-    -- end
-end
-
-function Room:getPropCfg(index)
-    local roomInfo = self.roomInfo
-    local propCfgString = roomInfo.propCfg
-    if propCfgString == nil or propCfgString == "" then
-        logger.debug("room propCfg = nil")
-        return nil
-    end
-
-    local propCfg = rapidjson.decode(propCfgString)
-    if propCfg == nil then
-        return nil
-    end
-
-    -- dump(propCfg, "-------propCfg--------")
-    -- logger.debug("index:", index)
-
-    return propCfg[tostring(index)]
-end
-
--------------------------------------------------
----- 道具名称映射，根据道具配置获取对应的道具名称
-------------------------------------------------
-function Room:getPropIconName(prop)
-    -- 预定义好道具名称与道具ID映射
-    local propIncos = {
-        ["1002"] = "dj_meigui",
-        ["1003"] = "dj_ganbei",
-        ["1004"] = "dj_jd",
-        ["1005"] = "dj_tuoxie",
-        ["1009"] = "dj_qj",
-        ["1008"] = "dj_bb",
-        ["1007"] = "dj_hj",
-        ["1006"] = "dj_mmd"
-    }
-
-    if prop == nil then
-        return ""
-    end
-
-    local propID = prop["propID"]
-    local propIconName = propIncos[tostring(propID)]
-    if propIconName == nil then
-        return ""
-    end
-
-    return propIconName
-end
-
-function Room:updatePropCfg(msgUpdatePropCfg)
-    logger.debug(" updatePropCfg:" .. msgUpdatePropCfg.propCfg)
-
-    local roomInfo = self.roomInfo
-    if roomInfo == nil then
-        return
-    end
-
-    roomInfo.propCfg = msgUpdatePropCfg.propCfg
-    self.roomView:refreshProps()
 end
 
 return Room
