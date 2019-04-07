@@ -30,7 +30,7 @@ function Handler.onMsg(msg, room)
         --警告玩家，小心包牌
         local playerViews = room.roomView.playerViews
         if playerViews[2].player.cardCountOnHand < 4 then
-            room.roomView.baopai:SetActive(true)
+        -- room.roomView.baopai:SetActive(true)
         end
     else
         --TODO: 如果是别人，则更新它的头像等待圈，以及提醒定时器
@@ -50,9 +50,11 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
 
     local needShowOperationButtons = true
     player.waitSkip = false
-    playerView.skipHuiBtn:SetActive(true)
+    -- playerView.skipHuiBtn:SetActive(true)
     --playerView.tipHuiBtn:SetActive(true)
-
+    playerView.skipBtn.visible = false
+    playerView.discardBtn.visible = false
+    playerView.tipBtn.visible = false
     --清除提示table
     player.tipCards = nil
     player.tipCardsIndex = 0
@@ -62,15 +64,15 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     if proto.actionsHasAction(actions, proto.prunfast.ActionType.enumActionType_SKIP) then
         logger.debug(" can skip")
         needShowOperationButtons = true
-        playerView.skipHuiBtn:SetActive(false)
-        playerView.skipBtn:SetActive(true)
+        -- playerView.skipHuiBtn:SetActive(false)
+        playerView.skipBtn.visible = true
     end
     --出牌
     if proto.actionsHasAction(actions, proto.prunfast.ActionType.enumActionType_DISCARD) then
         logger.debug(" can discard")
         needShowOperationButtons = true
-        playerView.discardBtn:SetActive(true)
-        playerView.tipBtn:SetActive(true)
+        playerView.discardBtn.visible = true
+        playerView.tipBtn.visible = true
     end
 
     if needShowOperationButtons then

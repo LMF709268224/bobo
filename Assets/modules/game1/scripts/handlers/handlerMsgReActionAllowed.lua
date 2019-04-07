@@ -29,7 +29,7 @@ function Handler.onMsg(msgData, room)
         --警告玩家，小心包牌
         local playerViews = room.roomView.playerViews
         if playerViews[2].player.cardCountOnHand < 4 then
-            room.roomView.baopai:SetActive(true)
+        -- room.roomView.baopai:SetActive(true)
         end
     else
         logger.debug(" oh no, now support opponents re-action")
@@ -54,25 +54,27 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
     local playerView = player.playerView
 
     --local needShowOperationButtons = true
-    playerView.discardHuiBtn:SetActive(true)
-    playerView.tipBtn:SetActive(true) --提示按钮
-    playerView.skipHuiBtn:SetActive(true)
+    -- playerView.discardHuiBtn:SetActive(true)
+    playerView.skipBtn.visible = false
+    playerView.discardBtn.visible = false
+    playerView.tipBtn.visible = true
+    -- playerView.skipHuiBtn:SetActive(true)
     logger.debug(" processMyAllowedReActions actions : " .. tostring(actions))
 
     --如果可以过
     if proto.actionsHasAction(actions, proto.prunfast.ActionType.enumActionType_SKIP) then
         logger.debug(" can skip")
         --needShowOperationButtons = true
-        playerView.skipHuiBtn:SetActive(false)
-        playerView.skipBtn:SetActive(true)
+        -- playerView.skipHuiBtn:SetActive(false)
+        playerView.skipBtn.visible = true
     end
 
     --出牌
     if proto.actionsHasAction(actions, proto.prunfast.ActionType.enumActionType_DISCARD) then
         logger.debug(" can discard")
         --needShowOperationButtons = true
-        playerView.discardHuiBtn:SetActive(false)
-        playerView.discardBtn:SetActive(true)
+        -- playerView.discardHuiBtn:SetActive(false)
+        playerView.discardBtn.visible = true
     end
 end
 

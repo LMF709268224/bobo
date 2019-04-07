@@ -8,19 +8,9 @@ Player.VERSION = "1.0"
 local logger = require "lobby/lcore/logger"
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
--- local dfPath = "GuanZhang/Script/"
--- local msgHelper = require(dfPath .. "dfMahjong/msgHelper")
--- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
--- local agariIndex = require(dfPath .. "dfMahjong/AgariIndex")
--- local acc = g_ModuleMgr:GetModule("AccModule")
--- local userDataModule = g_ModuleMgr:GetModule(ModuleName.DATASTORAGE_MODULE)
--- local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
--- require(dfPath .. "Proto/game_pokerface_rf_pb")
--- local pokerfaceRf = game_pokerface_rf_pb
--- require(dfPath .. "Proto/game_pokerface_pb")
--- local pokerface = game_pokerface_pb
--- local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
--- local agariIndex = require(dfPath .. "dfMahjong/agariIndex")
+local agariIndex = require("scripts/AgariIndex")
+local pokerfaceRf = proto.prunfast
+local pokerface = proto.pokerface
 
 --音效文件定义
 local SoundDef = {
@@ -104,11 +94,11 @@ function Player:sortHands(excludeLast)
         table.sort(
             self.cardsOnHand,
             function(x, y)
-                if x == proto.pokerface.CardID.R2H then
+                if x == pokerface.CardID.R2H then
                     --为了让 红桃2 排最后
                     return false
                 end
-                if y == proto.pokerface.CardID.R2H then
+                if y == pokerface.CardID.R2H then
                     --为了让 红桃2 排最后
                     return true
                 end
@@ -178,50 +168,6 @@ function Player:addHandTiles(tiles)
 end
 
 ------------------------------------
---增加一个落地面子牌组
-------------------------------------
-function Player:addMeld(meld)
-    --插入到队列尾部
-    table.insert(self.melds, meld)
-end
-
-------------------------------------
---利用服务器发下来的暗杠牌组的id列表（明牌）
---更新本地的暗杠牌组列表
-------------------------------------
-function Player:refreshConcealedMelds(concealedKongIDs)
-    -- local i = 1
-    -- for _, m in ipairs(self.melds) do
-    --     if m.meldType == pokerface.enumMeldTypeConcealedKong then
-    --         m.tile1 = concealedKongIDs[i]
-    --         i = i + 1
-    --     end
-    -- end
-end
-
-------------------------------------
---增加多个落地面子牌组
-------------------------------------
-function Player:addMelds(melds)
-    -- for _, v in ipairs(melds) do
-    --     --插入到队列尾部
-    --     table.insert(self.melds, v)
-    -- end
-end
-
-------------------------------------
---获取一个落地面子牌组
-------------------------------------
-function Player:getMeld(tileID, meldType)
-    for _, v in pairs(self.melds) do
-        if v.tile1 == tileID and v.meldType == meldType then
-            return v
-        end
-    end
-    return nil
-end
-
-------------------------------------
 --把手牌列表显示到界面上
 --对于自己的手牌，需要排序显示，排序仅用于显示
 --排序并不修改手牌列表
@@ -254,17 +200,6 @@ function Player:hand2Exposed()
 end
 
 ------------------------------------
---把花牌列表显示到界面上
-------------------------------------
-function Player:flower2UI()
-    --先取消所有花牌显示
-    local playerView = self.playerView
-    playerView:hideFlowers()
-
-    playerView:showFlowers()
-end
-
-------------------------------------
 --把打出的牌列表显示到界面上
 ----------------------------------
 function Player:discarded2UI(discardTileIds)
@@ -275,35 +210,35 @@ end
 function Player:showCardHandType(cardHandType, discardTileId)
     local tip = ""
     local effectName = "" -- 音效
-    if cardHandType == pokerfaceRf.Flush then
+    if cardHandType == pokerfaceRf.CardHandType.Flush then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_SHUNZI
         --顺子
         effectName = "sunzi"
-    elseif cardHandType == pokerfaceRf.Bomb then
+    elseif cardHandType == pokerfaceRf.CardHandType.Bomb then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_ZHADAN
         --炸弹
         effectName = "zhadan"
-    elseif cardHandType == pokerfaceRf.Single then
+    elseif cardHandType == pokerfaceRf.CardHandType.Single then
         tip = "" --单张
         self:playReadTileSound(discardTileId, false)
-    elseif cardHandType == pokerfaceRf.Pair then
+    elseif cardHandType == pokerfaceRf.CardHandType.Pair then
         tip = "" --对子
         self:playReadTileSound(discardTileId, true)
     elseif cardHandType == pokerfaceRf.Pair2X then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_LIANDUI
         --连对
         effectName = "liandui"
-    elseif cardHandType == pokerfaceRf.Triplet then
+    elseif cardHandType == pokerfaceRf.CardHandType.Triplet then
         tip = ""
         --三张
         self:playSound("sange")
-    elseif cardHandType == pokerfaceRf.TripletPair then
+    elseif cardHandType == pokerfaceRf.CardHandType.TripletPair then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_SANDAIER --三带二
         effectName = "sandaiyi"
-    elseif cardHandType == pokerfaceRf.Triplet2X then
+    elseif cardHandType == pokerfaceRf.CardHandType.Triplet2X then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_SANLIANDUI -- 飞机
         effectName = "feiji"
-    elseif cardHandType == pokerfaceRf.Triplet2X2Pair then
+    elseif cardHandType == pokerfaceRf.CardHandType.Triplet2X2Pair then
         tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_HANG --夯加飞机
         effectName = "feijidaicibang"
     end
@@ -328,94 +263,6 @@ function Player:hideDiscardedTips()
 end
 
 ------------------------------------
---听牌标志
-------------------------------------
-function Player:richiIconShow(showOrHide)
-    self.isRichi = showOrHide
-    local playerView = self.playerView
-    --playerView.head.ting:SetActive(showOrHide)
-end
-------------------------------------
---播放吃牌动画
-------------------------------------
-function Player:chowResultAnimation()
-    if self:isMe() then
-        --隐藏牌组
-        self.playerView:hideHands()
-        self.playerView:showHandsForMe(true)
-    end
-
-    --播放对应音效
-    self:playOperationSound(SoundDef.Chow)
-
-    self.playerView:playChowResultAnimation()
-end
-
-------------------------------------
---播放碰牌动画
-------------------------------------
-function Player:pongResultAnimation()
-    if self:isMe() then
-        --隐藏牌组
-        self.playerView:hideHands()
-        self.playerView:showHandsForMe(true)
-    end
-
-    --播放对应音效
-    self:playOperationSound(SoundDef.Pong)
-
-    self.playerView:playPongResultAnimation()
-end
-
-------------------------------------
---播放明杠动画
-------------------------------------
-function Player:exposedKongResultAnimation()
-    if self:isMe() then
-        --隐藏牌组
-        self.playerView:hideHands()
-        self.playerView:showHandsForMe(true)
-    end
-
-    --播放对应音效
-    self:playOperationSound(SoundDef.Kong)
-
-    self.playerView:playExposedKongResultAnimation()
-end
-
-------------------------------------
---播放暗杠动画
-------------------------------------
-function Player:concealedKongResultAnimation()
-    if self:isMe() then
-        --隐藏牌组
-        self.playerView:hideHands()
-        self.playerView:showHandsForMe(true)
-    end
-
-    --播放对应音效
-    self:playOperationSound(SoundDef.Kong)
-
-    self.playerView:playConcealedKongResultAnimation()
-end
-
-------------------------------------
---播放加杠动画
-------------------------------------
-function Player:triplet2KongResultAnimation()
-    if self:isMe() then
-        --隐藏牌组
-        self.playerView:hideHands()
-        self.playerView:showHandsForMe(true)
-    end
-
-    --播放对应音效
-    self:playOperationSound(SoundDef.Kong)
-
-    self.playerView:playTriplet2KongResultAnimation()
-end
-
-------------------------------------
 --播放音效
 ------------------------------------
 function Player:playSound(effectName)
@@ -436,17 +283,6 @@ function Player:playSound(effectName)
         -- end
         dfCompatibleAPI:soundPlay(path .. asset)
     end
-end
-
-------------------------------------
---播放起手听牌特效
-------------------------------------
-function Player:readyHandEffect()
-    --播放对应音效
-    -- TODO:没有这个音效，暂时注销 by陈日光
-    -- self:playOperationSound(SoundDef.Ting)
-
-    self.playerView:playReadyHandEffect()
 end
 
 ------------------------------------
@@ -517,14 +353,14 @@ function Player:updateByPlayerInfo(playerInfo)
     player.charm = playerInfo.charm
     player.avatarID = playerInfo.avatarID
     player.groupIds = playerInfo.clubIDs
-    logger.debug("player.avatarID:" .. tostring(player.avatarID))
+    -- logger.debug("player.avatarID:" .. tostring(player.avatarID))
     -- if self:isMe() and not self.room:isReplayMode() then
     --     local singleton = acc
     --     singleton.charm = playerInfo.charm
     --     g_dataModule:GetUserData():SetCharm(playerInfo.charm)
     -- end
     self.state = playerInfo.state
-    logger.debug("player id:" .. player.userID .. ", avatarID:" .. player.avatarID)
+    -- logger.debug("player id:" .. player.userID .. ", avatarID:" .. player.avatarID)
     self:updateHeadEffectBox()
 end
 
@@ -589,25 +425,13 @@ function Player:onTipBtnClick(isHui, btnObj)
     end
 end
 ----------------------------------------
--- 玩家选择了起手听牌
--- 上下文必然是allowedActionMsg
-----------------------------------------
-function Player:onReadyHandBtnClick2(btnObj)
-end
-----------------------------------------
--- 玩家选择了吃牌
--- 上下文必然是allowedReActionMsg
-----------------------------------------
-function Player:onChowBtnClick(btnObj)
-end
-
-----------------------------------------
 -- 玩家选择出牌
 ----------------------------------------
 function Player:onDiscardBtnClick(isHui, btnObj)
     if isHui then
         --提示。。。无牌可出
-        dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDS)
+        logger.error("ERR_ROOM_NOTDISCARDS")
+        -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDS)
         return
     end
     --出牌逻辑
@@ -622,45 +446,6 @@ function Player:onDiscardBtnClick(isHui, btnObj)
         end
     end
     self:onPlayerDiscardCards(discardCards)
-end
-
-----------------------------------------
--- 玩家选择了杠牌
--- 当上下文是allowedActionMsg时，表示加杠或者暗杠
--- 当上下文是allowedReActionMsg时，表示明杠
-----------------------------------------
-function Player:onKongBtnClick(btnObj)
-end
-
-----------------------------------------
--- 选择如何吃牌，杠牌界面  exp:吃的时候是3，杠的时候是4
-----------------------------------------
-function Player:showMultiOps(datas, actionMsg2, exp)
-end
-----------------------------------------
--- 玩家选择了胡牌
--- 当上下文是allowedActionMsg时，表示自摸胡牌
--- 当上下文是allowedReActionMsg时，表示吃铳胡牌
-----------------------------------------
-function Player:onWinBtnClick(btnObj)
-    local room = self.room
-
-    if self.allowedActionMsg ~= nil then
-        local actionMsg = pokerface.MsgPlayerAction()
-        actionMsg.qaIndex = self.allowedActionMsg.qaIndex
-        actionMsg.action = pokerfaceRf.enumActionType_WIN_SelfDrawn
-
-        room:sendActionMsg(actionMsg)
-    elseif self.allowedReActionMsg ~= nil then
-    -- local actionMsg = pokerface.MsgPlayerAction()
-    -- actionMsg.qaIndex = self.allowedReActionMsg.qaIndex
-    -- actionMsg.action = pokerface.enumActionType_WIN_Chuck
-    -- actionMsg.tile = self.allowedReActionMsg.victimTileID
-
-    -- room:sendActionMsg(actionMsg)
-    end
-
-    self.playerView:clearAllowedActionsView()
 end
 
 ----------------------------------------
@@ -682,11 +467,11 @@ function Player:onSkipBtnClick(isHui, btnObj)
 
     local discardAble = false
 
-    local actionMsg = pokerface.MsgPlayerAction()
+    local actionMsg = {} -- pokerface.MsgPlayerAction()
     actionMsg.qaIndex = self.allowedReActionMsg.qaIndex
-    actionMsg.action = pokerfaceRf.enumActionType_SKIP
-
-    room:sendActionMsg(actionMsg)
+    actionMsg.action = pokerfaceRf.ActionType.enumActionType_SKIP
+    local actionMsgBuf = proto.encodeMessage("pokerface.MsgPlayerAction", actionMsg)
+    room:sendActionMsg(actionMsgBuf)
 
     self.playerView:clearAllowedActionsView(discardAble)
     --重置手牌位置
@@ -695,7 +480,7 @@ function Player:onSkipBtnClick(isHui, btnObj)
     self.waitSkip = false
 
     --隐藏包牌文字警告
-    self.room.roomView.baopai:SetActive(false)
+    -- self.room.roomView.baopai:SetActive(false)
 end
 
 -----------------------------------------------------------
@@ -734,7 +519,7 @@ function Player:autoDiscard()
         -- self.discardR2H = false
         -- self.playerView:clearAllowedActionsView()
 
-        local disCards = {pokerface.R2H}
+        local disCards = {pokerface.CardID.R2H}
         self:onPlayerDiscardCards(disCards)
     end
 end
@@ -742,34 +527,38 @@ function Player:onPlayerDiscardCards(disCards)
     logger.debug(" onPlayerDiscardCards tile .")
     --dump(disCards , "----------------- disCards ---------------------------")
     if disCards == nil or #disCards < 1 then
-        dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSELECTCARDS)
+        logger.error(" ERR_ROOM_NOTSELECTCARDS .")
+        -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSELECTCARDS)
         return
     end
-    local actionMsg = pokerface.MsgPlayerAction()
+    local actionMsg = {} -- pokerface.MsgPlayerAction()
     local r3h = false
     local current = agariIndex.agariConvertMsgCardHand(disCards)
     if current == nil then
-        dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_CARDSNOTDIS)
+        logger.error(" ERR_ROOM_CARDSNOTDIS .")
+        -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_CARDSNOTDIS)
         return
     end
 
     local cards_ = {}
+    actionMsg.cards = {}
     for i = 1, #disCards do
         local disCard = disCards[i]
-        if disCard == pokerface.R3H then
+        if disCard == pokerface.CardID.R3H then
             r3h = true
         end
         --cards_.append(disCard)
         --actionMsg.cards.append(1)
         table.insert(actionMsg.cards, disCard)
     end
-    actionMsg.action = pokerfaceRf.enumActionType_DISCARD
+    actionMsg.action = pokerfaceRf.ActionType.enumActionType_DISCARD
     if self.allowedActionMsg ~= nil then
         actionMsg.qaIndex = self.allowedActionMsg.qaIndex
         if self.haveR3H then
             --此时必须出 红桃3
             if not r3h then
-                dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR3H)
+                logger.error("ERR_ROOM_NOTDISCARDSR3H")
+                -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR3H)
                 return
             end
             self.haveR3H = false
@@ -781,22 +570,25 @@ function Player:onPlayerDiscardCards(disCards)
         local prevActionHand = self.allowedReActionMsg.prevActionHand
         if self.discardR2H then
             --此时必须出2
-            if #disCards ~= 1 or disCards[1] ~= pokerface.R2H then
-                dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR2H)
+            if #disCards ~= 1 or disCards[1] ~= pokerface.CardID.R2H then
+                logger.error("ERR_ROOM_NOTDISCARDSR2H")
+                -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR2H)
                 return
             end
             self.discardR2H = false
         end
         if not agariIndex.agariGreatThan(prevActionHand, current) then
-            dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_DISCARDISSMALL)
+            logger.error("ERR_ROOM_DISCARDISSMALL")
+            -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_DISCARDISSMALL)
             return
         end
     end
-    self.room:sendActionMsg(actionMsg)
+    local actionMsgBuf = proto.encodeMessage("pokerface.MsgPlayerAction", actionMsg)
+    self.room:sendActionMsg(actionMsgBuf)
     self.playerView:clearAllowedActionsView()
 
     --隐藏包牌文字警告
-    self.room.roomView.baopai:SetActive(false)
+    -- self.room.roomView.baopai:SetActive(false)
 end
 
 function Player:onPlayerDiscardTile(tileID)
@@ -805,7 +597,7 @@ function Player:onPlayerDiscardTile(tileID)
     if self.allowedActionMsg ~= nil then
         local actionMsg = pokerface.MsgPlayerAction()
         actionMsg.qaIndex = self.allowedActionMsg.qaIndex
-        actionMsg.action = pokerfaceRf.enumActionType_DISCARD
+        actionMsg.action = pokerfaceRf.ActionType.enumActionType_DISCARD
         actionMsg.cards = {tileID}
         -- if self.flagsTing then
         --     actionMsg.flags = 1

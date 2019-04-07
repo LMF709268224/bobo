@@ -105,19 +105,10 @@ function Handler.onMsg(msgData, room)
             room.roomView:hide2ReadyButton()
         end
         if updatePlayer ~= 0 then
-        -- room.roomView:updateDistance()
-        --玩家自己与其他玩家的关系
-        -- room.roomView:initPlayersRelation()
         end
     elseif msgRoomUpdate.state == roomStateEnum.SRoomPlaying then
     -- room.roomView:hideDistanceView()
     end
-    --是否需要更新GPS按钮(是否有警告)
-    --新游戏 只有在room为等待状态的时候显示
-    -- if updatePlayer ~= 0 and msgRoomUpdate.state == pkproto2.SRoomWaiting then
-    --     --room:updateGPSBtnStatus(updatePlayer)
-    --     room.roomView:updateDistance()
-    -- end
 
     --更新房间界面
     room.roomView:onUpdateStatus(msgRoomUpdate.state)
@@ -156,7 +147,7 @@ function Handler.onMsg(msgData, room)
     for _, player in pairs(room.players) do
         if player ~= nil and player.totalScores ~= nil then
             logger.debug(" 更新 player.totalScores ： " .. player.totalScores)
-            player.playerView:setGold(player.totalScores)
+        -- player.playerView:setGold(player.totalScores)
         end
     end
 end

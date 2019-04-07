@@ -1,19 +1,19 @@
-local logger = require 'lobby/lcore/logger'
-local lenv = require 'lobby/lenv'
+local logger = require "lobby/lcore/logger"
+local lenv = require "lobby/lenv"
 --local errHelper = require 'lobby/LobbyErrHelper'
-local fairy = require 'lobby/lcore/fairygui'
+local fairy = require "lobby/lcore/fairygui"
 
-logger.warn('lobby main startup')
+logger.warn("lobby main startup")
 
 -- 打印所有被C#引用着的LUA函数
 local function print_func_ref_by_csharp()
-    local registry = debug.getregistry()
-    for k, v in pairs(registry) do
-        if type(k) == 'number' and type(v) == 'function' and registry[v] == k then
-            local info = debug.getinfo(v)
-            print(string.format('%s:%d', info.short_src, info.linedefined))
-        end
-    end
+	local registry = debug.getregistry()
+	for k, v in pairs(registry) do
+		if type(k) == "number" and type(v) == "function" and registry[v] == k then
+			local info = debug.getinfo(v)
+			print(string.format("%s:%d", info.short_src, info.linedefined))
+		end
+	end
 end
 
 local mylobbyView = nil
@@ -24,15 +24,15 @@ local function shutdownCleanup()
 		mylobbyView:Dispose()
 	end
 
-	logger.warn('lobby main cleanup')
+	logger.warn("lobby main cleanup")
 	print_func_ref_by_csharp()
 end
 
 local function doUpgrade()
 	-- 准备检查更新Lobby模块
-	local updaterM = require 'lobby/lcore/updater'
-	local updater = updaterM:new('lobby', lenv.URL.updateQuery)
-	
+	local updaterM = require "lobby/lcore/updater"
+	local updater = updaterM:new("lobby", lenv.URL.updateQuery)
+
 	local err = nil
 	local isNeedUpgrade = false
 
@@ -45,7 +45,11 @@ local function doUpgrade()
 
 	-- 如果有更新，执行更新
 	if isNeedUpgrade then
-		err = updater:doUpgrade(function(event, downloaded, total) end)
+		err =
+			updater:doUpgrade(
+			function(event, downloaded, total)
+			end
+		)
 	end
 
 	-- 返回err
@@ -68,7 +72,7 @@ local function msgBox(err)
 end
 
 local function mainEntryCoroutine()
-	logger.trace('mainEntryCoroutine()')
+	logger.trace("mainEntryCoroutine()")
 
 	-- 先显示启动背景
 	local err = nil
@@ -81,7 +85,7 @@ local function mainEntryCoroutine()
 		while retry do
 			-- 尝试检查和实施更新
 			err, upgraded = doUpgrade()
-			if err ~= nil then 
+			if err ~= nil then
 				-- 发生错误，询问是否重试
 				retry = msgBox(err)
 			else
@@ -92,7 +96,7 @@ local function mainEntryCoroutine()
 
 	if err ~= nil then
 		-- 发生错误，退出
-		logger.error('Error:', err.msg, 'Code:', err.code, ',程序将结束运行')
+		logger.error("Error:", err.msg, "Code:", err.code, ",程序将结束运行")
 		--_ENV.thisMod:AppExit()
 		return
 	end
@@ -106,14 +110,13 @@ local function mainEntryCoroutine()
 	-- 开始登录
 	-- local login = require ('lobby/Login')
 	-- login()
-	
-	
+
 	--_ENV.thisMod:LaunchGameModule("game1")
 end
 
 local function onStupidClick(context)
-  	print('you click on '..context.sender.name)
-	
+	print("you click on " .. context.sender.name)
+
 	-- CS.UnityEngine.Object.Destroy(gooo)
 	-- gooo = nil
 end
@@ -124,21 +127,21 @@ local function onFriendClick(context)
 	fairy.GRoot.inst:RemoveChild(mylobbyView)
 	fairy.GRoot.inst:CleanupChildren()
 
-	_ENV.thisMod:LaunchGameModule('game1')
+	_ENV.thisMod:LaunchGameModule("game1")
 end
 
 function backToLobby()
-	print('backToLobby')
+	print("backToLobby")
 	fairy.GRoot.inst:AddChild(mylobbyView)
 	mylobbyView = nil
 end
 
 local function testLobbyUI()
-	_ENV.thisMod:AddUIPackage('lobby/fui/lobby_main')
-	local view = fairy.UIPackage.CreateObject('lobby_main', 'Main')
+	_ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
+	local view = fairy.UIPackage.CreateObject("lobby_main", "Main")
 	fairy.GRoot.inst:AddChild(view)
-	
-	local friendBtn = view:GetChild('n1')
+
+	local friendBtn = view:GetChild("n1")
 	friendBtn.onClick:Add(onFriendClick)
 end
 
@@ -150,7 +153,7 @@ local function main()
 	logger.level = lenv.loglevel
 	CS.BestHTTP.HTTPManager.Logger.Level = lenv.loglevel
 
-	logger.warn('lobby/Boot begin, lobby version:', lobbyVer, ',csharp version:', csharpVer)
+	logger.warn("lobby/Boot begin, lobby version:", lobbyVer, ",csharp version:", csharpVer)
 
 	_ENV.thisMod:RegisterCleanup(shutdownCleanup)
 
@@ -158,7 +161,7 @@ local function main()
 	-- local co = coroutine.create(mainEntryCoroutine)
 	-- local r, err = coroutine.resume(co)
 	-- if not r then
-		-- logger.error(debug.traceback(co, err))
+	-- logger.error(debug.traceback(co, err))
 	-- end
 
 	testLobbyUI()

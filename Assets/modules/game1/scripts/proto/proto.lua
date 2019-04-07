@@ -40,10 +40,6 @@ local function loadProtofile()
     end
 end
 
--- function PROTO.decodeMessage(t, gmsgData)
---     return protobuf.decode(t, gmsgData)
--- end
-
 function PROTO.decodeMessage(t, msgData)
     return protobuf.decode(t, msgData)
 end

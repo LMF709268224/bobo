@@ -3,28 +3,27 @@
 ]]
 local DFReplay = {}
 
-local mt = {__index=DFReplay}
+local mt = {__index = DFReplay}
 local dfPath = "GuanZhang/Script/"
-local Room = require ( dfPath .."dfMahjong/room")
+local Room = require(dfPath .. "dfMahjong/room")
 
 local Acc = g_ModuleMgr:GetModule("AccModule")
 
-local bit = require ( dfPath ..'dfMahjong/bit')
-local dfCompatibleAPI = require(dfPath ..'dfMahjong/dfCompatibleAPI')
-require ( dfPath .. "Proto/game_pokerface_rf_pb")
+local bit = require(dfPath .. "dfMahjong/bit")
+local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
+require(dfPath .. "Proto/game_pokerface_rf_pb")
 local pokerfaceRf = game_pokerface_rf_pb
 
 --local pkproto2 = game_mahjong_s2s_pb
 
 function DFReplay:new(df, userID, msgHandRecord)
-
     local dfReplay = {}
     setmetatable(dfReplay, mt)
 
     dfReplay.df = df
     --dfReplay.replayRoom = replayRoom
     dfReplay.msgHandRecord = msgHandRecord
-    dfReplay.user = {userID=userID}
+    dfReplay.user = {userID = userID}
 
     return dfReplay
 end
@@ -37,8 +36,8 @@ function DFReplay:gogogo(isShare)
     self.room.host = self.df
     --self.room.roomInfo = roomInfo
 
-    logger.debug(" room info : "..self.msgHandRecord.roomConfigID)
-    local roomInfo = accessory_pb.RoomInfo{}
+    logger.debug(" room info : " .. self.msgHandRecord.roomConfigID)
+    local roomInfo = accessory_pb.RoomInfo {}
     roomInfo.roomID = ""
     roomInfo.roomNumber = self.msgHandRecord.roomNumber
     roomInfo.gameServerURL = ""
@@ -56,7 +55,7 @@ function DFReplay:gogogo(isShare)
     self.room:loadRoomView()
     coroutine.waitDoFinish(self.room)
 
-    local df = require ( dfPath .. "dfMahjong/dfSingleton")
+    local df = require(dfPath .. "dfMahjong/dfSingleton")
     local dfSingleton = df:getSingleton()
 
     dfSingleton.room = self.room
@@ -67,7 +66,7 @@ function DFReplay:gogogo(isShare)
     local players = self.msgHandRecord.players
     for _, p in ipairs(players) do
         --if p.userID == acc.userID then
-        logger.debug(" p.userID "..p.userID)
+        logger.debug(" p.userID " .. p.userID)
         if p.userID == self.user.userID then
             room:createMyPlayer(p)
         end
@@ -134,8 +133,6 @@ function DFReplay:gogogo(isShare)
     -- 取消游戏模块的逻辑监听
     -- require "DFMJGame"
     -- DFMJGame.Close()
-    --销毁播放界面
-    room.roomView:unInitialize()
     -- room.roomView:destroyReplayView()
     dfSingleton.room = nil
 
@@ -154,16 +151,15 @@ function DFReplay:gogogo(isShare)
         local function cb()
             dispatcher:dispatch("OPEN_GAME_RECORD_DETAIL_VIEW")
         end
-        dispatcher:dispatch("OPEN_HALLVIEW",cb)
+        dispatcher:dispatch("OPEN_HALLVIEW", cb)
     end
-
 end
 
 ---------------------------------
 --降低速度
 ---------------------------------
 function DFReplay:decreaseSpeed()
-    if self.speed >= (4*self.normalSpeed) then
+    if self.speed >= (4 * self.normalSpeed) then
         dfCompatibleAPI:showTip("已经是最慢速度")
         return
     end
@@ -175,7 +171,7 @@ end
 --增加速度
 ---------------------------------
 function DFReplay:increaseSpeed()
-    if self.speed <= (self.normalSpeed/4) then
+    if self.speed <= (self.normalSpeed / 4) then
         dfCompatibleAPI:showTip("已经是最快速度")
         return
     end
@@ -186,11 +182,11 @@ end
 function DFReplay:showCurrentSpeed()
     local scale
     if self.speed <= self.normalSpeed then
-        scale = self.normalSpeed/self.speed
-        dfCompatibleAPI:showTip("速度X"..tostring(scale))
+        scale = self.normalSpeed / self.speed
+        dfCompatibleAPI:showTip("速度X" .. tostring(scale))
     else
-        scale = self.speed/self.normalSpeed
-        dfCompatibleAPI:showTip("速度/"..tostring(scale))
+        scale = self.speed / self.normalSpeed
+        dfCompatibleAPI:showTip("速度/" .. tostring(scale))
     end
 end
 ---------------------------------
@@ -200,7 +196,6 @@ function DFReplay:onExitReplay()
     self.exit = true
     --logError("on exit : "..tostring(self.coWait ~= nil))
     if self.coWait ~= nil then
-
         self:resumeCo()
     end
 end
@@ -237,11 +232,10 @@ function DFReplay:waitPauseResume()
 
     local coWait = coroutine.running()
 
-        self.coWait = coWait
-        coroutine.yield()
+    self.coWait = coWait
+    coroutine.yield()
 
-        self.coWait = nil
-
+    self.coWait = nil
 end
 
 ---------------------------------
@@ -262,7 +256,7 @@ function DFReplay:waitActionDelay()
         dfReplay:resumeCo()
     end
 
-	self.timer = FrameTimer.New(action, self.speed, -1)
+    self.timer = FrameTimer.New(action, self.speed, -1)
     self.timer:Start()
 
     self.coWait = coWait
@@ -288,7 +282,7 @@ function DFReplay:resumeCo()
 
     if self.coWait ~= nil then
         local coWait = self.coWait
-		local flag, msg = coroutine.resume(coWait)
+        local flag, msg = coroutine.resume(coWait)
         if not flag then
             msg = debug.traceback(coWait, msg)
             --error(msg)
@@ -334,18 +328,13 @@ function DFReplay:deal()
         end
     end
 
-    --根据风圈修改
-    --room.roomView:setRoundMask(1)
-    --修改庄家标志
-    room:setBankerFlag()
-
     local drawCount = 0
     --保存每一个玩家的牌列表
-    for _,v in ipairs(deals) do
+    for _, v in ipairs(deals) do
         local chairID = v.chairID
         local player = room:getPlayerByChairID(chairID)
 
-        drawCount =  drawCount + #v.cardsHand
+        drawCount = drawCount + #v.cardsHand
         player.cardsOnHand = {}
         --填充手牌列表，所有人的手牌列表
         player:addHandTiles(v.cardsHand)
@@ -354,9 +343,6 @@ function DFReplay:deal()
         --填充花牌列表
         --player:addFlowerTiles(v.tilesFlower)
     end
-
-    --room.tilesInWall = 144 - drawCount
-    --room:updateTilesInWallUI()
 
     --TODO: 播放投色子动画
     --对局开始动画
@@ -378,15 +364,14 @@ function DFReplay:deal()
     end
 
     --显示各个玩家的手牌（对手只显示暗牌）和花牌
-    for _,p in pairs(players) do
+    for _, p in pairs(players) do
         p:sortHands()
-        p:hand2UI(false,false)
-        p:flower2UI()
+        p:hand2UI(false, false)
     end
 
     --播放发牌动画，并使用coroutine等待动画完成
     self.coWait = coroutine.running()
-    room.roomView:dealAnimation(mySelf,player1,player2)
+    room.roomView:dealAnimation(mySelf, player1, player2)
     self.coWait = nil
 
     --等待庄家出牌
@@ -404,7 +389,7 @@ function DFReplay:doAction(srAction, actionlist, i)
 
     local h = self.actionHandler[srAction.action]
     if h == nil then
-        logError("DFReplay, no action handler:"..tostring(srAction.action))
+        logError("DFReplay, no action handler:" .. tostring(srAction.action))
         return
     end
     if srAction.action == pokerfaceRf.enumActionType_DISCARD then
@@ -435,7 +420,7 @@ function DFReplay:skipActionHandler(srAction, room)
     logger.debug(" dfreplay, firstReadyHand")
 
     local actionResultMsg = {targetChairID = srAction.chairID}
-    local h = require  ( dfPath .. "dfMahjong/handlerActionResultSkip")
+    local h = require(dfPath .. "dfMahjong/handlerActionResultSkip")
     h:onMsg(actionResultMsg, room)
 end
 
@@ -466,9 +451,13 @@ function DFReplay:discardedActionHandler(srAction, room, waitDiscardReAction)
     local tiles = clone(srAction.cards)
     local cardHandType = tiles[1]
     table.remove(tiles, 1)
-    local actionResultMsg = {targetChairID = srAction.chairID, actionHand={cards =tiles,cardHandType=cardHandType}, waitDiscardReAction=waitDiscardReAction}
+    local actionResultMsg = {
+        targetChairID = srAction.chairID,
+        actionHand = {cards = tiles, cardHandType = cardHandType},
+        waitDiscardReAction = waitDiscardReAction
+    }
 
-    local h = require ( dfPath .. "dfMahjong/handlerActionResultDiscarded")
+    local h = require(dfPath .. "dfMahjong/handlerActionResultDiscarded")
     h:onMsg(actionResultMsg, room)
 end
 ---------------------------------
@@ -482,7 +471,7 @@ function DFReplay:handOver()
 
     local handScoreBytes = self.msgHandRecord.handScore
 
-    local msgHandOver = {continueAble=false}
+    local msgHandOver = {continueAble = false}
     if handScoreBytes == nil or #handScoreBytes < 1 then
         msgHandOver.endType = pokerfaceProto.enumHandOverType_None
     else
@@ -500,11 +489,11 @@ function DFReplay:handOver()
 
     room.msgHandOver = msgHandOver
     local players = room.players
-    for _,p in pairs(players) do
+    for _, p in pairs(players) do
         p.lastTile = p.cardsOnHand[#p.cardsOnHand] --保存最后一张牌，可能是胡牌。。。用于最后结算显示
     end
 
-    local h = require 'GuanZhang/Script/dfMahjong/handlerMsgHandOver'
+    local h = require "GuanZhang/Script/dfMahjong/handlerMsgHandOver"
     h:onHandOver(msgHandOver, room)
 end
 

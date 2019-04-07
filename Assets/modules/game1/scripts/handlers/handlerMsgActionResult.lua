@@ -33,7 +33,7 @@ function Handler.onMsg(msgData, room)
         return
     end
 
-    handler:onMsg(actionResultMsg, room)
+    handler.onMsg(actionResultMsg, room)
 end
 
 return Handler

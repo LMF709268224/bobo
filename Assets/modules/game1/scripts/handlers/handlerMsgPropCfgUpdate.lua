@@ -11,7 +11,7 @@ function Handler.onMsg(msgData, room)
     logger.debug(" update user game props cfg")
 
     local msgUpdatePropCfg = proto.decodeMessage("pokerface.MsgUpdatePropCfg", msgData)
-    room:updatePropCfg(msgUpdatePropCfg)
+    -- room:updatePropCfg(msgUpdatePropCfg)
 end
 
 return Handler

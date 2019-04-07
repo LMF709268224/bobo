@@ -27,19 +27,12 @@ function Handler.onMsg(msgData, room)
     --logger.debug("msgDeal.markup : " .. msgDeal.markup)
     room.markup = msgDeal.markup
     --logger.debug("handlerMsgRestore ---------------"..tostring(msgDeal.markup))
-    --room:updateTilesInWallUI()
 
     local players = room.players
     --隐藏复制按钮
     --room.roomView.copyRoomNumber:SetActive(false)
     --对局开始动画
     -- room.roomView:gameStartAnimation()
-    --TODO: 播放投色子动画
-    --room.roomView:touZiStartAnimation(msgDeal.dice1 , msgDeal.dice2)
-    --根据风圈修改
-    --room.roomView:setRoundMask(1)
-    --修改庄家标志
-    -- room:setBankerFlag()
 
     local player1 = nil
     local player2 = nil
@@ -67,7 +60,7 @@ function Handler.onMsg(msgData, room)
     end
 
     --播放发牌动画，并使用coroutine等待动画完成
-    --room.roomView:dealAnimation()
+    -- room.roomView:dealAnimation()
 
     --自己手牌排一下序
     local mySelf = room:me()
@@ -76,8 +69,7 @@ function Handler.onMsg(msgData, room)
     --显示各个玩家的手牌（对手只显示暗牌）和花牌
     for _, p in pairs(players) do
         logger.debug(" 显示各个玩家的手牌")
-        p:hand2UI(false, false)
-        --p:flower2UI()
+        p:hand2UI(false, true)
     end
 
     --播放发牌动画，并使用coroutine等待动画完成

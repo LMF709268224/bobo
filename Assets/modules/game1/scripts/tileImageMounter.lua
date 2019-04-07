@@ -127,7 +127,7 @@ function Mounter:mountTileImage(btn, tileID)
 	flag.visible = false
 	local big = btn:GetChild("n3")
 	big.visible = false
-	local position = nil
+	local p = nil
 
 	local pathHuaSeBig = "bigImage_" .. tostring(huaSe)
 	local pathHuaSeBig_2 = "bigImage_"
@@ -146,15 +146,15 @@ function Mounter:mountTileImage(btn, tileID)
 	if dianShu > 10 and dianShu < 14 then
 		--JQK
 		pathHuaSeBig = pathHuaSeBig_2
-		position = btn:GetChild("p2")
+		p = btn:GetChild("p2")
 	elseif dianShu == 15 then
 		--大小鬼 15
 		pathHuaSe = ""
 		pathHuaSeBig = pathHuaSeBig_2
-		position = btn:GetChild("p2")
+		p = btn:GetChild("p2")
 	else
 		--A 14
-		position = btn:GetChild("p1")
+		p = btn:GetChild("p1")
 	end
 
 	num.url = countMap[pathDianShu]
@@ -163,7 +163,7 @@ function Mounter:mountTileImage(btn, tileID)
 		flag.url = flowerMap[pathHuaSe]
 		flag.visible = true
 	end
-	-- big.position = position
+	big.position = p.position
 	-- logger.error("big.position : ", big.position)
 	big.url = bigImageMap[pathHuaSeBig]
 	big.visible = true
