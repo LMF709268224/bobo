@@ -342,7 +342,9 @@ function PlayerView:hideAll()
     for _, v in ipairs(self.head) do
         v.visible = false
     end
-    self.handsNumber.text = ""
+    if self.viewChairID ~= 1 then
+        self.handsNumber.text = ""
+    end
     self:hideHands()
     self:hideDiscarded()
 end
