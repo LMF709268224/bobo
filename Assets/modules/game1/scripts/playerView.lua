@@ -869,19 +869,19 @@ end
 ----------------------------------------------------------
 function PlayerView:showHeadImg()
     if self.head == nil then
-        logError("showHeadIcon, self.head == nil")
+        logger.error("showHeadIcon, self.head == nil")
         return
     end
     self.head.headImg.visible = true
 
     -- if self.head.headImg == nil then
-    --     logError("showHeadIcon, self.head.headImg == nil")
+    --     logger.error("showHeadIcon, self.head.headImg == nil")
     --     return
     -- end
 
     -- local player = self.player
     -- if player == nil then
-    --     logError("showHeadIcon, player == nil")
+    --     logger.error("showHeadIcon, player == nil")
     --     return
     -- end
 
@@ -895,7 +895,7 @@ function PlayerView:showHeadImg()
     --     logger.debug("showHeadImg player.headIconURI = "..player.headIconURI)
     --     tool:SetUrlImage(self.head.headImg.transform, player.headIconURI)
     -- else
-    --     logError("showHeadIcon,  player.headIconURI == nil")
+    --     logger.error("showHeadIcon,  player.headIconURI == nil")
     -- end
 
     -- local boxImg = self.head.headBox.transform:GetComponent("Image")
@@ -954,12 +954,12 @@ end
 ----------------------------------------------------------
 function PlayerView:showOwner()
     if self.head == nil then
-        logError("showOwner, self.head == nil")
+        logger.error("showOwner, self.head == nil")
         return
     end
 
     if self.head.roomOwnerFlag == nil then
-        logError("showOwner, self.head.owner == nil")
+        logger.error("showOwner, self.head.owner == nil")
         return
     end
 
@@ -983,7 +983,7 @@ function PlayerView:playSkipAnimation()
     --     function()
     --         local flag, msg = coroutine.resume(waitCo)
     --         if not flag then
-    --             logError(msg)
+    --             logger.error(msg)
     --             return
     --         end
     --     end

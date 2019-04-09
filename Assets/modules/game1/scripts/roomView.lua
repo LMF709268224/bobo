@@ -390,7 +390,7 @@ function RoomView:dealAnimation(me, player1, player2)
             if not flag then
                 msg = debug.traceback(waitCo, msg)
                 --error(msg)
-                logError(msg)
+                logger.error(msg)
                 return
             end
         end
@@ -441,7 +441,7 @@ end
 --             if not flag then
 --                 msg = debug.traceback(waitCo, msg)
 --                 --error(msg)
---                 logError(msg)
+--                 logger.error(msg)
 --                 return
 --             end
 --         end
@@ -478,7 +478,7 @@ function RoomView:gameStartAnimation()
             if not flag then
                 msg = debug.traceback(waitCo, msg)
                 --error(msg)
-                logError(msg)
+                logger.error(msg)
                 return
             end
         end
@@ -502,7 +502,7 @@ function RoomView:handOverAnimation()
             --     if not flag then
             --         msg = debug.traceback(waitCo, msg)
             --         --error(msg)
-            --         logError(msg)
+            --         logger.error(msg)
             --         return
             --     end
             -- end)
@@ -511,7 +511,7 @@ function RoomView:handOverAnimation()
             if not flag then
                 msg = debug.traceback(waitCo, msg)
                 --error(msg)
-                logError(msg)
+                logger.error(msg)
                 return
             end
         end
@@ -538,14 +538,6 @@ end
 function RoomView:clearWaitingPlayer()
     for _, v in pairs(self.playerViews) do
         v:setHeadEffectBox(false)
-    end
-end
-
-function RoomView:destroyRoomView()
-    --由于是切换回大厅时，是调用ViewManager.Replace("HallView")
-    --ViewManager会destroy掉roomView的unity节点，因此这里不需要做什么
-    if self.unityViewNode ~= nil then
-        self.unityViewNode = nil
     end
 end
 
@@ -687,8 +679,7 @@ function RoomView:showRoomNumber()
     end
     self.roundInfo:SetActive(true)
     local roundstr = "局数:<color=#e9bf89>%s/%s</color>"
-    self.roundInfo.text =
-        string.format(roundstr, tostring(self.room.handStartted) or "0", tostring((self.room.handNum)))
+    self.roundInfo.text = string.format(roundstr, tostring(self.room.handStartted) or "0", tostring((self.room.handNum)))
     if self.room.handStartted and self.room.handStartted > 0 then
         self.returnHallBtn:Hide()
     end
@@ -898,8 +889,7 @@ function RoomView:initVoiceButton()
     self.voiceButton = self.unityViewNode.transform:Find("ExtendFuc/RightBtns/chat_audio_btn")
     local w = self.voiceButton.width
     local h = self.voiceButton.height
-    local scrPos =
-        Util.GetUICamera():GetComponent(typeof(UnityEngine.Camera)):WorldToScreenPoint(self.voiceButton.position)
+    local scrPos = Util.GetUICamera():GetComponent(typeof(UnityEngine.Camera)):WorldToScreenPoint(self.voiceButton.position)
     local rect = UnityEngine.Rect(scrPos.x - w / 2, scrPos.y - h / 2, w, h)
     local init = function()
         if not self.voiceLayer then
@@ -1135,8 +1125,7 @@ function RoomView:ruleTopDisplayEvent()
     local config = self.room:getRoomConfig()
 
     local isdDoubleScoreWhenSelfDrawn = config.doubleScoreWhenSelfDrawn ~= nil and config.doubleScoreWhenSelfDrawn
-    local isDoubleScoreWhenContinuousBanker =
-        config.doubleScoreWhenContinuousBanker ~= nil and config.doubleScoreWhenContinuousBanker
+    local isDoubleScoreWhenContinuousBanker = config.doubleScoreWhenContinuousBanker ~= nil and config.doubleScoreWhenContinuousBanker
 
     local isDoubleScoreWhenZuoYuanZi = config.doubleScoreWhenZuoYuanZi ~= nil and config.doubleScoreWhenZuoYuanZi
     local isAA = config.payType

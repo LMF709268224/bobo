@@ -119,7 +119,6 @@ end
 --@param userID 64位userid
 -----------------------------------------------------------
 function Room:getPlayerByUserId(userID)
-    --logError("getPlayerByUserId : "..userID)
     for _, v in pairs(self.players) do
         if v:isMyUserId(userID) then
             return v
@@ -159,13 +158,6 @@ end
 -- 主要处理最外层的GameMessage消息结构
 -------------------------------------------
 function Room:dispatchWeboscketMessage(gmsg)
-    self:dispatchGameMessage(gmsg)
-end
-
--------------------------------------------
--- 分发GameMessage消息
--------------------------------------------
-function Room:dispatchGameMessage(gmsg)
     local op = gmsg.Ops
     local handler = self.Handlers[op]
     if handler == nil then
@@ -181,25 +173,10 @@ end
 
 ----------------------------------------------
 -- 加载房间的view
--- TODO:暂时用着LZOnlineView这个prefab
 ----------------------------------------------
 function Room:loadRoomView()
-    local starttime = os.clock()
     local roomView = RoomView.new(self)
     self.roomView = roomView
-    self.initRoomViewFinish = true
-end
-
-----------------------------------------------
--- 加载一手牌结束后，显示结果的view
-----------------------------------------------
-function Room:loadHandResultView()
-end
-
-----------------------------------------------
--- 加载游戏结束后，显示结果的view
-----------------------------------------------
-function Room:loadGameOverResultView()
 end
 
 ----------------------------------------------
@@ -207,7 +184,6 @@ end
 -- 并绑定playerView
 ----------------------------------------------
 function Room:createPlayerByInfo(playerInfo)
-    --TODO: 和createMyPlayer一起抽取一个共同的函数用于new一个基本player
     local player = Player.new(playerInfo.userID, playerInfo.chairID, self)
     player.state = playerInfo.state
     player.nick = playerInfo.nick
@@ -243,9 +219,6 @@ function Room:createMyPlayer(playerInfo)
     self.players[player.userID] = player
 
     self.myPlayer = player
-
-    -- 隐藏空椅子
-    --self.roomView:hideEmptyChair(player.chairID)
 end
 
 function Room:onReadyButtonClick()
@@ -334,27 +307,6 @@ function Room:resetForNewHand()
 end
 
 ------------------------------------
---主要是订阅一些聊天通知等
-------------------------------------
-function Room:initialize()
-    notificationCenter:register(self, self.onChatMsg, Notifications.OnInPlayerChatMessage)
-end
-
-------------------------------------
---主要是取消订阅一些聊天通知等
-------------------------------------
-function Room:unInitialize()
-    notificationCenter:unregister(self, Notifications.OnInPlayerChatMessage)
-
-    self.roomView:unInitialize()
-
-    self.emoji = nil
-
-    -- --退出房间清除弹窗
-    -- ViewManager.CloseMessageBox(true)
-end
-
-------------------------------------
 --接收消息，显示到对应的player里面
 ------------------------------------
 function Room:onChatMsg(msgChat)
@@ -404,10 +356,7 @@ function Room:onChatMsg(msgChat)
             g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE):DestroyAllChilds(oCurTextChat)
             if not self.emoji[emojiName] then
                 --local emojiObj = resMgr.LoadAsset("LanZhouMaJiang/prefab/bund1/",emojiName)
-                local emojiObj =
-                    ResourceManager:LoadPrefab(
-                    "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund1/" .. emojiName .. ".prefab"
-                )
+                local emojiObj = ResourceManager:LoadPrefab("GameModule/GuanZhang/_AssetsBundleRes/prefab/bund1/" .. emojiName .. ".prefab")
                 emojiObj:SetParent(self.roomView.unityViewNode.transform, false)
                 emojiObj:Hide()
                 if emojiObj then
@@ -591,63 +540,6 @@ function Room:showPlayerVoiceAnimation(player)
     end
 end
 
-function Room:destroyRoomView()
-    if self.roomView ~= nil then
-        self.roomView:destroyRoomView()
-        self.roomView = nil
-    end
-    --如果解散窗口存在则删除
-    if self.disbandVoteView ~= nil then
-        --注销解散框的销毁， 不然点解散房间，然后断网重新连网，导致view不存在报错
-        -- self.disbandVoteView:destroy()
-        self.disbandVoteView = nil
-    end
-end
-
------------------------------------------------------------
---执行自动打牌操作
------------------------------------------------------------
-function Room:stopDiscardCountdown()
-    -- self.roomView.unityViewNode:StopTimer("timer_djs")
-    -- self.roomView.countdown:SetActive(false)
-    --self.roomView.CountDownText.text = ""
-end
-
------------------------------------------------------------
---开始打牌倒计时
------------------------------------------------------------
-function Room:startDiscardCountdown(player)
-    --重置定时器
-    -- self.roomView.unityViewNode:StopTimer("timer_djs")
-
-    local nGetRoomCountDown = 0
-    --if countDown then nGetRoomCountDown = countDown end
-    local djsCnt = 1
-    -- self.roomView.countdownText.text = tostring(djsCnt)
-    -- self.roomView.countdown:SetActive(true)
-    -- self.roomView.countdown.transform.localPosition = player.playerView.countdownPos.transform.localPosition
-
-    -- self.roomView.unityViewNode:StartTimer(
-    --     "timer_djs",
-    --     1,
-    --     function()
-    --         djsCnt = djsCnt + 1
-    --         if djsCnt > 9 then
-    --             self.roomView.countdownText.text = tostring(djsCnt)
-    --         else
-    --             self.roomView.countdownText.text = "0" .. djsCnt
-    --         end
-    --         if djsCnt > 998 then
-    --             self.roomView.unityViewNode:StopTimer("timer_djs")
-    --         end
-    --         if djsCnt == 3 then
-    --         --来个抖动效果
-    --         end
-    --     end,
-    --     0
-    -- )
-end
-
 ---------------------------------------
 --处理玩家申请解散请求
 ---------------------------------------
@@ -661,15 +553,9 @@ function Room:onDissolveClicked()
         -- end
         self:updateDisbandVoteView(self.msgDisbandNotify)
     else
-        self:sendMsg(pokerfaceProto.OPDisbandRequest)
+        self:sendMsg(proto.pokerface.MessageCode.OPDisbandRequest)
         self.disbandLocked = true
     end
-end
-
---处理玩家返回大厅请求
----------------------------------------
-function Room:onRetunHallClicked()
-    self:sendMsg(pokerfaceProto.OP2Lobby)
 end
 
 ---------------------------------------
@@ -694,29 +580,20 @@ function Room:updateDisbandVoteView(msgDisbandNotify)
     end
 end
 
----------------------------------------
---关闭解散处理界面
----------------------------------------
-function Room:destroyVoteView()
-    if self.disbandVoteView then
-        self.disbandVoteView:destroy()
-        self.disbandVoteView = nil
-    end
-end
-
 function Room:hideDiscardedTips()
     for _, p in pairs(self.players) do
         p:hideDiscardedTips()
     end
 end
+
 ---------------------------------------
 --发送解散回复给服务器
 ---------------------------------------
 function Room:sendDisbandAgree(agree)
-    local msgDisbandAnswer = pkproto2.MsgDisbandAnswer()
+    local msgDisbandAnswer = proto.pokerface.MsgDisbandAnswer()
     msgDisbandAnswer.agree = agree
 
-    self:sendMsg(pokerfaceProto.OPDisbandAnswer, msgDisbandAnswer)
+    self:sendMsg(proto.pokerface.MessageCode.OPDisbandAnswer, msgDisbandAnswer)
 end
 
 function Room:getRoomConfig()
@@ -786,23 +663,6 @@ function Room:getRule()
         end
     end
     return rule
-end
-
-function Room:openMessageBoxFromDaFeng(viewName, order, ...)
-    local viewObj =
-        viewModule:CreatePanel(
-        {
-            luaPath = "View." .. viewName,
-            resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/" .. viewName .. ".prefab",
-            parentNode = self.roomView.unityViewNode.transform
-        },
-        ...
-    )
-    return viewObj
-end
-
-function Room:ShowMessageBoxFromDaFeng(str, order, okFunc, noFunc)
-    return dfCompatibleAPI:openDialog(str, okFunc, noFunc)
 end
 
 function Room:updatePlayerLocation(msgUpdateLocation)
