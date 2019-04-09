@@ -8,6 +8,7 @@ Player.VERSION = "1.0"
 local logger = require "lobby/lcore/logger"
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
+local promptDialog = require "scripts/promptDialog"
 local agariIndex = require("scripts/AgariIndex")
 local pokerfaceRf = proto.prunfast
 local pokerface = proto.pokerface
@@ -527,7 +528,8 @@ function Player:onPlayerDiscardCards(disCards)
     logger.debug(" onPlayerDiscardCards tile .")
     --dump(disCards , "----------------- disCards ---------------------------")
     if disCards == nil or #disCards < 1 then
-        logger.error(" ERR_ROOM_NOTSELECTCARDS .")
+        -- logger.error(" ERR_ROOM_NOTSELECTCARDS .")
+        promptDialog:showDialog("没有选中任何牌")
         -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSELECTCARDS)
         return
     end
@@ -535,7 +537,8 @@ function Player:onPlayerDiscardCards(disCards)
     local r3h = false
     local current = agariIndex.agariConvertMsgCardHand(disCards)
     if current == nil then
-        logger.error(" ERR_ROOM_CARDSNOTDIS .")
+        promptDialog:showDialog("选中的牌不符合规则")
+        -- logger.error(" ERR_ROOM_CARDSNOTDIS .")
         -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_CARDSNOTDIS)
         return
     end
