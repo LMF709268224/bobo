@@ -17,7 +17,7 @@ function Handler.onMsg(msgData, room)
     --隐藏打出的牌
     player.playerView:hideDiscarded()
     --TODO:开始倒计时
-    room:startDiscardCountdown(player)
+    -- room:startDiscardCountdown(player)
 
     --清除提示table
     player.tipCards = nil
