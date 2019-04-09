@@ -70,18 +70,7 @@ function DF:tryEnterRoom(url, myUser, roomInfo)
     self.isEnterRoom = false
     --解开引用room对象
     if self.room ~= nil then
-        self.room:unInitialize()
-        self.room:destroyRoomView()
-        --关闭所有的box
-        self.room:closeMessageBox(true)
         self.room = nil
-    --room不为nil表明roomView已经加载了
-    --因此得销毁房间，回到大厅
-    -- if not self.forceExit then
-    -- local hallModule = require("HallComponent.Script.HallModule")
-    -- g_ModuleMgr:AddModule(hallModule.moduleName, hallModule)
-    -- dispatcher:dispatch("OPEN_HALLVIEW")
-    -- end
     end
 
     if self.forceExit then
@@ -170,30 +159,12 @@ function DF:doEnterRoom(url, myUser, roomInfo)
     logger.debug(" end room main-msg-loop")
 end
 
-function DF:createRoom()
-    --logger.debug(" doEnterRoom, date2: " .. os.date() .. ", timeStamp:" .. os.time() .. ", clock:" .. os.clock())
-    -- g_ModuleMgr:GetModule(ModuleName.SCENE_MODULE):EnterRoomScene("Room")
+function DF:createRoom(roomInfo)
     self.room = room.new(self.myUser)
     self.room.host = self
     self.room.roomInfo = roomInfo
-    --logger.debug(" doEnterRoom, date7: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
-    --dfCompatibleAPI:showWaitTip("进入房间...", nil, nil, 0)
-    --logger.debug("进入子游戏关张，创建房间socket完成，当前系统时间：" .. os.time())
-    self.room.initRoomViewFinish = false
     self.room:loadRoomView()
-
-    --local starttime = os.clock()
-
-    --coroutine.waitDoFinish(self.room)
-
-    --log(string.format("----loadRoomView-coroutine-waitDoFinish---cost time  : %.4f", os.clock() - starttime))
     self.isEnterRoom = false
-    --dfCompatibleAPI:closeWaitTip()
-    --logger.debug(" doEnterRoom, date8: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
-    -- 调用房间的初始化函数，做一些事件订阅
-    -- self.room:initialize()
-    --进入房间错误清除保留的房间信息
-    --g_dataModule:SaveDataByKey("RoomInfo", nil)
 end
 
 function DF:pumpMsg()
@@ -353,42 +324,24 @@ end
 --显示进入房间的错误信息
 ---------------------------------------
 function DF:showEnterRoomError(status)
-    local msg = ""
-    local table = {
-        [pkproto2.RoomNotExist] = "房间不存在",
-        [pkproto2.RoomIsFulled] = "你输入的房间已满，无法加入",
-        [pkproto2.RoomPlaying] = "房间正在游戏中",
-        [pkproto2.InAnotherRoom] = "您已经再另一个房间",
-        [pkproto2.MonkeyRoomUserIDNotMatch] = "测试房间userID不匹配",
-        [pkproto2.MonkeyRoomUserLoginSeqNotMatch] = "测试房间进入顺序不匹配",
-        [pkproto2.AppModuleNeedUpgrade] = "您的APP版本过老，请升级到最新版本",
-        [pkproto2.InRoomBlackList] = "您被房主踢出房间，10分钟内无法再次加入此房间",
-        [pkproto2.TakeoffDiamondFailedNotEnough] = "您的钻石不足，不能进入房间，请充值",
-        [pkproto2.TakeoffDiamondFailedIO] = "抱歉，系统扣除钻石失败，不能进入房间",
-        [pkproto2.RoomInApplicateDisband] = "房间正在解散"
+    local pokerface = proto.pokerface.EnterRoomStatus
+    local msgMap = {
+        [pokerface.RoomNotExist] = "房间不存在",
+        [pokerface.RoomIsFulled] = "你输入的房间已满，无法加入",
+        [pokerface.RoomPlaying] = "房间正在游戏中",
+        [pokerface.InAnotherRoom] = "您已经再另一个房间",
+        [pokerface.MonkeyRoomUserIDNotMatch] = "测试房间userID不匹配",
+        [pokerface.MonkeyRoomUserLoginSeqNotMatch] = "测试房间进入顺序不匹配",
+        [pokerface.AppModuleNeedUpgrade] = "您的APP版本过老，请升级到最新版本",
+        [pokerface.InRoomBlackList] = "您被房主踢出房间，10分钟内无法再次加入此房间",
+        [pokerface.TakeoffDiamondFailedNotEnough] = "您的钻石不足，不能进入房间，请充值",
+        [pokerface.TakeoffDiamondFailedIO] = "抱歉，系统扣除钻石失败，不能进入房间",
+        [pokerface.RoomInApplicateDisband] = "房间正在解散"
     }
-    msg = table[status]
-    g_dataModule:SaveDataByKey("RoomInfo", nil)
-    dispatcher:dispatch("ENTER_ROOM_FAIL")
-    if status == pkproto2.TakeoffDiamondFailedNotEnough then
-        self:gotoShoppingView()
-        return
-    end
+    local msg = msgMap[status]
 
     if msg ~= "" then
-        -- local waitCo = coroutine.running()
-        -- dfCompatibleAPI:openDialog(
-        --     msg,
-        --     function()
-        --         local flag, msg = coroutine.resume(waitCo)
-        --         if not flag then
-        --             logError(msg)
-        --             return
-        --         end
-        --     end
-        -- )
-
-        coroutine.yield()
+        logger.error("进入房间失败，服务器返回错误：", msg)
     end
 end
 

@@ -51,7 +51,6 @@ function DFReplay:gogogo(isShare)
     self.room.handStartted = self.msgHandRecord.handNum
     self.room.roomNumber = self.msgHandRecord.roomNumber
 
-    self.room.initRoomViewFinish = false
     self.room:loadRoomView()
     coroutine.waitDoFinish(self.room)
 

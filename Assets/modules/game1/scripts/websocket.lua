@@ -108,7 +108,7 @@ end
 
 function WS:onBestHTTPWebsocketPong(ms)
     --self.mq:pushWebsocketPongEvent(ms)
-    logger.debug("ws recv pong ms:", ms)
+    --logger.debug("ws recv pong ms:", ms)
     self.ms = ms
 end
 
