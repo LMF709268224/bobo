@@ -17,7 +17,7 @@ function Handler.onMsg(msg, room)
     --隐藏打出的牌
     player.playerView:hideDiscarded()
     --TODO:开启倒计时
-    room:startDiscardCountdown(player)
+    --room:startDiscardCountdown(player)
 
     if allowedActionMsg.timeoutInSeconds > 255 then
         player.haveR3H = true --保存有过红桃3的标志 (打出之后为false)

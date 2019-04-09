@@ -12,7 +12,7 @@ function Handler.onMsg(actionResultMsg, room)
     --隐藏打出的牌
     player.playerView:hideDiscarded()
     --TODO:开启倒计时
-    room:startDiscardCountdown(player)
+    --room:startDiscardCountdown(player)
 
     player.playerView:playSkipAnimation()
 end

@@ -529,7 +529,7 @@ function Player:onPlayerDiscardCards(disCards)
     --dump(disCards , "----------------- disCards ---------------------------")
     if disCards == nil or #disCards < 1 then
         -- logger.error(" ERR_ROOM_NOTSELECTCARDS .")
-        promptDialog:showDialog("没有选中任何牌")
+        promptDialog.showDialog("没有选中任何牌")
         -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSELECTCARDS)
         return
     end
@@ -537,7 +537,7 @@ function Player:onPlayerDiscardCards(disCards)
     local r3h = false
     local current = agariIndex.agariConvertMsgCardHand(disCards)
     if current == nil then
-        promptDialog:showDialog("选中的牌不符合规则")
+        promptDialog.showDialog("选中的牌不符合规则")
         -- logger.error(" ERR_ROOM_CARDSNOTDIS .")
         -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_CARDSNOTDIS)
         return
