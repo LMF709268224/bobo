@@ -14,11 +14,19 @@ function Prompt.showPrompt(msg)
         local view = fairy.UIPackage.CreateObject("lobby_dialog", "prompt")
         Prompt.viewNode = view
     end
-
+    -- local position = Prompt.viewNode.position
     local label = Prompt.viewNode:GetChild("text")
     label.text = msg
 
     fairy.GRoot.inst:ShowPopup(Prompt.viewNode)
+    Prompt.viewNode:SetXY(1136 / 2, 640 / 2)
+
+    local gtweener = fairy.Gtween.DelayedCall(2.0)
+    gtweener:OnComplete(
+        function()
+            fairy.GRoot.inst:HidePopup()
+        end
+    )
 end
 
 return Prompt
