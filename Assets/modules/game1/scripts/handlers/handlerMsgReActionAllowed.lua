@@ -24,13 +24,13 @@ function Handler.onMsg(msgData, room)
     player.tipCardsIndex = 0
 
     if player:isMe() then
+        --警告玩家，小心包牌
+        -- local playerViews = room.roomView.playerViews
+        -- if playerViews[2].player.cardCountOnHand < 4 then
+        -- room.roomView.baopai:SetActive(true)
+        -- end
         logger.debug(" my allowed re-action")
         Handler.processMyAllowedReActions(allowedReActionMsg, player)
-        --警告玩家，小心包牌
-        local playerViews = room.roomView.playerViews
-        if playerViews[2].player.cardCountOnHand < 4 then
-        -- room.roomView.baopai:SetActive(true)
-        end
     else
         logger.debug(" oh no, now support opponents re-action")
     end
