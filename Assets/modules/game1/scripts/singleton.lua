@@ -10,6 +10,7 @@ local msgQueue = require "scripts/msgQueue"
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local room = require "scripts/room"
+local fairy = require "lobby/lcore/fairygui"
 
 local singleTon = nil
 
@@ -82,6 +83,11 @@ function DF:tryEnterRoom(url, myUser, roomInfo)
     -- self.locked = false
 
     logger.debug(" -------destory room complete-------")
+
+    -- 清理界面
+    fairy.GRoot.inst:CleanupChildren()
+    -- 退回大厅
+    _ENV.thisMod:BackToLobby()
 end
 
 function DF:doEnterRoom(url, myUser, roomInfo)
