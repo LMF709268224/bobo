@@ -14,9 +14,7 @@ local wsClean = function(w)
     w.OnClosed = nil
     w.OnError = nil
     w.OnMessage = nil
-    w.OnPong = nil
     w.OnBinary = nil
-    w.PingDataProvider = nil
 end
 
 function WS.new(url, msgQueue)
@@ -36,6 +34,8 @@ function WS:open()
 
     bestHTTPws.OnOpen = function(ws)
         logger.debug("ws opened")
+        local timespan = CS.System.TimeSpan.FromDays(1) -- 一天都不关闭，BestHTTP默认是10秒
+        ws.CloseAfterNoMesssage = timespan
         ws.PingFrequency = 15000 -- 15秒ping一次服务器
         ws.StartPingThread = true
 
@@ -62,18 +62,6 @@ function WS:open()
 
     bestHTTPws.OnBinary = function(_, binary)
         this:onBestHTTPWebsocketBinary(binary)
-    end
-
-    bestHTTPws.OnPong = function(_, pongData)
-        logger.debug("websocket recv pong data length:", #pongData)
-        local ms = CS.NetHelper.TimeElapsedMilliseconds(pongData)
-        this:onBestHTTPWebsocketPong(ms)
-    end
-
-    bestHTTPws.PingDataProvider = function()
-        local pingData = CS.NetHelper.CurrentUTCTime2Bytes()
-        logger.debug("ping data length:", #pingData)
-        return pingData
     end
 
     -- 开始连接服务器
@@ -104,12 +92,6 @@ end
 function WS:onBestHTTPWebsocketBinary(binary)
     logger.debug("ws binary msg, length:", #binary)
     self.mq:pushWebsocketBinaryEvent(binary)
-end
-
-function WS:onBestHTTPWebsocketPong(ms)
-    --self.mq:pushWebsocketPongEvent(ms)
-    --logger.debug("ws recv pong ms:", ms)
-    self.ms = ms
 end
 
 function WS:sendBinary(msg)

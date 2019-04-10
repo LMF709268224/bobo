@@ -81,23 +81,6 @@ public static class NetHelper
         return ws;
     }
 
-    public static int TimeElapsedMilliseconds(byte[] timeBuffer)
-    {
-        var dt1 = DateTime.FromBinary(BitConverter.ToInt64(timeBuffer, 0));
-        DateTime now = DateTime.UtcNow;
-        var ts = now.Subtract(dt1);
-
-        return (int) ts.TotalMilliseconds;
-    }
-
-    public static byte[] CurrentUTCTime2Bytes()
-    {
-        DateTime now = DateTime.UtcNow;
-        var b = now.ToBinary();
-
-        return BitConverter.GetBytes(b);
-    }
-
     public static bool WriteBytesToFile(string path, byte[] bytes)
     {
         bool result = false;
