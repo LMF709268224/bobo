@@ -9,78 +9,6 @@ local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local tileMounter = require("scripts/tileImageMounter")
 
---这段代码比较屌----------------------------------------
--- function ViewBase:DoPress(clickSound, func, obj, eventData)
---     if clickSound == "selectcard" then
---         Sound.Play(clickSound)
---     end
---     func(obj, eventData)
--- end
-
--- function ViewBase:AddDrag(node, func, clickSound)
---     clickSound = clickSound
---     if isString(func) then
---         func = self:Func(func)
---     end
---     if isString(node) then
---         node = self:FindChild(node)
---     end
---     if node == self.transform then
---         node.onDrag = function(obj, eventData)
---             if eventData.rawPointerPress == eventData.pointerPress then
---                 ViewBase:DoPress(clickSound, func, obj, eventData)
---             end
---         end
---     elseif node then
---         node.onDrag = function(obj, eventData)
---             ViewBase:DoPress(clickSound, func, obj, eventData)
---         end
---     end
--- end
---add drag 2017.3.2 zy
--- function ViewBase:AddDragEnd(node, func, clickSound)
---     clickSound = clickSound
---     if isString(func) then
---         func = self:Func(func)
---     end
---     if isString(node) then
---         node = self:FindChild(node)
---     end
---     if node == self.transform then
---         node.onEndDrag = function(obj, eventData)
---             if eventData.rawPointerPress == eventData.pointerPress then
---                 ViewBase:DoPress(clickSound, func, obj, eventData)
---             end
---         end
---     elseif node then
---         node.onEndDrag = function(obj, eventData)
---             ViewBase:DoPress(clickSound, func, obj, eventData)
---         end
---     end
--- end
-
--- function ViewBase:AddBeginDrag(node, func, clickSound)
---     clickSound = clickSound
---     if isString(func) then
---         func = self:Func(func)
---     end
---     if isString(node) then
---         node = self:FindChild(node)
---     end
---     if node == self.transform then
---         node.onBeginDrag = function(obj, eventData)
---             if eventData.rawPointerPress == eventData.pointerPress then
---                 ViewBase:DoPress(clickSound, func, obj, eventData)
---             end
---         end
---     elseif node then
---         node.onBeginDrag = function(obj, eventData)
---             ViewBase:DoPress(clickSound, func, obj, eventData)
---         end
---     end
--- end
---最屌代码完成---------------------------------------------------------------
-
 -----------------------------------------------
 -- 新建一个player view
 -- @param viewUnityNode 根据viewUnityNode获得playerView需要控制
@@ -157,7 +85,6 @@ function PlayerView:initHands(view)
                 local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
                 card.position = go.position
                 myHandTilesNode:AddChild(card)
-                -- YY = card.y
                 local btn = card:GetChild("n0")
                 btn.onClick:Add(
                     function(context)
@@ -260,7 +187,7 @@ function PlayerView:initHeadView(view)
     local headImg = view:GetChild("head")
     headImg.visible = false
 
-    head.score = view:GetChild("score")
+    head.scoreBg = view:GetChild("score")
     head.readyIndicator = view:GetChild("ready")
     head.scoreText = view:GetChild("scoreText")
     head.headImg = headImg
@@ -276,9 +203,6 @@ function PlayerView:initPlayerStatus()
         -- head.stateOffline:SetActive(false)
         -- self.infoGroupEmpty:SetActive(false)
         self.head.readyIndicator.visible = false
-        if self.checkReadyHandBtn ~= nil then
-            self.checkReadyHandBtn:SetActive(false)
-        end
     end
 
     --准备
@@ -338,7 +262,6 @@ end
 --从根节点上隐藏所有
 ------------------------------------
 function PlayerView:hideAll()
-    -- self.head.readyIndicator.visible = false
     for _, v in ipairs(self.head) do
         v.visible = false
     end
@@ -506,7 +429,7 @@ function PlayerView:showHandsForMe(wholeMove, isShow)
     --恢复所有牌的位置，由于点击手牌时会把手牌向上移动
     self:restoreHandPositionAndClickCount()
 
-    --蛋疼需求，手牌要居中显示，所以要计算开始位置跟结束位置
+    --手牌要居中显示，所以要计算开始位置跟结束位置
     local cardsHandMax = 16 --满牌数
     local var = math.floor((cardsHandMax - cardCountOnHand) / 2) -- 两边需要空的位置
     local begin = 1 + var
@@ -637,8 +560,6 @@ end
 ------------------------------------------
 function PlayerView:clearAllowedActionsView(discardAble)
     self:hideOperationButtons()
-
-    --self.checkReadyHandBtn:SetActive(false)
 end
 
 --处理玩家拖动牌
@@ -720,122 +641,6 @@ function PlayerView:onHandTileBtnClick(index)
 end
 
 -------------------------------------------------
---拖动出牌事件
--------------------------------------------------
-function PlayerView:onDrag(dragGo, index)
-    local rect
-    local startPos
-    local enable
-    local clickCtrl
-    local siblingIndex
-
-    --可否拖动
-    local function dragable()
-        --logger.debug(" drag able")
-        local player = self.player
-        if player == nil then
-            return false
-        end
-
-        local handsClickCtrls = self.handsClickCtrls
-        clickCtrl = handsClickCtrls[index]
-        return clickCtrl.isDiscardable and not player.waitSkip
-    end
-
-    --检测拖动范围时候合法
-    local function pointIsInRect(pos)
-        if rect == nil then
-            return false
-        end
-
-        if pos.x > rect[1] and pos.x < rect[2] and pos.y > rect[3] and pos.y < rect[4] then
-            return true
-        else
-            return false
-        end
-    end
-
-    --附加拖动效果
-    local function attachEffect(obj)
-        self.dragEffect:SetParent(obj)
-        self.dragEffect.localPosition = Vector3(0, 0, 0)
-        self.dragEffect:SetActive(true)
-    end
-
-    --去掉拖动效果
-    local function detachEffect()
-        self.dragEffect:SetActive(false)
-    end
-
-    dragGo.onBeginDrag = function(obj, eventData)
-        --logger.debug(" darg onbegindrag")
-        if not enable then
-            return
-        end
-
-        self:restoreHandPositionAndClickCount(index)
-        attachEffect(obj)
-    end
-
-    dragGo.onDown = function(obj, eventData)
-        enable = dragable()
-        --关闭拖动特效
-        detachEffect()
-
-        if not enable then
-            startPos = dragGo.localPosition
-            return
-        end
-        siblingIndex = dragGo:GetSiblingIndex()
-
-        --logger.debug(" drag ondown")
-        local x1 = dragGo.localPosition.x - dragGo.sizeDelta.x * 0.5
-        local x2 = dragGo.localPosition.x + dragGo.sizeDelta.x * 0.5
-        local y1 = dragGo.localPosition.y - dragGo.sizeDelta.y * 0.5
-        local y2 = dragGo.localPosition.y + dragGo.sizeDelta.y * 0.5
-        rect = {x1, x2, y1, y2}
-
-        startPos = dragGo.localPosition
-        dragGo:SetAsLastSibling()
-    end
-
-    dragGo.onMove = function(obj, eventData, pos)
-        if not enable then
-            dragGo.localPosition = startPos
-            return
-        end
-        -- obj.position = pos
-    end
-
-    dragGo.onEndDrag = function(obj, eventData)
-        if not enable then
-            return
-        end
-
-        --拖牌结束立即不显示
-        dragGo:SetActive(false)
-
-        dragGo:SetSiblingIndex(siblingIndex)
-        --logger.debug(" darg onenddrag")
-        detachEffect()
-        if pointIsInRect(dragGo.localPosition) then
-            dragGo:SetActive(true)
-            dragGo.localPosition = startPos
-        else
-            --重置打出的牌位置（TODO：需要测试当网络不好的情况下onPlayerDiscardTile发送数据失败，界面刷新情况）
-            dragGo:SetActive(false)
-            dragGo.localPosition = startPos
-
-            --判断可否出牌
-            if not self.player.waitSkip then
-                self.player:onPlayerDiscardTile(clickCtrl.tileID)
-                self:clearAllowedActionsView()
-            end
-        end
-    end
-end
-
--------------------------------------------------
 --还原所有手牌到它初始化时候的位置，并把clickCount重置为0
 -------------------------------------------------
 function PlayerView:restoreHandPositionAndClickCount(index)
@@ -873,7 +678,8 @@ function PlayerView:showHeadImg()
         return
     end
     self.head.headImg.visible = true
-
+    self.head.scoreText.visible = true
+    self.head.scoreBg.visible = true
     -- if self.head.headImg == nil then
     --     logger.error("showHeadIcon, self.head.headImg == nil")
     --     return

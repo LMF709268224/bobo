@@ -24,14 +24,13 @@ function Handler.onMsg(msg, room)
     end
 
     if player:isMe() then
+        --警告玩家，小心包牌
+        -- local playerViews = room.roomView.playerViews
+        -- if playerViews[2].player.cardCountOnHand < 4 then
+        -- room.roomView.baopai:SetActive(true)
+        -- end
         logger.debug(" my allowed action")
         Handler.processMyAllowedActions(allowedActionMsg, player)
-
-        --警告玩家，小心包牌
-        local playerViews = room.roomView.playerViews
-        if playerViews[2].player.cardCountOnHand < 4 then
-        -- room.roomView.baopai:SetActive(true)
-        end
     else
         --TODO: 如果是别人，则更新它的头像等待圈，以及提醒定时器
         logger.debug(" opponents allowed action")
