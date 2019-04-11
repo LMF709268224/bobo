@@ -97,6 +97,12 @@ function DF:doEnterRoom(url, myUser, roomInfo)
     -- 会置retry为true
     self.retry = false
     self.isTokenExpire = false
+
+    -- self.room可能不为nil，因为如果断线重入，room以及roomview就可能已经加载
+    if self.room == nil then
+        self:createRoom(myUser, roomInfo)
+    end
+
     -- 显示登录房间等待进度框
     -- 显示于界面的等待信息
     local showProgressTips = "正在进入房间"
@@ -153,11 +159,6 @@ function DF:doEnterRoom(url, myUser, roomInfo)
         logger.debug(" server return enter room ~= 0")
         self:showEnterRoomError(enterRoomResult.status)
         return
-    end
-
-    -- self.room可能不为nil，因为如果断线重入，room以及roomview就可能已经加载
-    if self.room == nil then
-        self:createRoom(myUser, roomInfo)
     end
 
     self:pumpMsg()
