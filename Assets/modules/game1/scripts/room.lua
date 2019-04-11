@@ -13,6 +13,7 @@ local rapidjson = require("rapidjson")
 local RoomView = require("scripts/roomView")
 local Player = require("scripts/player")
 local HandResultView = require("scripts/handResultView")
+local GameOverResultView = require("scripts/gameOverResultView")
 
 -----------------------------------------------------------
 --初始化顶层消息响应handlers，有些消息例如ActionResultNotify
@@ -687,7 +688,11 @@ function Room:updatePlayerLocation(msgUpdateLocation)
 end
 
 function Room:loadHandResultView()
-    HandResultView.new(self, nil)
+    HandResultView.new(self)
+end
+
+function Room:loadGameOverResultView()
+    GameOverResultView.new(self)
 end
 
 return Room
