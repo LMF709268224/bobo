@@ -12,6 +12,7 @@ local proto = require "scripts/proto/proto"
 local rapidjson = require("rapidjson")
 local RoomView = require("scripts/roomView")
 local Player = require("scripts/player")
+local HandResultView = require("scripts/handResultView")
 
 -----------------------------------------------------------
 --初始化顶层消息响应handlers，有些消息例如ActionResultNotify
@@ -683,6 +684,10 @@ function Room:updatePlayerLocation(msgUpdateLocation)
     if roomView.distanceView == nil then
         return
     end
+end
+
+function Room:loadHandResultView()
+    HandResultView.new(self, nil)
 end
 
 return Room

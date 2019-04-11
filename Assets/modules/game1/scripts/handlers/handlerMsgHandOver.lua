@@ -11,8 +11,8 @@ local logger = require "lobby/lcore/logger"
 function Handler.onMsg(msgData, room)
     logger.debug("llwant hand over msg")
     --TODO:关闭倒计时
-    room:stopDiscardCountdown()
-    room:hideDiscardedTips()
+    -- room:stopDiscardCountdown()
+    -- room:hideDiscardedTips()
 
     local msgHandOver = proto.decodeMessage("pokerface.MsgHandOver", msgData)
 
@@ -33,7 +33,7 @@ function Handler.onMsg(msgData, room)
     end
 
     --TODO:重置操作面板，重置等待玩家等等
-    room.roomView:clearWaitingPlayer()
+    -- room.roomView:clearWaitingPlayer()
     --隐藏操作按钮
     local myPlayer = room:me()
     myPlayer.playerView:hideOperationButtons()
@@ -55,7 +55,7 @@ function Handler.onHandOver(msgHandOver, room)
     local win = false
 
     -- 隐藏游戏内聊天面板
-    room.roomView:hideChatPanel()
+    -- room.roomView:hideChatPanel()
 
     if msgHandOver.endType ~= proto.prunfast.HandOverType.enumHandOverType_None then
         local myself = room:me()
@@ -68,18 +68,18 @@ function Handler.onHandOver(msgHandOver, room)
         end
     end
 
-    local soundName
-    if msgHandOver.endType == proto.prunfast.HandOverType.enumHandOverType_None then
-        soundName = "effect_huangzhuang"
-    elseif win then
-        soundName = "effect_win"
-    else
-        soundName = "effect_lost"
-    end
+    -- local soundName
+    -- if msgHandOver.endType == proto.prunfast.HandOverType.enumHandOverType_None then
+    --     soundName = "effect_huangzhuang"
+    -- elseif win then
+    --     soundName = "effect_win"
+    -- else
+    --     soundName = "effect_lost"
+    -- end
 
-    room:resumeBackMusicVolume(0)
+    -- room:resumeBackMusicVolume(0)
 
-    logger.debug("onHandOver sound name:", soundName)
+    -- logger.debug("onHandOver sound name:", soundName)
     --播放声音
     --dfCompatibleAPI:soundPlay("effect/" .. soundName)
 
@@ -93,6 +93,6 @@ function Handler.onHandOver(msgHandOver, room)
     -- room.roomView:handOverAnimation()
 
     --显示手牌输赢结果
-    -- room:loadHandResultView()
+    room:loadHandResultView()
 end
 return Handler
