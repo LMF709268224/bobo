@@ -265,15 +265,13 @@ end
 ---------------------------------------
 function DF:showEnterRoomError(status)
     local msg = proto.getEnterRoomErrorCode(status)
-    logger.warn("进入房间失败，服务器返回错误：", msg)
+    logger.warn("enter room failed, server return error：", msg)
     dialog.coShowDialog(
         msg,
         function()
-            self.retry = true
-        end,
-        function()
             self.retry = false
-        end
+        end,
+        nil
     )
 end
 
