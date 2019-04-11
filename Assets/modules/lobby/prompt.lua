@@ -5,28 +5,25 @@ local Prompt = {}
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
 
+_ENV.thisMod:AddUIPackage("lobby/fui_dialog/lobby_dialog")
+
 function Prompt.showPrompt(msg)
-    if Prompt.viewNode then
-        logger.debug("showPrompt -----------")
-    else
-        logger.debug("showPrompt viewNode is nil.")
-        _ENV.thisMod:AddUIPackage("lobby/fui_dialog/lobby_dialog")
-        local view = fairy.UIPackage.CreateObject("lobby_dialog", "prompt")
-        Prompt.viewNode = view
-    end
-    -- local position = Prompt.viewNode.position
-    local label = Prompt.viewNode:GetChild("text")
+	local view = fairy.UIPackage.CreateObject("lobby_dialog", "prompt")
+    local label = view:GetChild("text")
     label.text = msg
 
-    fairy.GRoot.inst:ShowPopup(Prompt.viewNode)
-    Prompt.viewNode:SetXY(1136 / 2, 640 / 2)
+    local screenWidth = CS.UnityEngine.Screen.width
+    local screenHeight = CS.UnityEngine.Screen.height
+	local x = screenWidth / 2
+	local y = screenHeight / 2
+    view:SetXY(x, y)
 
-    local gtweener = fairy.Gtween.DelayedCall(2.0)
-    gtweener:OnComplete(
-        function()
-            fairy.GRoot.inst:HidePopup()
-        end
-    )
+	local trans = view:GetTransition('t1');
+	trans:Play(1, 0, function()
+		view:Dispose()
+	end)
+
+	fairy.GRoot.inst:AddChild(view)
 end
 
 return Prompt
