@@ -151,7 +151,7 @@ local function main()
 
 	--日志等级设置
 	logger.level = lenv.loglevel
-	CS.BestHTTP.HTTPManager.Logger.Level = lenv.loglevel
+	CS.BestHTTP.HTTPManager.Logger.Level = lenv.bestHTTP.loglevel
 
 	logger.warn("lobby/Boot begin, lobby version:", lobbyVer, ",csharp version:", csharpVer)
 
