@@ -11,6 +11,7 @@ local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local room = require "scripts/room"
 local fairy = require "lobby/lcore/fairygui"
+local dialog = require "lobby/dialog"
 
 local singleTon = nil
 
@@ -91,7 +92,6 @@ function DF:tryEnterRoom(url, myUser, roomInfo)
 end
 
 function DF:doEnterRoom(url, myUser, roomInfo)
-    --logger.debug(" doEnterRoom, date1: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
     -- 每次进入本函数时都重置retry为false
     -- 如果发生断线重连且用户选择了重连那么后面的代码
     -- 会置retry为true
@@ -117,13 +117,13 @@ function DF:doEnterRoom(url, myUser, roomInfo)
 
     if rt ~= 0 then
         -- 连接超时提示和处理（用户选择是否重连，重连的话下一帧重新执行tryEnterRoom
-        self.retry = false
-        if self.connectErrorCount > 2 then
+        self.retry = true
+        if self.connectErrorCount > 0 then
             self:showRetryMsgBox()
         end
         return
     else
-        logger.debug(" waitWebsocketMessage wait room reply")
+        logger.debug("waitWebsocketMessage wait room reply")
         enterRoomReplyMsg = self:waitWebsocketMessage(showProgressTips)
     end
 
@@ -131,7 +131,7 @@ function DF:doEnterRoom(url, myUser, roomInfo)
         -- 连接超时提示和处理（用户选择是否重连，重连的话下一帧重新执行tryEnterRoom）
         logger.debug(" waitWebsocketMessage return nil")
         self.retry = true
-        if self.connectErrorCount > 2 then
+        if self.connectErrorCount > 0 then
             self:showRetryMsgBox()
         end
         return
@@ -210,26 +210,9 @@ end
 --如果超时，则认为连接断开
 ------------------------------------------
 function DF:waitWebsocketMessage(showProgressTips)
-    logger.debug("DF:waitWebsocketMessage--------------------" .. showProgressTips)
-
-    -- 显示滚动圈并显示文字showProgressTips
-    -- if showProgressTips ~= nil and showProgressTips ~= "" then
-    -- dfCompatibleAPI:showWaitTip(
-    --     showProgressTips,
-    --     30,
-    --     function()
-    --         df:triggerTimeout()
-    --     end,
-    --     0
-    -- )
-    -- end
+    logger.debug("DF:waitWebsocketMessage, " .. showProgressTips)
 
     local msg = self.mq:getMsg()
-
-    -- 隐藏滚动圈
-    -- if showProgressTips ~= nil and showProgressTips ~= "" then
-    --dfCompatibleAPI:closeWaitTip()
-    -- end
 
     if msg.mt == msgQueue.MsgType.wsData then
         return msg.data
@@ -246,21 +229,10 @@ end
 --以避免等待过于长久
 ------------------------------------------
 function DF:waitConnect(showProgressTips)
-    logger.debug("DF:waitConnect--------------------" .. showProgressTips)
-
-    -- 显示滚动圈并显示文字showProgressTips
-    --logError("waitConnect showProgressTips : "..showProgressTips)
-    -- if showProgressTips ~= nil and showProgressTips ~= "" then
-    --     dfCompatibleAPI:showWaitTip(showProgressTips, 30, nil, 0)
-    -- end
+    logger.debug("DF:waitConnect, " .. showProgressTips)
 
     local msg = self.mq:getMsg()
-    --logError("waitConnect msg : "..msg)
 
-    -- 隐藏滚动圈
-    -- if showProgressTips ~= nil and showProgressTips ~= "" then
-    --     dfCompatibleAPI:closeWaitTip()
-    -- end
     logger.debug("DF:waitConnect, mq:getMsg return:", msg)
 
     if msg.mt == msgQueue.MsgType.wsOpen then
@@ -275,102 +247,33 @@ end
 --则return true，否则返回false
 ---------------------------------------
 function DF:showRetryMsgBox(msg)
-    local waitCo = coroutine.running()
-    local df = self
     msg = msg or "连接游戏服务器失败，是否重连？"
-    if self.room ~= nil then
-        -- 如果在房间里面则弹房间的的对话框
-        self.room:ShowMessageBoxFromDaFeng(
-            --ViewManager.ShowMessageBox(
-            msg,
-            2,
-            function()
-                self.connectErrorCount = self.connectErrorCount + 1
-                df.retry = true
-                local flag, msg = coroutine.resume(waitCo)
-                if not flag then
-                    logError(msg)
-                    return
-                end
-            end,
-            function()
-                df.retry = false
-                local flag, msg = coroutine.resume(waitCo)
-                if not flag then
-                    logError(msg)
-                    return
-                end
-            end
-        )
-    else
-        -- 如果在房间外面则弹公共对话框
-        -- dfCompatibleAPI:showMessageBox(
-        --     msg,
-        --     function()
-        --         df.retry = true
-        --         local flag, msg = coroutine.resume(waitCo)
-        --         if not flag then
-        --             logError(msg)
-        --             return
-        --         end
-        --     end,
-        --     function()
-        --         df.retry = false
-        --         local flag, msg = coroutine.resume(waitCo)
-        --         if not flag then
-        --             logError(msg)
-        --             return
-        --         end
-        --     end
-        -- )
-    end
-    coroutine.yield()
+    dialog.coShowDialog(
+        msg,
+        function()
+            self.retry = true
+        end,
+        function()
+            self.retry = false
+        end
+    )
 end
+
 ---------------------------------------
 --显示进入房间的错误信息
 ---------------------------------------
 function DF:showEnterRoomError(status)
-    local pokerface = proto.pokerface.EnterRoomStatus
-    local msgMap = {
-        [pokerface.RoomNotExist] = "房间不存在",
-        [pokerface.RoomIsFulled] = "你输入的房间已满，无法加入",
-        [pokerface.RoomPlaying] = "房间正在游戏中",
-        [pokerface.InAnotherRoom] = "您已经再另一个房间",
-        [pokerface.MonkeyRoomUserIDNotMatch] = "测试房间userID不匹配",
-        [pokerface.MonkeyRoomUserLoginSeqNotMatch] = "测试房间进入顺序不匹配",
-        [pokerface.AppModuleNeedUpgrade] = "您的APP版本过老，请升级到最新版本",
-        [pokerface.InRoomBlackList] = "您被房主踢出房间，10分钟内无法再次加入此房间",
-        [pokerface.TakeoffDiamondFailedNotEnough] = "您的钻石不足，不能进入房间，请充值",
-        [pokerface.TakeoffDiamondFailedIO] = "抱歉，系统扣除钻石失败，不能进入房间",
-        [pokerface.RoomInApplicateDisband] = "房间正在解散"
-    }
-    local msg = msgMap[status]
-
-    if msg ~= "" then
-        logger.error("进入房间失败，服务器返回错误：", msg)
-    end
-end
-
-function DF:gotoShoppingView()
-    local pContent = "　您的钻石不足，无法加入房间，是否前往商城购买？\n　绑定代理推广码，购买额外赠送钻石哦！"
-
-    local config = {
-        content = pContent,
-        ignoreCloseBtn = true,
-        btnData = {
-            {
-                callback = function()
-                    dispatcher:dispatch("OPEN_SHOPVIEW")
-                end
-            },
-            {
-                callback = function(...)
-                end
-            }
-        }
-    }
-
-    g_commonModule:ShowDialog(config)
+    local msg = proto.getEnterRoomErrorCode(status)
+    logger.warn("进入房间失败，服务器返回错误：", msg)
+    dialog.coShowDialog(
+        msg,
+        function()
+            self.retry = true
+        end,
+        function()
+            self.retry = false
+        end
+    )
 end
 
 ------------------------------------------

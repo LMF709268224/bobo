@@ -67,6 +67,29 @@ function PROTO.selectMeldFromMeldsForAction(meldsForAction, ty)
     return r
 end
 
+local enterRoomErrorMap = nil
+function PROTO.getEnterRoomErrorCode(status)
+    local pokerface = PROTO.pokerface.EnterRoomStatus
+    if enterRoomErrorMap == nil then
+        enterRoomErrorMap = {
+            [pokerface.RoomNotExist] = "房间不存在",
+            [pokerface.RoomIsFulled] = "你输入的房间已满，无法加入",
+            [pokerface.RoomPlaying] = "房间正在游戏中",
+            [pokerface.InAnotherRoom] = "您已经再另一个房间",
+            [pokerface.MonkeyRoomUserIDNotMatch] = "测试房间userID不匹配",
+            [pokerface.MonkeyRoomUserLoginSeqNotMatch] = "测试房间进入顺序不匹配",
+            [pokerface.AppModuleNeedUpgrade] = "您的APP版本过老，请升级到最新版本",
+            [pokerface.InRoomBlackList] = "您被房主踢出房间，10分钟内无法再次加入此房间",
+            [pokerface.TakeoffDiamondFailedNotEnough] = "您的钻石不足，不能进入房间，请充值",
+            [pokerface.TakeoffDiamondFailedIO] = "抱歉，系统扣除钻石失败，不能进入房间",
+            [pokerface.RoomInApplicateDisband] = "房间正在解散"
+        }
+    end
+
+    local msg = enterRoomErrorMap[status] or "未知错误"
+    return msg
+end
+
 --加载pb文件
 loadProtofile()
 
