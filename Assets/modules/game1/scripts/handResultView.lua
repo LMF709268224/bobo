@@ -10,7 +10,7 @@ local fairy = require "lobby/lcore/fairygui"
 local tileMounter = require("scripts/tileImageMounter")
 
 --local Key = "handResultView"
-function HandResultView.new(room, waitCo)
+function HandResultView.new(room)
     -- local handResultView = {}
     -- setmetatable(handResultView, mt)
     if HandResultView.unityViewNode then
@@ -25,8 +25,16 @@ function HandResultView.new(room, waitCo)
 
         --初始化View
         HandResultView:initAllView()
+
+        -- 由于win隐藏，而不是销毁，隐藏后和GRoot脱离了关系，因此需要
+        -- 特殊销毁
+        _ENV.thisMod:RegisterCleanup(
+            function()
+                win:Dispose()
+            end
+        )
     end
-    HandResultView.waitCo = waitCo
+
     HandResultView.room = room
     --结算数据
     HandResultView.msgHandOver = room.msgHandOver
@@ -341,12 +349,9 @@ end
 -------------------------------------------
 function HandResultView:onAgainButtonClick()
     self.win:Hide()
-    -- if self.msgHandOver.continueAble then
-    --     self.room.host:sendPlayerReadyMsg()
-    -- else
-    -- end
-    -- self.room.handResultView = nil
-    -- self.room:completedWait()
+    if self.msgHandOver.continueAble then
+        self.room.host:sendPlayerReadyMsg()
+    end
 end
 
 -------------------------------------------
