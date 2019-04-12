@@ -9,7 +9,6 @@ local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
 local tileMounter = require("scripts/tileImageMounter")
 
---local Key = "handResultView"
 function HandResultView.new(room)
     -- 提高消息队列的优先级为1
     room.host.mq:blockNormal()
@@ -174,6 +173,7 @@ function HandResultView:updatePlayerInfoData(player, c)
         name = userID
     end
     c.textName.text = name
+    c.textId.text = "ID:" .. userID
     --房主
     if player.userID == self.room.ownerID then
         c.imageRoom.visible = true
@@ -322,6 +322,7 @@ function HandResultView:initAllView()
         contentGroupData.cards = self:initHands(group)
         --名字
         contentGroupData.textName = group:GetChild("name")
+        contentGroupData.textId = group:GetChild("id")
         --分数为正的时候显示
         contentGroupData.textCountT = group:GetChild("text_win")
         contentGroupData.textCountT.text = "0"
@@ -357,6 +358,9 @@ function HandResultView:onAgainButtonClick()
     self.win:Hide()
     if self.msgHandOver.continueAble then
         self.room.host:sendPlayerReadyMsg()
+    else
+        --显示大结算
+        self.room:loadGameOverResultView()
     end
 end
 
