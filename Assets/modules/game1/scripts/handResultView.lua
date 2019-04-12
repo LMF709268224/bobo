@@ -11,6 +11,9 @@ local tileMounter = require("scripts/tileImageMounter")
 
 --local Key = "handResultView"
 function HandResultView.new(room)
+    -- 提高消息队列的优先级为1
+    room.host.mq:blockNormal()
+
     -- local handResultView = {}
     -- setmetatable(handResultView, mt)
     if HandResultView.unityViewNode then
@@ -348,6 +351,9 @@ end
 --是“大结算”
 -------------------------------------------
 function HandResultView:onAgainButtonClick()
+    -- 降低消息队列的优先级为0
+    self.room.host.mq:unblockNormal()
+
     self.win:Hide()
     if self.msgHandOver.continueAble then
         self.room.host:sendPlayerReadyMsg()
