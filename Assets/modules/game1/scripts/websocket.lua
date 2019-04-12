@@ -69,7 +69,11 @@ function WS:open()
 end
 
 function WS:close()
-    self.ws:Close()
+    if self.ws ~= nil then
+        self.ws:Close()
+        wsClean(self.ws)
+        self.ws = nil
+    end
 end
 
 function WS:onBestHTTPWebsocketOpen()

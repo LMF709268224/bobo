@@ -51,6 +51,7 @@ function Handler.onMsg(msgData, room)
     --     return false
     -- end
     -- coroutine.yield()
+    room.host.mq:pushQuit()
 end
 
 return Handler

@@ -76,11 +76,11 @@ function DF:tryEnterRoom(url, myUser, roomInfo)
     end
 
     if self.forceExit then
-        self:logout()
+        --self:logout()
     elseif self.isTokenExpire then
-        self:logout("登录超时，请重新登录")
+    --self:logout("登录超时，请重新登录")
     end
-    self.forceExit = false
+    --self.forceExit = false
     -- self.locked = false
 
     logger.debug(" -------destory room complete-------")
@@ -302,40 +302,6 @@ function DF:sendLeaveRoomMsg()
     gmsg.Ops = proto.pokerface.MessageCode.OPPlayerLeaveRoom
     local buf = proto.encodeMessage("pokerface.GameMessage", gmsg)
     self.ws:sendBinary(buf)
-end
-
-------------------------------------------
---向websocket投递退出房间事件
---这样weboscket就会即刻唤醒我们的消息coroutine
-------------------------------------------
-function DF:triggerLeaveRoom()
-    if self.ws ~= nil then
-        self.ws:raiseEvent(websocket.exitRoomEvent)
-    end
-end
-
-function DF:registerWakeupWSMsg(filterFunc)
-    if self.ws ~= nil then
-        logger.debug(" registerWakeupWSMsg")
-        self.ws:registerMsgFilter(filterFunc)
-    end
-end
-
-function DF:unRegisterWakeupWSMsg()
-    if self.ws ~= nil then
-        logger.debug(" unRegisterWakeupWSMsg")
-        self.ws:unRegisterMsgFilter()
-    end
-end
-
-------------------------------------------
---向websocket投递超时事件
---这样weboscket就会即刻唤醒我们的消息coroutine
-------------------------------------------
-function DF:triggerTimeout()
-    if self.ws ~= nil then
-        self.ws:raiseEvent(websocket.timeoutEvent)
-    end
 end
 
 ------------------------------------------

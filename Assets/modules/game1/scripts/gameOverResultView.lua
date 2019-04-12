@@ -313,6 +313,9 @@ end
 function GameOverResultView:onCloseButtonClick()
     -- 降低消息队列的优先级为0
     self.room.host.mq:unblockNormal()
+    self.win:Hide()
+
+    self.room.host.mq:pushQuit()
 end
 
 return GameOverResultView
