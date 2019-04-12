@@ -3,8 +3,13 @@
 ]]
 local GameOverResultView = {}
 GameOverResultView.VERSION = "1.0"
+local fairy = require "lobby/lcore/fairygui"
+local logger = require "lobby/lcore/logger"
 
 function GameOverResultView.new(room)
+    -- 提高消息队列的优先级为1
+    room.host.mq:blockNormal()
+
     if GameOverResultView.unityViewNode then
         logger.debug("GameOverResultView ---------------------")
     else
@@ -43,9 +48,9 @@ function GameOverResultView.new(room)
         end
     )
 
-    if configModule:IsIosAudit() then
-        shanreBtn.visible = false
-    end
+    -- if configModule:IsIosAudit() then
+    --     shanreBtn.visible = false
+    -- end
 
     --更新数据
     GameOverResultView:updateAllData()
@@ -306,6 +311,9 @@ end
 --玩家点击返回按钮
 -------------------------------------------
 function GameOverResultView:onCloseButtonClick()
+    -- 降低消息队列的优先级为0
+    self.room.host.mq:unblockNormal()
+
     fairy.GRoot.inst:CleanupChildren()
     _ENV.thisMod:BackToLobby()
 end
