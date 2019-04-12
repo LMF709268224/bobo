@@ -19,6 +19,7 @@ MQ.MsgType = MsgType
 function MQ.new()
     local mq = {messages = {}}
     mq.priority = 0
+    mq.blockedMsgs = {}
 
     return setmetatable(mq, mt)
 end
@@ -68,21 +69,22 @@ function MQ:pushQuit()
 end
 
 function MQ:pushMsg(msg)
-    table.insert(self.messages, msg)
-
-    local wakeup = true
+    local isBlocked = false
     if (self.priority > 0) then
-        wakeup = false
+        isBlocked = true
         if msg.mt == MsgType.wsData then
             local p = priorityMap[msg.data.Ops]
             if p ~= nil and p > self.priority then
-                wakeup = true
+                isBlocked = false
             end
         end
     end
 
-    if wakeup then
+    if not isBlocked then
+        table.insert(self.messages, msg)
         self:wakeupCoroutine()
+    else
+        table.insert(self.blockedMsgs, msg)
     end
 end
 
@@ -93,7 +95,11 @@ end
 function MQ:unblockNormal()
     self.priority = 0
 
-    if #(self.messages) > 0 then
+    if #self.blockedMsgs > 0 then
+        for _, msg in ipairs(self.blockedMsgs) do
+            table.insert(self.messages, msg)
+        end
+        self.blockedMsgs = {}
         self:wakeupCoroutine()
     end
 end

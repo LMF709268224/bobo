@@ -313,9 +313,6 @@ end
 function GameOverResultView:onCloseButtonClick()
     -- 降低消息队列的优先级为0
     self.room.host.mq:unblockNormal()
-
-    fairy.GRoot.inst:CleanupChildren()
-    _ENV.thisMod:BackToLobby()
 end
 
 return GameOverResultView
