@@ -23,9 +23,9 @@ function RoomView.new(room)
     setmetatable(roomView, mt)
 
     _ENV.thisMod:AddUIPackage("lobby/fui_lobby_poker/lobby_poker")
-    _ENV.thisMod:AddUIPackage("game1/bg/runfast_bg_2d")
-    _ENV.thisMod:AddUIPackage("game1/fgui/runfast")
-    _ENV.thisMod:AddUIPackage("game1/setting/runfast_setting")
+    _ENV.thisMod:AddUIPackage("bg/runfast_bg_2d")
+    _ENV.thisMod:AddUIPackage("fgui/runfast")
+    _ENV.thisMod:AddUIPackage("setting/runfast_setting")
     local view = fairy.UIPackage.CreateObject("runfast", "desk")
     fairy.GRoot.inst:AddChild(view)
 

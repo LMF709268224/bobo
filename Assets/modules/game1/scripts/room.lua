@@ -577,7 +577,7 @@ function Room:updateDisbandVoteView(msgDisbandNotify)
             }
         )
         local disbandVoteView = require("scripts/handlers/disbandVoteView")
-        self.disbandVoteView = disbandVoteView:new(self, viewObj)
+        self.disbandVoteView = disbandVoteView.new(self, viewObj)
         self.disbandVoteView:updateView(msgDisbandNotify)
     end
 end
