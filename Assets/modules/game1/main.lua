@@ -1,5 +1,6 @@
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
+local CreateRoomView = require "scripts/createRoomView"
 
 logger.warn("i am game1")
 
@@ -108,6 +109,11 @@ local function fillCards(myView)
 	end
 end
 
+local function testCreateUI()
+	_ENV.thisMod:AddUIPackage("game1/fgui/runfast")
+	CreateRoomView.new()
+end
+
 local function testGame1UI()
 	_ENV.thisMod:RegisterCleanup(shutdownCleanup)
 
@@ -145,20 +151,21 @@ local function main()
 	_ENV.MODULE_NAME = version.MODULE_NAME
 
 	-- testGame1UI()
-	local singletonMod = require("scripts/singleton")
-	local singleton = singletonMod.getSingleton()
-	-- 启动cortouine
-	local co =
-		coroutine.create(
-		function()
-			singleton:tryEnterRoom()
-		end
-	)
+	testCreateUI()
+	-- local singletonMod = require("scripts/singleton")
+	-- local singleton = singletonMod.getSingleton()
+	-- -- 启动cortouine
+	-- local co =
+	-- 	coroutine.create(
+	-- 	function()
+	-- 		singleton:tryEnterRoom()
+	-- 	end
+	-- )
 
-	local r, err = coroutine.resume(co)
-	if not r then
-		logger.error(debug.traceback(co, err))
-	end
+	-- local r, err = coroutine.resume(co)
+	-- if not r then
+	-- 	logger.error(debug.traceback(co, err))
+	-- end
 end
 
 main()
