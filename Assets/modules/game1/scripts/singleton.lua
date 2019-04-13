@@ -92,6 +92,7 @@ function DF:tryEnterRoom(url, myUser, roomInfo)
 end
 
 function DF:doEnterRoom(url, myUser, roomInfo)
+    logger.info("doEnterRoom enter---")
     -- 每次进入本函数时都重置retry为false
     -- 如果发生断线重连且用户选择了重连那么后面的代码
     -- 会置retry为true
@@ -163,7 +164,7 @@ function DF:doEnterRoom(url, myUser, roomInfo)
 
     self:pumpMsg()
 
-    logger.debug(" end room main-msg-loop")
+    logger.info("doEnterRoom leave---")
 end
 
 function DF:createRoom(roomInfo)

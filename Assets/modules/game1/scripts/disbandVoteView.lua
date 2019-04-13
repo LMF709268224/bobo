@@ -1,9 +1,9 @@
 local DisbandVoteView = {}
-DisbandVoteView.VERSION = '1.0'
+DisbandVoteView.VERSION = "1.0"
 
-local mt = {__index=DisbandVoteView}
+local mt = {__index = DisbandVoteView}
 
-function DisbandVoteView:new(room, viewObj)
+function DisbandVoteView.new(room, viewObj)
     local disbandVoteView = {}
     setmetatable(disbandVoteView, mt)
 
@@ -15,53 +15,62 @@ function DisbandVoteView:new(room, viewObj)
     disbandVoteView.unityViewNode = viewObj
     local unityViewNode = disbandVoteView.unityViewNode
 
-	disbandVoteView.refuseBtn = unityViewNode.transform:Find("btns/RefuseBtn")
-	disbandVoteView.agreeBtn = unityViewNode.transform:Find("btns/AgreeBtn")
+    disbandVoteView.refuseBtn = unityViewNode.transform:Find("btns/RefuseBtn")
+    disbandVoteView.agreeBtn = unityViewNode.transform:Find("btns/AgreeBtn")
 
     disbandVoteView.refuseBtnText = unityViewNode:SubGet("btns/RefuseBtn/Text", "Text")
     disbandVoteView.agreeBtnText = unityViewNode:SubGet("btns/AgreeBtn/Text", "Text")
 
-    unityViewNode:AddClick(disbandVoteView.refuseBtn, function() disbandVoteView:onRefuseBtnClicked() end)
-	unityViewNode:AddClick(disbandVoteView.agreeBtn, function() disbandVoteView:onAgreeBtnClicked() end)
+    unityViewNode:AddClick(
+        disbandVoteView.refuseBtn,
+        function()
+            disbandVoteView:onRefuseBtnClicked()
+        end
+    )
+    unityViewNode:AddClick(
+        disbandVoteView.agreeBtn,
+        function()
+            disbandVoteView:onAgreeBtnClicked()
+        end
+    )
 
     disbandVoteView.title = unityViewNode:SubGet("titleText", "Text")
 
-	disbandVoteView.myCountDown = unityViewNode.transform:Find("mineTxt")
-    disbandVoteView.myCountDownTxt =  unityViewNode:SubGet("mineTxt/lefttime", "Text")
-	disbandVoteView.otherCountDown = unityViewNode.transform:Find("otherTxt")
+    disbandVoteView.myCountDown = unityViewNode.transform:Find("mineTxt")
+    disbandVoteView.myCountDownTxt = unityViewNode:SubGet("mineTxt/lefttime", "Text")
+    disbandVoteView.otherCountDown = unityViewNode.transform:Find("otherTxt")
     disbandVoteView.otherCountDownTxt = unityViewNode:SubGet("otherTxt/lefttime", "Text")
 
     disbandVoteView.myCountDown:SetActive(false)
     disbandVoteView.otherCountDown:SetActive(false)
 
-	disbandVoteView.playerList = {}
+    disbandVoteView.playerList = {}
     --以下代码从DissolveVoteView2.lua中拷贝过来
-	for	i = 1, 4 do
-		local _playeri = unityViewNode.transform:Find("MsgPlayer/Grid/player"..i)
-		local _NameText = unityViewNode:SubGet("MsgPlayer/Grid/player"..i.."/Name", "Text")
-		local _SpState_Refuse = unityViewNode.transform:Find("MsgPlayer/Grid/player"..i.."/ImageRefuse")
-		local _SpState_Agree = unityViewNode.transform:Find("MsgPlayer/Grid/player"..i.."/ImageAgree")
-		local _SpState_Thinking = unityViewNode.transform:Find("MsgPlayer/Grid/player"..i.."/ImageThink")
+    for i = 1, 4 do
+        local _playeri = unityViewNode.transform:Find("MsgPlayer/Grid/player" .. i)
+        local _NameText = unityViewNode:SubGet("MsgPlayer/Grid/player" .. i .. "/Name", "Text")
+        local _SpState_Refuse = unityViewNode.transform:Find("MsgPlayer/Grid/player" .. i .. "/ImageRefuse")
+        local _SpState_Agree = unityViewNode.transform:Find("MsgPlayer/Grid/player" .. i .. "/ImageAgree")
+        local _SpState_Thinking = unityViewNode.transform:Find("MsgPlayer/Grid/player" .. i .. "/ImageThink")
 
-		_SpState_Refuse:SetActive(false)
-		_SpState_Agree:SetActive(false)
+        _SpState_Refuse:SetActive(false)
+        _SpState_Agree:SetActive(false)
         _SpState_Thinking:SetActive(false)
         _playeri:SetActive(false)
 
-		disbandVoteView.playerList[i] =
-		{
-			root = _playeri,
-			nameText = _NameText,
-			spState_Refuse = _SpState_Refuse,
-			spState_Agree = _SpState_Agree,
-			spState_Thinking = _SpState_Thinking
-		}
+        disbandVoteView.playerList[i] = {
+            root = _playeri,
+            nameText = _NameText,
+            spState_Refuse = _SpState_Refuse,
+            spState_Agree = _SpState_Agree,
+            spState_Thinking = _SpState_Thinking
+        }
     end
 
     local playerNumber = 0
     local roomConfig = room:getRoomConfig()
     if roomConfig ~= nil then
-        playerNumber =  roomConfig.playerNumAcquired
+        playerNumber = roomConfig.playerNumAcquired
     end
 
     -- 如果只有两个用户，则2与3调换位置
@@ -74,10 +83,9 @@ function DisbandVoteView:new(room, viewObj)
         local originPos2 = disbandVoteView.playerList[3].root.transform.localPosition
         -- local width = disbandVoteView.playerList[3].root.transform.width
 
-        disbandVoteView.playerList[1].root.transform.localPosition = Vector3(originPos1.x, originPos1.y-60, 0)
-        disbandVoteView.playerList[3].root.transform.localPosition = Vector3(originPos2.x, originPos2.y-60, 0)
+        disbandVoteView.playerList[1].root.transform.localPosition = Vector3(originPos1.x, originPos1.y - 60, 0)
+        disbandVoteView.playerList[3].root.transform.localPosition = Vector3(originPos2.x, originPos2.y - 60, 0)
     end
-
 
     return disbandVoteView
 end
@@ -88,14 +96,13 @@ function DisbandVoteView:getPlayerNick(chairID)
     if nick == "" then
         nick = player.userID
     end
-    nick = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE):FormotGameNickName(nick,6)
+    nick = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE):FormotGameNickName(nick, 6)
     return nick
 end
 
 function DisbandVoteView:updateTexts(msgDisbandNotify)
-
     local nick = self:getPlayerNick(msgDisbandNotify.applicant)
-    local title = "玩家 <color=#527983>"..nick.."</color> 申请解散房间"
+    local title = "玩家 <color=#527983>" .. nick .. "</color> 申请解散房间"
     -- if msgDisbandNotify.disbandState == pkproto2.Waiting then
     --     title = title..":正等待回复"
     -- elseif msgDisbandNotify.disbandState == pkproto2.DoneWithWaitReplyTimeout then
@@ -111,7 +118,7 @@ function DisbandVoteView:updateTexts(msgDisbandNotify)
     self.title.text = title
 
     --先全部隐藏
-    for  i = 1, 4 do
+    for i = 1, 4 do
         local p = self.playerList[i]
         p.root:SetActive(false)
         p.spState_Agree:SetActive(false)
@@ -121,66 +128,66 @@ function DisbandVoteView:updateTexts(msgDisbandNotify)
 
     -- 显示谁解散房间
     if self.room:getPlayerByChairID(msgDisbandNotify.applicant) ~= nil then
-        local p = self.playerList[msgDisbandNotify.applicant+1]
+        local p = self.playerList[msgDisbandNotify.applicant + 1]
         nick = self:getPlayerNick(msgDisbandNotify.applicant)
-        p.nameText.text = "玩家("..nick..")"
-        logger.debug(" player "..nick.."refused")
+        p.nameText.text = "玩家(" .. nick .. ")"
+        logger.debug(" player " .. nick .. "refused")
         p.spState_Agree:SetActive(true)
         p.root:SetActive(true)
-        -- index = index + 1
+    -- index = index + 1
     end
 
     -- local index = 1
     --等待中的玩家列表
     if msgDisbandNotify.waits ~= nil then
-        logger.debug(" msgDisbandNotify.waits length:"..#msgDisbandNotify.waits)
+        logger.debug(" msgDisbandNotify.waits length:" .. #msgDisbandNotify.waits)
         for _, chairID in ipairs(msgDisbandNotify.waits) do
             if self.room:getPlayerByChairID(chairID) ~= nil then
-                logger.debug(" msgDisbandNotify.waits chairID:"..chairID)
-                local p = self.playerList[chairID+1]
+                logger.debug(" msgDisbandNotify.waits chairID:" .. chairID)
+                local p = self.playerList[chairID + 1]
                 nick = self:getPlayerNick(chairID)
-                p.nameText.text = "玩家("..nick..")"
-                logger.debug(" player "..nick.."thinking")
+                p.nameText.text = "玩家(" .. nick .. ")"
+                logger.debug(" player " .. nick .. "thinking")
                 p.spState_Thinking:SetActive(true)
                 p.root:SetActive(true)
-                -- index = index + 1
+            -- index = index + 1
             end
         end
     end
 
     --同意的玩家列表
     if msgDisbandNotify.agrees ~= nil then
-        logger.debug(" msgDisbandNotify.agrees length:"..#msgDisbandNotify.agrees)
+        logger.debug(" msgDisbandNotify.agrees length:" .. #msgDisbandNotify.agrees)
         for _, chairID in ipairs(msgDisbandNotify.agrees) do
             if self.room:getPlayerByChairID(chairID) ~= nil then
-                local p = self.playerList[chairID+1]
+                local p = self.playerList[chairID + 1]
                 nick = self:getPlayerNick(chairID)
-                p.nameText.text = "玩家("..nick..")"
-                logger.debug(" player "..nick.."agree")
+                p.nameText.text = "玩家(" .. nick .. ")"
+                logger.debug(" player " .. nick .. "agree")
                 p.spState_Agree:SetActive(true)
                 p.root:SetActive(true)
-                -- index = index + 1
+            -- index = index + 1
             end
         end
     end
 
     --拒绝的玩家列表
     if msgDisbandNotify.rejects ~= nil then
-        logger.debug(" msgDisbandNotify.rejectslength:"..#msgDisbandNotify.rejects)
+        logger.debug(" msgDisbandNotify.rejectslength:" .. #msgDisbandNotify.rejects)
         local isShowTip = true
         for i, chairID in ipairs(msgDisbandNotify.rejects) do
             if self.room:getPlayerByChairID(chairID) ~= nil then
-                local p = self.playerList[chairID+1]
+                local p = self.playerList[chairID + 1]
                 nick = self:getPlayerNick(chairID)
-                p.nameText.text = "玩家("..nick..")"
-                logger.debug(" player "..nick.."refused")
+                p.nameText.text = "玩家(" .. nick .. ")"
+                logger.debug(" player " .. nick .. "refused")
                 p.spState_Refuse:SetActive(true)
                 p.root:SetActive(true)
                 -- index = index + 1
 
-                if  isShowTip then
-                    local str = "玩家 "..nick.." 不同意解散，解散不成功!"
-                    g_commonModule:ShowTip(str,2)
+                if isShowTip then
+                    local str = "玩家 " .. nick .. " 不同意解散，解散不成功!"
+                    g_commonModule:ShowTip(str, 2)
                     isShowTip = false
                 end
             end
@@ -193,10 +200,10 @@ function DisbandVoteView:updateView(msgDisbandNotify)
     --先更新所有文字信息，例如谁同意，谁拒绝之类
     self:updateTexts(msgDisbandNotify)
 
-    if msgDisbandNotify.disbandState == pkproto2.DoneWithOtherReject or
-        msgDisbandNotify.disbandState == pkproto2.DoneWithWaitReplyTimeout or
-        msgDisbandNotify.disbandState == pkproto2.DoneWithRoomServerNotResponse then
-
+    if
+        msgDisbandNotify.disbandState == pkproto2.DoneWithOtherReject or msgDisbandNotify.disbandState == pkproto2.DoneWithWaitReplyTimeout or
+            msgDisbandNotify.disbandState == pkproto2.DoneWithRoomServerNotResponse
+     then
         self.myCountDown:SetActive(false)
         self.otherCountDown:SetActive(false)
 
@@ -206,13 +213,12 @@ function DisbandVoteView:updateView(msgDisbandNotify)
 
         local disbandVoteView = self
         disbandVoteView:onAgreeBtnClicked()
-
     elseif msgDisbandNotify.disbandState == mjproto2.Done then
         self.isDisbandDone = true
         self:onAgreeBtnClicked()
     elseif msgDisbandNotify.disbandState == pkproto2.Waiting then
         --如果等待列表中有自己，则显示选择按钮，以便玩家做出选择
-        if  msgDisbandNotify.countdown then
+        if msgDisbandNotify.countdown then
             self.unityViewNode:StopTimer("disbandCountDown")
             self.leftTime = msgDisbandNotify.countdown --倒计时时间，秒为单位
 
@@ -229,23 +235,24 @@ function DisbandVoteView:updateView(msgDisbandNotify)
 
             if not found then
                 if #msgDisbandNotify.waits > 0 then
-
                     disbandVoteView.myCountDownTxt.text = disbandVoteView.leftTime .. "秒"
                     if disbandVoteView.leftTime <= 0 then
                         disbandVoteView.unityViewNode:StopTimer("disbandCountDown")
                     end
                     self.myCountDown:SetActive(true)
                     --为他人倒计时
-                    self.unityViewNode:StartTimer("disbandCountDown", 1, function()
-
-                        disbandVoteView.leftTime = disbandVoteView.leftTime -1
-                        disbandVoteView.myCountDownTxt.text = disbandVoteView.leftTime .. "秒"
-                        if disbandVoteView.leftTime <= 0 then
-                            disbandVoteView.unityViewNode:StopTimer("disbandCountDown")
-                        end
-
-                    end, disbandVoteView.leftTime)
-
+                    self.unityViewNode:StartTimer(
+                        "disbandCountDown",
+                        1,
+                        function()
+                            disbandVoteView.leftTime = disbandVoteView.leftTime - 1
+                            disbandVoteView.myCountDownTxt.text = disbandVoteView.leftTime .. "秒"
+                            if disbandVoteView.leftTime <= 0 then
+                                disbandVoteView.unityViewNode:StopTimer("disbandCountDown")
+                            end
+                        end,
+                        disbandVoteView.leftTime
+                    )
                 end
                 self.otherCountDown:SetActive(false)
                 self:showButtons(false)
@@ -258,19 +265,24 @@ function DisbandVoteView:updateView(msgDisbandNotify)
             logger.debug("1222222222222222222222222222")
             disbandVoteView.otherCountDownTxt.text = disbandVoteView.leftTime .. "秒"
             --为自己倒计时
-            self.unityViewNode:StartTimer("disbandCountDown", 1, function()
-                disbandVoteView.leftTime = disbandVoteView.leftTime -1
-                disbandVoteView.otherCountDownTxt.text = disbandVoteView.leftTime .. "秒"
-                if disbandVoteView.leftTime <= 0 then
-                    disbandVoteView.unityViewNode:StopTimer("disbandCountDown")
-                    disbandVoteView:onAgreeBtnClicked()
-                end
-                end, disbandVoteView.leftTime)
+            self.unityViewNode:StartTimer(
+                "disbandCountDown",
+                1,
+                function()
+                    disbandVoteView.leftTime = disbandVoteView.leftTime - 1
+                    disbandVoteView.otherCountDownTxt.text = disbandVoteView.leftTime .. "秒"
+                    if disbandVoteView.leftTime <= 0 then
+                        disbandVoteView.unityViewNode:StopTimer("disbandCountDown")
+                        disbandVoteView:onAgreeBtnClicked()
+                    end
+                end,
+                disbandVoteView.leftTime
+            )
         end
     end
 end
 
-function DisbandVoteView:showButtons( show )
+function DisbandVoteView:showButtons(show)
     if show then
         self.refuseBtn:SetActive(show)
         self.agreeBtn:SetActive(show)
@@ -281,7 +293,7 @@ function DisbandVoteView:showButtons( show )
 end
 
 function DisbandVoteView:onRefuseBtnClicked()
-	--Network.SendAgreeDismissTableReq(2)
+    --Network.SendAgreeDismissTableReq(2)
     --logger.debug(" you choose to refuse disband")
     --拒绝请求,因此隐藏所有按钮
     self:showButtons(false)
@@ -295,7 +307,7 @@ function DisbandVoteView:onRefuseBtnClicked()
 end
 
 function DisbandVoteView:onAgreeBtnClicked()
-	--Network.SendAgreeDismissTableReq(1)
+    --Network.SendAgreeDismissTableReq(1)
     --logger.debug(" agree btn clicked")
     self.unityViewNode:StopTimer("disbandCountDown")
 

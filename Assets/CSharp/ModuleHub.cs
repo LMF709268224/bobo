@@ -375,6 +375,7 @@ public class ModuleHub
     /// <param name="path"></param>
     public void AddUIPackage(string path)
     {
+        path = AppendModPrefix(path, modName);
         var p = FairyGUI.UIPackage.AddPackage(path);
         if (p != null && !myUIPackage.Contains(p.name))
         {
