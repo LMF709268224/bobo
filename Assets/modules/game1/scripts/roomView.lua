@@ -1,12 +1,15 @@
 --[[
     房间的view，大致上这样划分：凡是属于用户相关的，就放到PlayerView，其余的放到RoomView中
 ]]
+--luacheck:no self
 local RoomView = {}
 
 local fairy = require "lobby/lcore/fairygui"
 local PlayerView = require("scripts/playerView")
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
+local dialog = require "lobby/dialog"
+
 local mt = {__index = RoomView}
 -- local dfPath = "GuanZhang/Script/"
 -- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
@@ -63,6 +66,11 @@ function RoomView.new(room)
 
     roomView.roundInfo = view:GetChild("top_room_info")
 
+    settingBtn.onClick:Add(
+        function()
+            roomView:onDissolveClick()
+        end
+    )
     -- 聊天
     -- roomView:iniChatButtons()
     -- -- 语音
@@ -780,21 +788,16 @@ end
 --解散房间按钮点击事件
 --------------------------------------
 function RoomView:onDissolveClick()
-    msg = "确实要申请解散房间吗？"
+    local msg = "确实要申请解散房间吗？"
     local roomView = self
 
-    dfCompatibleAPI:showMessageBox(
+    dialog.showDialog(
         msg,
         function()
-            local room = roomView.room
-            --先向服务器发送解散房间请求
-            room:onDissolveClicked()
-            if inGameChatPanel then
-                inGameChatPanel:CleanupChatMsg()
-            end
+            roomView.room:onDissolveClicked()
         end,
         function()
-            --nothing to do
+            -- do nothing
         end
     )
 end

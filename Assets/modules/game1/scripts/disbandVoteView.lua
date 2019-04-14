@@ -15,20 +15,16 @@ function DisbandVoteView.new(room, viewObj)
     disbandVoteView.unityViewNode = viewObj
     local unityViewNode = disbandVoteView.unityViewNode
 
-    disbandVoteView.refuseBtn = unityViewNode.transform:Find("btns/RefuseBtn")
-    disbandVoteView.agreeBtn = unityViewNode.transform:Find("btns/AgreeBtn")
+    disbandVoteView.refuseBtn = unityViewNode:GetChild("unagreeBtn")
+    disbandVoteView.agreeBtn = unityViewNode:GetChild("agreeBtn")
 
-    disbandVoteView.refuseBtnText = unityViewNode:SubGet("btns/RefuseBtn/Text", "Text")
-    disbandVoteView.agreeBtnText = unityViewNode:SubGet("btns/AgreeBtn/Text", "Text")
-
-    unityViewNode:AddClick(
-        disbandVoteView.refuseBtn,
+    disbandVoteView.refuseBtn.onClick:Add(
         function()
             disbandVoteView:onRefuseBtnClicked()
         end
     )
-    unityViewNode:AddClick(
-        disbandVoteView.agreeBtn,
+
+    disbandVoteView.agreeBtn.onClick:Add(
         function()
             disbandVoteView:onAgreeBtnClicked()
         end
@@ -36,17 +32,17 @@ function DisbandVoteView.new(room, viewObj)
 
     disbandVoteView.title = unityViewNode:SubGet("titleText", "Text")
 
-    disbandVoteView.myCountDown = unityViewNode.transform:Find("mineTxt")
-    disbandVoteView.myCountDownTxt = unityViewNode:SubGet("mineTxt/lefttime", "Text")
-    disbandVoteView.otherCountDown = unityViewNode.transform:Find("otherTxt")
-    disbandVoteView.otherCountDownTxt = unityViewNode:SubGet("otherTxt/lefttime", "Text")
+    disbandVoteView.myCountDown = unityViewNode.transform:Find("n9")
+    disbandVoteView.myCountDownTxt = unityViewNode:GetChild("time")
+    -- disbandVoteView.otherCountDown = unityViewNode.transform:Find("otherTxt")
+    -- disbandVoteView.otherCountDownTxt = unityViewNode:SubGet("otherTxt/lefttime", "Text")
 
     disbandVoteView.myCountDown:SetActive(false)
-    disbandVoteView.otherCountDown:SetActive(false)
+    --disbandVoteView.otherCountDown:SetActive(false)
 
     disbandVoteView.playerList = {}
     --以下代码从DissolveVoteView2.lua中拷贝过来
-    for i = 1, 4 do
+    for i = 1, 3 do
         local _playeri = unityViewNode.transform:Find("MsgPlayer/Grid/player" .. i)
         local _NameText = unityViewNode:SubGet("MsgPlayer/Grid/player" .. i .. "/Name", "Text")
         local _SpState_Refuse = unityViewNode.transform:Find("MsgPlayer/Grid/player" .. i .. "/ImageRefuse")
