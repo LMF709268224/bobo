@@ -190,6 +190,8 @@ function PlayerView:initHeadView(view)
     head.scoreBg = view:GetChild("score")
     head.readyIndicator = view:GetChild("ready")
     head.scoreText = view:GetChild("scoreText")
+    head.countDownImage = view:GetChild("count")
+    head.countDownText = view:GetChild("countDown")
     head.headImg = headImg
 
     self.head = head
@@ -253,9 +255,31 @@ end
 -- 设置头像特殊效果是否显示（当前出牌者则显示）
 -----------------------------------
 function PlayerView:setHeadEffectBox(isShow)
-    if self.head.effectBox ~= nil then
-        self.head.effectBox:SetActive(isShow)
+    self.head.countDownImage.visible = isShow
+    self.head.countDownText.visible = isShow
+    if isShow then
+        self.leftTime = 20
+        --起定时器
+        self.viewUnityNode:StartTimer(
+            "playerCountDown",
+            1,
+            0,
+            function()
+                self.leftTime = self.leftTime - 1
+                self.head.countDownText.text = self.leftTime
+                if self.leftTime <= 0 then
+                    self.viewUnityNode:StopTimer("playerCountDown")
+                end
+            end,
+            self.leftTime
+        )
+    else
+        --清理定时器
+        self.viewUnityNode:StopTimer("playerCountDown")
     end
+    -- if self.head.effectBox ~= nil then
+    --     self.head.effectBox:SetActive(isShow)
+    -- end
 end
 
 ------------------------------------
@@ -284,7 +308,7 @@ function PlayerView:resetForNewHand()
     --特效列表
     --self:cleanEffectObjLists()
     --self.head.ting:SetActive(false)
-    -- self:setHeadEffectBox(false)
+    self:setHeadEffectBox(false)
     self:hideGaoJing()
     --这里还要删除特效
     if self.viewChairID == 1 then
@@ -318,6 +342,9 @@ end
 function PlayerView:hideHands()
     for _, h in ipairs(self.hands) do
         h.visible = false
+    end
+    if self.handsNumber then
+        self.handsNumber.visible = false
     end
 end
 

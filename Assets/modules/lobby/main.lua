@@ -128,8 +128,22 @@ local function onFriendClick(context)
 	fairy.GRoot.inst:CleanupChildren()
 
 	local parameters = {
-		abc = "abc",
-		stupid = "stupid"
+		abc = "1"
+	}
+
+	local rapidjson = require("rapidjson")
+	local jsonString = rapidjson.encode(parameters)
+	_ENV.thisMod:LaunchGameModule("game1", jsonString)
+end
+
+local function onCreateClick(context)
+	--testGame1UI()
+	mylobbyView = fairy.GRoot.inst:GetChildAt(0)
+	fairy.GRoot.inst:RemoveChild(mylobbyView)
+	fairy.GRoot.inst:CleanupChildren()
+
+	local parameters = {
+		abc = "2"
 	}
 
 	local rapidjson = require("rapidjson")
@@ -150,6 +164,9 @@ local function testLobbyUI()
 
 	local friendBtn = view:GetChild("n1")
 	friendBtn.onClick:Add(onFriendClick)
+
+	local createBtn = view:GetChild("n4")
+	createBtn.onClick:Add(onCreateClick)
 end
 
 local function main()
