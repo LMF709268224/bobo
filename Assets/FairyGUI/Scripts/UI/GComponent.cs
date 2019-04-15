@@ -30,7 +30,7 @@ namespace FairyGUI
 		internal List<Controller> _controllers;
 		internal List<Transition> _transitions;
 		internal bool _buildingDisplayList;
-        internal Dictionary<string, TimerCallback> _timers = new Dictionary<string, TimerCallback>();
+        internal Dictionary<string, ComponentTimer> _timers = new Dictionary<string, ComponentTimer>();
 		protected Margin _margin;
 		protected bool _trackBounds;
 		protected bool _boundsChanged;
@@ -105,6 +105,12 @@ namespace FairyGUI
 #endif
 		}
 
+        internal class ComponentTimer
+        {
+            public TimerCallback luaCb;
+            public TimerCallback csCb;
+        }
+
         public bool StartTimer(string timerName, int interval, int repeat, TimerCallback callback, object callbackParam)
         {
             if (_timers.ContainsKey(timerName))
@@ -112,20 +118,27 @@ namespace FairyGUI
                 return false;
             }
 
-            Timers.inst.Add(interval, repeat, callback, callbackParam);
-            _timers.Add(timerName, callback);
+            ComponentTimer ct = new ComponentTimer();
+            ct.luaCb = callback;
+            ct.csCb = (object param) =>
+            {
+                ct.luaCb?.Invoke(param);
+            };
+
+            Timers.inst.Add(interval, repeat, ct.csCb, callbackParam);
+            _timers.Add(timerName, ct);
             Debug.Log($"StartTimer add new Timer:{timerName}");
             return true;
         }
 
         public bool StopTimer(string timerName)
         {
-            TimerCallback cb;
-            if (_timers.TryGetValue(timerName, out cb))
+            ComponentTimer ct;
+            if (_timers.TryGetValue(timerName, out ct))
             {
                 Debug.Log("StopTimer remove timer");
                 _timers.Remove(timerName);
-                Timers.inst.Remove(cb);
+                Timers.inst.Remove(ct.csCb);
                 return true;
             }
 
@@ -134,10 +147,10 @@ namespace FairyGUI
 
         public void ClearTimers()
         {
-            foreach (var cb in _timers.Values)
+            foreach (var ct in _timers.Values)
             {
                 Debug.Log("ClearTimers remove timer");
-                Timers.inst.Remove(cb);
+                Timers.inst.Remove(ct.csCb);
             }
 
             _timers.Clear();
