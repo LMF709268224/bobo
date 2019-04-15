@@ -140,6 +140,8 @@ namespace FairyGUI
             if (_timers.TryGetValue(timerName, out ct))
             {
                 Debug.Log("StopTimer remove timer");
+                ct.luaCb = null;
+                ct.luaParam = null;
                 _timers.Remove(timerName);
                 Timers.inst.Remove(ct.csCb);
                 return true;
@@ -153,6 +155,8 @@ namespace FairyGUI
             foreach (var ct in _timers.Values)
             {
                 Debug.Log("ClearTimers remove timer");
+                ct.luaCb = null;
+                ct.luaParam = null;
                 Timers.inst.Remove(ct.csCb);
             }
 
