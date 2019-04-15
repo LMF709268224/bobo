@@ -30,7 +30,7 @@ namespace FairyGUI
 		internal List<Controller> _controllers;
 		internal List<Transition> _transitions;
 		internal bool _buildingDisplayList;
-
+        internal Dictionary<string, TimerCallback> _timers = new Dictionary<string, TimerCallback>();
 		protected Margin _margin;
 		protected bool _trackBounds;
 		protected bool _boundsChanged;
@@ -66,7 +66,9 @@ namespace FairyGUI
 
 		override public void Dispose()
 		{
-			int cnt = _transitions.Count;
+            ClearTimers();
+
+            int cnt = _transitions.Count;
 			for (int i = 0; i < cnt; ++i)
 			{
 				Transition trans = _transitions[i];
@@ -93,6 +95,7 @@ namespace FairyGUI
 				obj.Dispose();
 			}
 
+
 #if FAIRYGUI_TOLUA
 			if (_peerTable != null)
 			{
@@ -102,6 +105,44 @@ namespace FairyGUI
 #endif
 		}
 
+        public bool StartTimer(string timerName, int interval, int repeat, TimerCallback callback, object callbackParam)
+        {
+            if (_timers.ContainsKey(timerName))
+            {
+                return false;
+            }
+
+            Timers.inst.Add(interval, repeat, callback, callbackParam);
+            _timers.Add(timerName, callback);
+            Debug.Log($"StartTimer add new Timer:{timerName}");
+            return true;
+        }
+
+        public bool StopTimer(string timerName)
+        {
+            TimerCallback cb;
+            if (_timers.TryGetValue(timerName, out cb))
+            {
+                Debug.Log("StopTimer remove timer");
+                _timers.Remove(timerName);
+                Timers.inst.Remove(cb);
+                return true;
+            }
+
+            return false;
+        }
+
+        public void ClearTimers()
+        {
+            foreach (var cb in _timers.Values)
+            {
+                Debug.Log("ClearTimers remove timer");
+                Timers.inst.Remove(cb);
+            }
+
+            _timers.Clear();
+        }
+    
 		/// <summary>
 		/// Dispatched when an object was dragged and dropped to this component.
 		/// </summary>

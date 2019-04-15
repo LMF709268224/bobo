@@ -137,6 +137,7 @@ public class Boot : MonoBehaviour
     void OnDestroy()
     {
         Debug.Log("Boot.OnDestroy");
+        FairyGUI.Timers.inst.Clear();
         FairyGUI.GRoot.inst.Dispose();
         lobby.OnDestroy();
         lobby = null;

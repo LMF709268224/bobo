@@ -739,6 +739,7 @@ namespace FairyGUI
         public void CleanupChildren()
         {
             GObject[] arr = _children.ToArray();
+            Debug.Log($"GRoot CleanupChildren, count:{arr.Length}");
             foreach (GObject g in arr)
             {
                 if (g is Window)
