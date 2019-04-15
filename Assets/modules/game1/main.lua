@@ -144,6 +144,12 @@ local function main()
 	logger.info("game ", version.MODULE_NAME, " startup, version:", version.VER_STR)
 	_ENV.MODULE_NAME = version.MODULE_NAME
 
+	local jsonString = _ENV.launchJson
+	if jsonString ~= nil then
+		local rapidjson = require("rapidjson")
+		logger.debug('launchArgs:', rapidjson.decode(jsonString))
+	end
+
 	-- testGame1UI()
 	local singletonMod = require("scripts/singleton")
 	local singleton = singletonMod.getSingleton()

@@ -121,13 +121,20 @@ local function onStupidClick(context)
 	-- gooo = nil
 end
 
-local prompt = require 'lobby/prompt'
 local function onFriendClick(context)
 	--testGame1UI()
 	mylobbyView = fairy.GRoot.inst:GetChildAt(0)
 	fairy.GRoot.inst:RemoveChild(mylobbyView)
 	fairy.GRoot.inst:CleanupChildren()
-	_ENV.thisMod:LaunchGameModule("game1")
+
+	local parameters = {
+		abc = "abc",
+		stupid = "stupid"
+	}
+
+	local rapidjson = require("rapidjson")
+	local jsonString = rapidjson.encode(parameters)
+	_ENV.thisMod:LaunchGameModule("game1", jsonString)
 end
 
 function backToLobby()
