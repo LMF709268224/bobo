@@ -109,6 +109,7 @@ namespace FairyGUI
         {
             public TimerCallback luaCb;
             public TimerCallback csCb;
+            public object luaParam;
         }
 
         public bool StartTimer(string timerName, int interval, int repeat, TimerCallback callback, object callbackParam)
@@ -120,12 +121,14 @@ namespace FairyGUI
 
             ComponentTimer ct = new ComponentTimer();
             ct.luaCb = callback;
+            ct.luaParam = callbackParam;
+
             ct.csCb = (object param) =>
             {
-                ct.luaCb?.Invoke(param);
+                ct.luaCb?.Invoke(ct.luaParam);
             };
 
-            Timers.inst.Add(interval, repeat, ct.csCb, callbackParam);
+            Timers.inst.Add(interval, repeat, ct.csCb);
             _timers.Add(timerName, ct);
             Debug.Log($"StartTimer add new Timer:{timerName}");
             return true;
@@ -137,6 +140,8 @@ namespace FairyGUI
             if (_timers.TryGetValue(timerName, out ct))
             {
                 Debug.Log("StopTimer remove timer");
+                ct.luaCb = null;
+                ct.luaParam = null;
                 _timers.Remove(timerName);
                 Timers.inst.Remove(ct.csCb);
                 return true;
@@ -150,6 +155,8 @@ namespace FairyGUI
             foreach (var ct in _timers.Values)
             {
                 Debug.Log("ClearTimers remove timer");
+                ct.luaCb = null;
+                ct.luaParam = null;
                 Timers.inst.Remove(ct.csCb);
             }
 
