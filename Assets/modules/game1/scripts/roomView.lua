@@ -538,7 +538,7 @@ function RoomView:setWaitingPlayer(player)
     --因此设置一个等待时，先把其他的清理掉
     --self.room:startDiscardCountdown(31)
     self:clearWaitingPlayer()
-    local viewChairID = player.playerView.viewChairID
+    -- local viewChairID = player.playerView.viewChairID
 
     player.playerView:setHeadEffectBox(true)
 end

@@ -33,7 +33,7 @@ function Handler.onMsg(msgData, room)
     end
 
     --TODO:重置操作面板，重置等待玩家等等
-    -- room.roomView:clearWaitingPlayer()
+    room.roomView:clearWaitingPlayer()
     --隐藏操作按钮
     local myPlayer = room:me()
     myPlayer.playerView:hideOperationButtons()
@@ -45,7 +45,7 @@ function Handler.onMsg(msgData, room)
         p.lastTile = p.cardsOnHand[#p.cardsOnHand] --保存最后一张牌，可能是胡牌。。。用于最后结算显示
         p:sortHands()
         --摊开手牌
-        --p:hand2Exposed()
+        p:hand2Exposed()
     end
 
     Handler.onHandOver(msgHandOver, room)
