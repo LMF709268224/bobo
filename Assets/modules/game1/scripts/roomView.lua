@@ -9,6 +9,7 @@ local PlayerView = require("scripts/playerView")
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local dialog = require "lobby/dialog"
+local chatView = require "lobby/chatView"
 
 local mt = {__index = RoomView}
 -- local dfPath = "GuanZhang/Script/"
@@ -51,6 +52,12 @@ function RoomView.new(room)
 
     local voiceBtn = view:GetChild("voice")
     voiceBtn.visible = false
+    local chatBtn = view:GetChild("chat")
+    chatBtn.onClick:Add(
+        function()
+            chatView.showChatView()
+        end
+    )
 
     local settingBtn = view:GetChild("setting")
 
