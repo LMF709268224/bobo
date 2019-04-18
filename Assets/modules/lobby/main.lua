@@ -121,20 +121,11 @@ local function onStupidClick(context)
 	-- gooo = nil
 end
 
+local gooo = nil
+local animation = require "lobby/lcore/animations"
 local function onFriendClick(context)
-	--testGame1UI()
-	mylobbyView = fairy.GRoot.inst:GetChildAt(0)
-	fairy.GRoot.inst:RemoveChild(mylobbyView)
-	fairy.GRoot.inst:CleanupChildren()
-
-	local parameters = {
-		abc = "abc",
-		stupid = "stupid"
-	}
-
-	local rapidjson = require("rapidjson")
-	local jsonString = rapidjson.encode(parameters)
-	_ENV.thisMod:LaunchGameModule("game1", jsonString)
+	local anchor = gooo:GetChild('n32')
+	animation.play('animations/Effects_huojian.prefab', gooo, anchor.x, anchor.y)
 end
 
 function backToLobby()
@@ -150,6 +141,8 @@ local function testLobbyUI()
 
 	local friendBtn = view:GetChild("n1")
 	friendBtn.onClick:Add(onFriendClick)
+
+	gooo = view
 end
 
 local function main()
