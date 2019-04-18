@@ -378,8 +378,6 @@ end
 --显示打出去的牌，明牌显示
 ------------------------------------------
 function PlayerView:showDiscarded(tilesDiscarded)
-    local player = self.player
-
     --先隐藏所有的打出牌节点
     self:hideDiscarded()
     local discards = self.discards
@@ -388,22 +386,12 @@ function PlayerView:showDiscarded(tilesDiscarded)
     local tileCount = #tilesDiscarded
 
     local begin = 1
-    if tileCount < 4 then
-        --居中显示
-        begin = 2
-        tileCount = tileCount + 1
+    if self.viewChairID == 1 then
+        --自己打出去的牌 需要居中显示
+        local s = #discards / 2 --8
+        begin = s - math.ceil(tileCount / 2) + 1
+        tileCount = begin + tileCount - 1
     end
-
-    --打出牌的挂载点个数
-    --local dCount = #discards
-    --从那张牌开始挂载，由于tileCount可能大于dCount
-    --因此，需要选择tilesDiscarded末尾的dCount个牌显示即可
-    -- local begin = tileCount - dCount + 1
-    -- if begin < 1 then
-    --     begin = 1
-    -- end
-    --local dianShu = 0
-    --i计数器对应tilesDiscarded列表
     local j = 1
     for i = begin, tileCount do
         --local d = discards[(i - 1) % dCount + 1]
