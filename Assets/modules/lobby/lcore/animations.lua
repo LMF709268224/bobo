@@ -40,12 +40,10 @@ local function createGameObject(prefabName)
 end
 
 local function playGameObject(goCached, parentComponent)
-	local go = goCached.go
-
 	-- 重新激活
 	goCached.wrapper.visible = true
-	go:SetActive(false)
-	go:SetActive(true)
+	goCached.go:SetActive(false)
+	goCached.go:SetActive(true)
 
 	-- 启动定时器，去检测动画是否完成
 	parentComponent:StopTimer(goCached.prefabName)
@@ -65,7 +63,7 @@ local function playGameObject(goCached, parentComponent)
 		-- 动画已经结束
 		parentComponent:StopTimer(goCached.prefabName)
 		goCached.wrapper.visible = false
-		go:SetActive(false)
+		goCached.go:SetActive(false)
 	end)
 end
 
