@@ -27,7 +27,7 @@ local function createGameObject(prefabName)
 	-- 实例化
 	local go = CS.UnityEngine.Object.Instantiate(prefab);
 	-- 给动画节点加一个canvas，以便它里面的canvas renderer能够绘图
-	CS.NetHelper.AddCanvas(go, 1136, 640)
+	CS.UIHelper.AddCanvas(go, 1136, 640)
 
 	-- 找到界面上的锚点，并把动画节点挂载上去
 	local holder = fairy.GGraph()
@@ -35,7 +35,8 @@ local function createGameObject(prefabName)
 	holder:SetNativeObject(wrapper)
 
 	local animator = go:GetComponent(typeof(CS.UnityEngine.Animator))
-	return {holder = holder, go = go, wrapper = wrapper, animator = animator}
+	local particles = CS.UIHelper.GetAllParticle(go)
+	return {holder = holder, go = go, wrapper = wrapper, animator = animator, particles = particles}
 end
 
 local function playGameObject(goCached, parentComponent)
@@ -51,7 +52,13 @@ local function playGameObject(goCached, parentComponent)
 	parentComponent:StartTimer(goCached.prefabName, 0.5, 0, function ()
 		local animator = goCached.animator
 		local stateInfo = animator:GetCurrentAnimatorStateInfo(0);
+		--logger.debug('playGameObject timer callback:', stateInfo.normalizedTime)
 		if stateInfo.normalizedTime < 1 then
+			return
+		end
+
+		-- 检查是否所有的粒子都完成
+		if not CS.UIHelper.IsParticleFinished(goCached.particles) then
 			return
 		end
 
