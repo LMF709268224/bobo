@@ -67,9 +67,9 @@ function ChatView:initView()
         end
     )
     -- list
-    self.phraseList = self.viewNode:GetChild("phraseList")
-    self.expressionList = self.viewNode:GetChild("expressionList")
-    self.historyList = self.viewNode:GetChild("historyList")
+    self.phraseList = self.viewNode:GetChild("phraseList").asList
+    self.expressionList = self.viewNode:GetChild("expressionList").asList
+    self.historyList = self.viewNode:GetChild("historyList").asList
     -- item
     -- self.expressionItem = fairy.UIPackage.CreateObject("lobby_chat", "chat_expression_item")
     -- self.historyMeItem = fairy.UIPackage.CreateObject("lobby_chat", "chat_history_me_item")
@@ -130,15 +130,24 @@ end
 function ChatView:updatePhraseList()
     -- local RenderListItem = function(index, obj)
     --     local t = obj:GetChild("n0")
-    --     t.text = "哈哈哈哈哈 ：" .. index
+    --     t.text = "呵呵呵呵 ：" .. index
     -- end
+    -- self.phraseList.itemRenderer = RenderListItem
+    -- self.phraseList.numItems = 12
+    self.phraseList.onClickItem:Add(
+        function(onClickItem)
+            logger.debug("点击短语item : ", onClickItem.data.name)
+            logger.debug("点击短语item : ", onClickItem.data:GetChild("n0").text)
+        end
+    )
+    self.phraseList:RemoveChildrenToPool()
     for i = 1, 16 do
-        local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_phrase_item")
+        local obj = self.phraseList:AddItemFromPool()
+        obj.name = "o:" .. i
+        -- local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_phrase_item")
         local t = obj:GetChild("n0")
         t.text = "哈哈哈哈哈 ：" .. i
-        self.phraseList:AddChild(obj)
-        -- self.phraseList:AddItemFromPool()
-        -- self.phraseList.itemRenderer = RenderListItem
+        -- self.phraseList:AddChild(obj)
     end
 end
 
