@@ -146,6 +146,23 @@ local function testGame1UI()
 	gooo = operationPanel
 end
 
+local function goTestGame()
+	local singletonMod = require("scripts/singleton")
+	local singleton = singletonMod.getSingleton()
+	-- 启动cortouine
+	local co =
+		coroutine.create(
+		function()
+			singleton:tryEnterRoom()
+		end
+	)
+
+	local r, err = coroutine.resume(co)
+	if not r then
+		logger.error(debug.traceback(co, err))
+	end
+end
+
 local function main()
 	logger.info("game ", version.MODULE_NAME, " startup, version:", version.VER_STR)
 	_ENV.MODULE_NAME = version.MODULE_NAME
@@ -153,25 +170,18 @@ local function main()
 	local jsonString = _ENV.launchArgs
 	if jsonString ~= nil then
 		local rapidjson = require("rapidjson")
-		logger.debug('launchArgs:', rapidjson.decode(jsonString))
+		local json = rapidjson.decode(jsonString)
+		logger.debug("launchArgs:", rapidjson.decode(jsonString))
+		if json.abc == "1" then
+			logger.debug("abc == 1")
+			goTestGame()
+		elseif json.abc == "2" then
+			logger.debug("abc == 2")
+			testCreateUI()
+		end
 	end
 
 	-- testGame1UI()
-	testCreateUI()
-	-- local singletonMod = require("scripts/singleton")
-	-- local singleton = singletonMod.getSingleton()
-	-- -- 启动cortouine
-	-- local co =
-	-- 	coroutine.create(
-	-- 	function()
-	-- 		singleton:tryEnterRoom()
-	-- 	end
-	-- )
-
-	-- local r, err = coroutine.resume(co)
-	-- if not r then
-	-- 	logger.error(debug.traceback(co, err))
-	-- end
 end
 
 main()

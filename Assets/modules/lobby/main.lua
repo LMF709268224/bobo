@@ -124,8 +124,37 @@ end
 local gooo = nil
 local animation = require "lobby/lcore/animations"
 local function onFriendClick(context)
+
 	local anchor = gooo:GetChild('n32')
 	animation.play('animations/Effects_huojian.prefab', gooo, anchor.x, anchor.y)
+
+	--testGame1UI()
+	-- mylobbyView = fairy.GRoot.inst:GetChildAt(0)
+	-- fairy.GRoot.inst:RemoveChild(mylobbyView)
+	-- fairy.GRoot.inst:CleanupChildren()
+
+	-- local parameters = {
+		-- abc = "1"
+	-- }
+
+	-- local rapidjson = require("rapidjson")
+	-- local jsonString = rapidjson.encode(parameters)
+	-- _ENV.thisMod:LaunchGameModule("game1", jsonString)
+end
+
+local function onCreateClick(context)
+	--testGame1UI()
+	mylobbyView = fairy.GRoot.inst:GetChildAt(0)
+	fairy.GRoot.inst:RemoveChild(mylobbyView)
+	fairy.GRoot.inst:CleanupChildren()
+
+	local parameters = {
+		abc = "2"
+	}
+
+	local rapidjson = require("rapidjson")
+	local jsonString = rapidjson.encode(parameters)
+	_ENV.thisMod:LaunchGameModule("game1", jsonString)
 end
 
 function backToLobby()
@@ -143,6 +172,9 @@ local function testLobbyUI()
 	friendBtn.onClick:Add(onFriendClick)
 
 	gooo = view
+
+	local createBtn = view:GetChild("n4")
+	createBtn.onClick:Add(onCreateClick)
 end
 
 local function main()

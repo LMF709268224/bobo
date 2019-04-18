@@ -9,6 +9,7 @@ local PlayerView = require("scripts/playerView")
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local dialog = require "lobby/dialog"
+local chatView = require "lobby/chatView"
 
 local mt = {__index = RoomView}
 -- local dfPath = "GuanZhang/Script/"
@@ -51,6 +52,12 @@ function RoomView.new(room)
 
     local voiceBtn = view:GetChild("voice")
     voiceBtn.visible = false
+    local chatBtn = view:GetChild("chat")
+    chatBtn.onClick:Add(
+        function()
+            chatView.showChatView()
+        end
+    )
 
     local settingBtn = view:GetChild("setting")
 
@@ -531,7 +538,7 @@ function RoomView:setWaitingPlayer(player)
     --因此设置一个等待时，先把其他的清理掉
     --self.room:startDiscardCountdown(31)
     self:clearWaitingPlayer()
-    local viewChairID = player.playerView.viewChairID
+    -- local viewChairID = player.playerView.viewChairID
 
     player.playerView:setHeadEffectBox(true)
 end

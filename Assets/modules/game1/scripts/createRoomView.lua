@@ -44,7 +44,7 @@ function CreateRoomView.new()
     if CreateRoomView.unityViewNode then
         logger.debug("CreateRoomView ---------------------")
     else
-        _ENV.thisMod:AddUIPackage("game1/fgui/runfast")
+        _ENV.thisMod:AddUIPackage("fgui/runfast")
         local viewObj = fairy.UIPackage.CreateObject("runfast", "room_create")
         CreateRoomView.unityViewNode = viewObj
 
@@ -79,7 +79,7 @@ function CreateRoomView:initAllView()
     self.togglePay = {}
     self.togglePay[1] = self.unityViewNode:GetChild("pay1")
     self.togglePay[2] = self.unityViewNode:GetChild("pay2")
-
+    self.togglePay[1].selected = true
     self.togglePay[1].onClick:Add(
         function()
             self.togglePay[2].selected = false
@@ -108,7 +108,7 @@ function CreateRoomView:initAllView()
     self.toggleCount[1] = self.unityViewNode:GetChild("hand4")
     self.toggleCount[2] = self.unityViewNode:GetChild("hand8")
     self.toggleCount[3] = self.unityViewNode:GetChild("hand16")
-
+    self.toggleCount[1].selected = true
     self.toggleCount[1].onClick:Add(
         function()
             self.toggleCount[2].selected = false
@@ -178,6 +178,7 @@ function CreateRoomView:initAllView()
     --     dispatcher:unregister("LOAD_PRICES_CFG", self, self.OnUpdatePriceCfgs)
     -- end
 
+    self:UpdateComsumer()
     self:updateCostDiamond()
 end
 
