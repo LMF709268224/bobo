@@ -4,6 +4,7 @@
 local GameOverResultView = {}
 GameOverResultView.VERSION = "1.0"
 local fairy = require "lobby/lcore/fairygui"
+local animation = require "lobby/lcore/animations"
 local logger = require "lobby/lcore/logger"
 
 function GameOverResultView.new(room)
@@ -68,6 +69,9 @@ function GameOverResultView:updateRoomData()
     -- effobj.localPosition = Vector3(1.6, 9, 0)
     -- self.effect = effobj
     --self:orderAdd(effobj)
+
+    animation.play("animations/Effects_JieMian_ZongJieSuan.prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
+
     --日期时间
     local date = os.date("%Y-%m-%d %H:%M:%S")
     self.textTime.text = date
@@ -149,10 +153,11 @@ end
 function GameOverResultView:setDYJView(c)
     --local colorSText = "#f8dd26"
     if c ~= nil then
-        --大赢家动效
-        local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_DAYINGJIA .. ".prefab", self.canvasOrder)
-        effobj:SetParent(c.group.transform, false)
-        effobj.localPosition = c.imageWin.localPosition --Vector3(1.6, 0.8, 0)
+        animation.play("animations/Effects_jiemian_dayingjia.prefab", c.group, c.aniPos.x, c.aniPos.y, true)
+    --大赢家动效
+    -- local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_DAYINGJIA .. ".prefab", self.canvasOrder)
+    -- effobj:SetParent(c.group.transform, false)
+    -- effobj.localPosition = c.imageWin.localPosition --Vector3(1.6, 0.8, 0)
     --self:orderAdd(effobj)
     end
 end
@@ -226,12 +231,12 @@ function GameOverResultView:updateAllData()
                     number = number + 1
                 end
             end
-        -- if self.maxScore > 0 and self.maxScoreIndexs ~= nil then
-        --     for _, maxScoreIndex in ipairs(self.maxScoreIndexs) do
-        --         self:setDYJView(maxScoreIndex)
-        --     end
-        -- --self.maxScoreIndex.imageWin:SetActive(true)
-        -- end
+            if self.maxScore > 0 and self.maxScoreIndexs ~= nil then
+                for _, maxScoreIndex in ipairs(self.maxScoreIndexs) do
+                    self:setDYJView(maxScoreIndex)
+                end
+            --self.maxScoreIndex.imageWin:SetActive(true)
+            end
         end
     end
 end
@@ -244,6 +249,8 @@ function GameOverResultView:initAllView()
     self.textTime = self.unityViewNode:GetChild("date")
     --房间信息
     self.textRoomNumber = self.unityViewNode:GetChild("roomNumber")
+    --特效位置节点
+    self.aniPos = self.unityViewNode:GetChild("aniPos")
     --局数
     -- self.handAmount = self.unityViewNode.transform:Find("HandAmount")
     --付费方式
@@ -261,8 +268,8 @@ function GameOverResultView:initAllView()
         --房主标志
         contentGroupData.imageRoom = group:GetChild("roomOwner")
         contentGroupData.imageRoom.visible = false
-        --大赢家标志
-        -- contentGroupData.imageWin = group:Find("ImageWin")
+        --大赢家动画位置
+        contentGroupData.aniPos = group:GetChild("aniPos")
         -- contentGroupData.imageWin:SetActive(false)
         --名字
         contentGroupData.textName = group:GetChild("name")

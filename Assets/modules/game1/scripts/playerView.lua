@@ -826,6 +826,7 @@ end
 
 --不要动画并等待
 function PlayerView:playSkipAnimation()
+    self:playerOperationEffectWhitGZ("Effects_zi_buyao", "")
     --local waitCo = coroutine.running()
     -- self:playerOperationEffectWhitGZ(dfConfig.EFF_DEFINE.SUB_GUANZHANG_BUYAO, "buyao")
     --self.player:playSound("hua")
@@ -861,7 +862,6 @@ function PlayerView:playerOperationEffectWhitGZ(effectName, sound)
     -- end
     --新代码
     -- self.aniPos.visible = true
-    logger.debug("playerOperationEffectWhitGZ : ", effectName)
     animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
 end
 

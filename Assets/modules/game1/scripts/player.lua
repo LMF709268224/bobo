@@ -212,7 +212,7 @@ function Player:showCardHandType(cardHandType, discardTileId)
     local tip = ""
     local effectName = "" -- 音效
     if cardHandType == pokerfaceRf.CardHandType.Flush then
-        tip = "Effects_shunzi"
+        tip = "Effects_zi_shunzi"
         --顺子
         effectName = "sunzi"
     elseif cardHandType == pokerfaceRf.CardHandType.Bomb then
