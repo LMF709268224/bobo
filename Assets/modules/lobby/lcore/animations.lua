@@ -39,8 +39,10 @@ local function createGameObject(prefabName)
 	return {holder = holder, go = go, wrapper = wrapper, animator = animator, particles = particles}
 end
 
-local function playGameObject(goCached, noAutoHide, coYield)
+local function playGameObject(goCached, ctx)
 	-- 重新激活
+	local noAutoHide = ctx.noAutoHide
+	local coYield = ctx.coYield
 	local parentComponent = goCached.parentComponent
 	goCached.wrapper.visible = true
 	goCached.go:SetActive(false)
@@ -94,7 +96,12 @@ local function playGameObject(goCached, noAutoHide, coYield)
 	end
 end
 
-local function getGocached(prefabName, parentComponent, x, y)
+local function getGocached(ctx)
+	local prefabName = ctx.prefabName
+	local parentComponent = ctx.parentComponent
+	local x = ctx.x
+	local y = ctx.y
+
 	-- 检查是否有可用的game object，如果有则直接使用
 	local goCached = gameObjectsCached[prefabName]
 	if goCached == nil then
@@ -126,18 +133,37 @@ local function getGocached(prefabName, parentComponent, x, y)
 	return goCached
 end
 
-function AnimationMgr.play(prefabName, parentComponent, x, y, noAutoHide)
-	logger.debug("AnimationMgr.play prefabName:", prefabName)
+function AnimationMgr.playAnimation(ctx)
+	logger.debug("AnimationMgr.playAnimation prefabName:", ctx.prefabName)
 
-	local goCached = getGocached(prefabName, parentComponent, x, y)
-	playGameObject(goCached, noAutoHide)
+	local goCached = getGocached(ctx)
+	playGameObject(goCached, ctx)
+end
+
+function AnimationMgr.play(prefabName, parentComponent, x, y, noAutoHide)
+	local ctx = {
+		prefabName = prefabName,
+		parentComponent = parentComponent,
+		x = x,
+		y = y,
+		noAutoHide = noAutoHide
+	}
+
+	local goCached = getGocached(ctx)
+	playGameObject(goCached, ctx)
 end
 
 function AnimationMgr.coplay(prefabName, parentComponent, x, y)
-	logger.debug("AnimationMgr.coplay prefabName:", prefabName)
+	local ctx = {
+		prefabName = prefabName,
+		parentComponent = parentComponent,
+		x = x,
+		y = y,
+		coYield = true
+	}
 
-	local goCached = getGocached(prefabName, parentComponent, x, y)
-	playGameObject(goCached, false, true)
+	local goCached = getGocached(ctx)
+	playGameObject(goCached, ctx)
 end
 
 return AnimationMgr
