@@ -31,6 +31,7 @@ local function createGameObject(prefabName)
 	-- 找到界面上的锚点，并把动画节点挂载上去
 	local holder = fairy.GGraph()
 	local wrapper = CS.FairyGUI.GoWrapper(go)
+	wrapper:SetSize(0, 0)
 	holder:SetNativeObject(wrapper)
 
 	local animator = go:GetComponent(typeof(CS.UnityEngine.Animator))
