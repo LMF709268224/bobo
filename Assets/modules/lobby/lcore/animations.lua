@@ -67,8 +67,8 @@ local function playGameObject(goCached, noAutoHide, coYield)
 
 			particleLoopKilled = particleLoopKilled + 1
 
-			-- 检查是否所有的粒子都完成
-			if not CS.UIHelper.IsParticleFinished(goCached.particles) and particleLoopKilled < 6 then
+			-- 检查是否所有的粒子都完成，如果5秒都还没有完成，就不再等待，直接结束
+			if not CS.UIHelper.IsParticleFinished(goCached.particles) and particleLoopKilled < 10 then
 				return
 			end
 
