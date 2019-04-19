@@ -37,13 +37,13 @@ function GameOverResultView.new(room)
     GameOverResultView.msgGameOver = room.msgGameOver
 
     local backHallBtn = GameOverResultView.unityViewNode:GetChild("backHallBtn")
-    backHallBtn.onClick:Add(
+    backHallBtn.onClick:Set(
         function()
             GameOverResultView:onCloseButtonClick()
         end
     )
     local shanreBtn = GameOverResultView.unityViewNode:GetChild("shanreBtn")
-    shanreBtn.onClick:Add(
+    shanreBtn.onClick:Set(
         function()
             -- GameOverResultView:onShareButtonClick()
         end

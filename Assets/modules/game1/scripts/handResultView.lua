@@ -65,13 +65,13 @@ function HandResultView.new(room)
     HandResultView.players = players
 
     local againBtn = HandResultView.unityViewNode:GetChild("againBtn")
-    againBtn.onClick:Add(
+    againBtn.onClick:Set(
         function()
             HandResultView:onAgainButtonClick()
         end
     )
     local shanreBtn = HandResultView.unityViewNode:GetChild("shanreBtn")
-    shanreBtn.onClick:Add(
+    shanreBtn.onClick:Set(
         function()
             -- handResultView:onShareButtonClick()
         end

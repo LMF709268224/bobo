@@ -33,6 +33,8 @@ function MQ:getMsg()
     coroutine.yield()
     self.waitCoroutine = nil
 
+    assert(#self.messages > 0, "getMsg coroutine been resume with empty msg")
+
     return table.remove(self.messages, 1) --返回并删除列表里第一个消息
 end
 
@@ -130,6 +132,7 @@ function MQ:unblockNormal()
 end
 
 function MQ:wakeupCoroutine()
+    assert(#self.messages > 0, "wakeupCoroutine without any msg")
     if self.waitCoroutine ~= nil then
         local waitCoroutine = self.waitCoroutine
         self.waitCoroutine = nil

@@ -22,13 +22,13 @@ function DisbandVoteView.new(room, viewObj)
     disbandVoteView.refuseBtn = viewObj:GetChild("unagreeBtn")
     disbandVoteView.agreeBtn = viewObj:GetChild("agreeBtn")
 
-    disbandVoteView.refuseBtn.onClick:Add(
+    disbandVoteView.refuseBtn.onClick:Set(
         function()
             disbandVoteView:onRefuseBtnClicked()
         end
     )
 
-    disbandVoteView.agreeBtn.onClick:Add(
+    disbandVoteView.agreeBtn.onClick:Set(
         function()
             disbandVoteView:onAgreeBtnClicked()
         end
