@@ -369,9 +369,9 @@ function HandResultView:onAgainButtonClick()
     if self.msgHandOver.continueAble then
         self.room.host:sendPlayerReadyMsg()
     else
-        logger.debug("onAgainButtonClick --------------------------------2")
         --显示大结算
-        self.room:loadGameOverResultView()
+        --self.room:loadGameOverResultView()
+        logger.debug("onAgainButtonClick --------------------------------2")
     end
 end
 
