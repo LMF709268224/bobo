@@ -7,6 +7,7 @@ HandResultView.VERSION = "1.0"
 -- local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
+local animation = require "lobby/lcore/animations"
 local tileMounter = require("scripts/tileImageMounter")
 
 function HandResultView.new(room)
@@ -95,12 +96,14 @@ function HandResultView:updateRoomData()
     --背景（输还是赢）
     --endType == enumHandOverType_None 表示流局 也就是没有人胡牌
     --if self.msgHandOver.endType ~= pokerfacerf.enumHandOverType_None then
+    local effectName = "Effects_JieMian_ShiBai"
     if self.room:me().score.score > 0 then
         --self.bgImageWin:SetActive(true)
         -- local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_YING .. ".prefab", self.canvasOrder)
         -- effobj:SetParent(self.unityViewNode.transform, false)
         -- effobj.localPosition = Vector3(1.6, 0.8, 0)
         -- self.effect = effobj
+        effectName = "Effects_JieMian_ShengLi"
     else
         -- self.bgImageLose:SetActive(true)
         -- local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_SHU .. ".prefab", self.canvasOrder)
@@ -108,6 +111,7 @@ function HandResultView:updateRoomData()
         -- effobj.localPosition = Vector3(1.6, 0.8, 0)
         -- self.effect = effobj
     end
+    animation.play("animations/" .. effectName .. ".prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
     -- else
     --     self.bgImageLose:SetActive(true)
     --     local effobj =
@@ -205,7 +209,7 @@ function HandResultView:updatePlayerInfoData(player, c)
 end
 
 -------------------------------------------
---更新麻将牌数据
+--更新牌数据
 -------------------------------------------
 function HandResultView:updatePlayerTileData(player, c)
     local cardsOnHand = player.cardsOnHand --玩家手上的牌（暗牌）排好序的
@@ -306,6 +310,8 @@ function HandResultView:initAllView()
     self.textTime = self.unityViewNode:GetChild("date")
     --房间信息
     self.textRoomNumber = self.unityViewNode:GetChild("roomNumber")
+    --特效位置节点
+    self.aniPos = self.unityViewNode:GetChild("aniPos")
 
     local contentGroup = {}
     for var = 1, 3, 1 do

@@ -4,6 +4,7 @@
 local GameOverResultView = {}
 GameOverResultView.VERSION = "1.0"
 local fairy = require "lobby/lcore/fairygui"
+local animation = require "lobby/lcore/animations"
 local logger = require "lobby/lcore/logger"
 
 function GameOverResultView.new(room)
@@ -68,6 +69,9 @@ function GameOverResultView:updateRoomData()
     -- effobj.localPosition = Vector3(1.6, 9, 0)
     -- self.effect = effobj
     --self:orderAdd(effobj)
+
+    animation.play("animations/Effects_JieMian_ZongJieSuan.prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
+
     --日期时间
     local date = os.date("%Y-%m-%d %H:%M:%S")
     self.textTime.text = date
@@ -244,6 +248,8 @@ function GameOverResultView:initAllView()
     self.textTime = self.unityViewNode:GetChild("date")
     --房间信息
     self.textRoomNumber = self.unityViewNode:GetChild("roomNumber")
+    --特效位置节点
+    self.aniPos = self.unityViewNode:GetChild("aniPos")
     --局数
     -- self.handAmount = self.unityViewNode.transform:Find("HandAmount")
     --付费方式

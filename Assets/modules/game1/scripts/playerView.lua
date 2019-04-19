@@ -861,7 +861,6 @@ function PlayerView:playerOperationEffectWhitGZ(effectName, sound)
     -- end
     --新代码
     -- self.aniPos.visible = true
-    logger.debug("playerOperationEffectWhitGZ : ", effectName)
     animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
 end
 
