@@ -19,7 +19,7 @@ local gameObjectsCached = {}
 
 local function createGameObject(prefabName)
 	local prefab = prefabsCached[prefabName]
-	if prefabCached == nil then
+	if prefab == nil then
 		prefab = _ENV.thisMod.loader:LoadGameObject(prefabName)
 		prefabsCached[prefabName] = prefab
 	end
@@ -39,8 +39,9 @@ local function createGameObject(prefabName)
 	return {holder = holder, go = go, wrapper = wrapper, animator = animator, particles = particles}
 end
 
-local function playGameObject(goCached, parentComponent)
+local function playGameObject(goCached)
 	-- 重新激活
+	local parentComponent = goCached.parentComponent
 	goCached.wrapper.visible = true
 	goCached.go:SetActive(false)
 	goCached.go:SetActive(true)
@@ -73,20 +74,31 @@ function AnimationMgr.play(prefabName, parentComponent, x, y)
 	-- 检查是否有可用的game object，如果有则直接使用
 	local goCached = gameObjectsCached[prefabName]
 	if goCached == nil then
-		logger.debug('AnimationMgr.play, goCached nil, create new game Object')
+		logger.debug('AnimationMgr.play, goCached nil, create new game Object for:', prefabName)
 		goCached = createGameObject(prefabName)
 		gameObjectsCached[prefabName] = goCached
 
 		parentComponent:AddChild(goCached.holder)
 
+		goCached.parentComponent = parentComponent
 		goCached.prefabName = prefabName
+	end
+
+	if goCached.parentComponent ~= parentComponent then
+		-- 把定时器停止，然后从老的父节点移除
+		goCached.parentComponent:StopTimer(prefabName)
+		goCached.holder:RemoveFromParent()
+
+		--加入到新的父节点
+		parentComponent:AddChild(goCached.holder)
+		goCached.parentComponent = parentComponent
 	end
 
 	-- reposistion
 	goCached.holder.x = x
 	goCached.holder.y = y
 
-	playGameObject(goCached, parentComponent)
+	playGameObject(goCached)
 end
 
 return AnimationMgr
