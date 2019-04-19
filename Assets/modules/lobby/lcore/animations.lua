@@ -28,7 +28,7 @@ local function createGameObject(prefabName)
 	-- 给动画节点加一个canvas，以便它里面的canvas renderer能够绘图
 	CS.UIHelper.AddCanvas(go, 1136, 640)
 
-	-- 找到界面上的锚点，并把动画节点挂载上去
+	-- 动画节点挂载到GGraph上
 	local holder = fairy.GGraph()
 	local wrapper = CS.FairyGUI.GoWrapper(go)
 	wrapper:SetSize(0, 0)
@@ -149,8 +149,7 @@ function AnimationMgr.play(prefabName, parentComponent, x, y, noAutoHide)
 		noAutoHide = noAutoHide
 	}
 
-	local goCached = getGocached(ctx)
-	playGameObject(goCached, ctx)
+	AnimationMgr.playAnimation(ctx)
 end
 
 function AnimationMgr.coplay(prefabName, parentComponent, x, y)
@@ -162,8 +161,7 @@ function AnimationMgr.coplay(prefabName, parentComponent, x, y)
 		coYield = true
 	}
 
-	local goCached = getGocached(ctx)
-	playGameObject(goCached, ctx)
+	AnimationMgr.playAnimation(ctx)
 end
 
 return AnimationMgr
