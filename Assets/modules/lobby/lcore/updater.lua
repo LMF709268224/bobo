@@ -36,7 +36,7 @@ function Updater:new(modName, remoteURL)
 	updater.upgradePath = writeAbleDir .. '/' .. modName .. '_Upgrade'
 
 	--确定模块的旧路径
-	local writeAbleOldPath = writeAbleDir .. '/' .. modName
+	local writeAbleOldPath = writeAbleDir .. '/modules/' .. modName
 	if CS.System.IO.Directory.Exists(writeAbleOldPath) then
 		updater.oldPath = writeAbleOldPath
 		updater.oldWriteAble = true
@@ -193,8 +193,8 @@ function Updater:checkUpdate()
 		-- 没有内容需要更新
 		return nil, false
 	end
-	
-	local downloadURL = lenv.URL.updateDownload..'/'..self.modName..'/'..self.modVersion.VER_STR
+
+	local downloadURL = lenv.URL.updateDownload..'/'..self.modName..'/'..remoteJSON.version
 	for _, ab in ipairs(upgrades) do
 		if ab.url == nil then
 			ab.url = downloadURL..'/'..ab.name
@@ -238,7 +238,7 @@ function Updater:doUpgrade(progressHandler, retryConfirmHandler)
 	local loop = true
 	while loop and #remains > 0 do
 		-- Batch下载，3个HTTP一批次
-		local batch = batchDl.new(remains, upgradePath, 3)
+		local batch = batchDl.new(remains, self.upgradePath, 3)
 		batch.progress = function(delta)
 			downloadedSize = downloadedSize + delta
 			progressHandler(downloadedSize, totalSize)
@@ -296,6 +296,13 @@ function Updater:doUpgrade(progressHandler, retryConfirmHandler)
 	-- 删除老的模块目录
 	if self.oldWriteAble then
 		CS.System.IO.Directory.Delete(self.oldPath)
+	else
+		local modulesPath = CS.UnityEngine.Application.persistentDataPath .. '/modules'
+		if not CS.System.IO.Directory.Exists(modulesPath) then
+			CS.System.IO.Directory.CreateDirectory(modulesPath)
+		end
+
+		self.oldPath = modulesPath..'/'..self.modName
 	end
 
 	-- 重命名upgrade目录

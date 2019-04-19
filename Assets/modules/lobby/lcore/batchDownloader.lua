@@ -48,7 +48,7 @@ function SingleDownloader:fire()
 				if sd.ab.md5 == CS.NetHelper.MD5(respBytes) then
 					local targetPath = sd.targetPath
 					--写入到文件
-					local result = CS.NetHelper.WriteBytesToFile(upgradeJSONPath, respBytes)
+					local result = CS.NetHelper.WriteBytesToFile(targetPath..'/'..sd.ab.name, respBytes)
 					if not result then
 						httpError = {code=errHelper.ERR_FILE_WRITE_FAILED, msg='保存新的bundle数据包失败'}
 					end
