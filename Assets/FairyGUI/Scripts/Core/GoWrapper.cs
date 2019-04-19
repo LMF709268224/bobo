@@ -99,10 +99,20 @@ namespace FairyGUI
 					_canvas.overrideSorting = true;
 
 					RectTransform rt = _canvas.GetComponent<RectTransform>();
-					rt.pivot = new Vector2(0, 1);
+                    // LLWANT modify from '(0.0f, 1.0f)' to '(0.5f, 0.5f)'
+                    rt.pivot = new Vector2(0.5f, 0.5f);
 					rt.position = new Vector3(0, 0, 0);
 					this.SetSize(rt.rect.width, rt.rect.height);
-				}
+
+                    // LLWANT ADD, cached renderers of canvas children
+                    _renderers.Clear();
+                    _sortingOrders.Clear();
+                    _wrapTarget.GetComponentsInChildren<Renderer>(true, _renderers);
+                    _sortingOrders.Capacity = _renderers.Count;
+                    for (int i = 0; i < _renderers.Count; i++)
+                        _sortingOrders.Add(_renderers[i].sortingOrder);
+                    // LLWANT ADD END
+                }
 				else
 #endif
 				{
@@ -246,7 +256,7 @@ namespace FairyGUI
 			set
 			{
 				base.renderingOrder = value;
-
+                // Debug.Log($"set renderingOrder for gowrapper:{value}");
 #if (UNITY_5 || UNITY_5_3_OR_NEWER)
 				if (_canvas != null)
 					_canvas.sortingOrder = value;
@@ -256,10 +266,10 @@ namespace FairyGUI
 				{
 					Renderer r = _renderers[i];
 					if (r != null)
-					{
-						if (i != 0 && _sortingOrders[i] != _sortingOrders[i - 1])
-							value = UpdateContext.current.renderingOrder++;
-						r.sortingOrder = value;
+                    {
+                        if (i != 0 && _sortingOrders[i] != _sortingOrders[i - 1])
+                            value = UpdateContext.current.renderingOrder++;
+                        r.sortingOrder = value;
 					}
 				}
 			}

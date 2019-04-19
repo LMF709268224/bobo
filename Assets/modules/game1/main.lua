@@ -1,5 +1,6 @@
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
+local CreateRoomView = require "scripts/createRoomView"
 
 logger.warn("i am game1")
 
@@ -108,6 +109,11 @@ local function fillCards(myView)
 	end
 end
 
+local function testCreateUI()
+	_ENV.thisMod:AddUIPackage("game1/fgui/runfast")
+	CreateRoomView.new()
+end
+
 local function testGame1UI()
 	_ENV.thisMod:RegisterCleanup(shutdownCleanup)
 
@@ -140,11 +146,7 @@ local function testGame1UI()
 	gooo = operationPanel
 end
 
-local function main()
-	logger.info("game ", version.MODULE_NAME, " startup, version:", version.VER_STR)
-	_ENV.MODULE_NAME = version.MODULE_NAME
-
-	-- testGame1UI()
+local function goTestGame()
 	local singletonMod = require("scripts/singleton")
 	local singleton = singletonMod.getSingleton()
 	-- 启动cortouine
@@ -159,6 +161,27 @@ local function main()
 	if not r then
 		logger.error(debug.traceback(co, err))
 	end
+end
+
+local function main()
+	logger.info("game ", version.MODULE_NAME, " startup, version:", version.VER_STR)
+	_ENV.MODULE_NAME = version.MODULE_NAME
+
+	local jsonString = _ENV.launchArgs
+	if jsonString ~= nil then
+		local rapidjson = require("rapidjson")
+		local json = rapidjson.decode(jsonString)
+		logger.debug("launchArgs:", rapidjson.decode(jsonString))
+		if json.abc == "1" then
+			logger.debug("abc == 1")
+			goTestGame()
+		elseif json.abc == "2" then
+			logger.debug("abc == 2")
+			testCreateUI()
+		end
+	end
+
+	-- testGame1UI()
 end
 
 main()

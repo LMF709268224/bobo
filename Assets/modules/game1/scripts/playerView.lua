@@ -46,6 +46,8 @@ function PlayerView.new(viewUnityNode, viewChairID)
     playerView:initHands(view)
     -- 出牌列表
     playerView:initDiscards(view)
+    -- 明牌列表
+    playerView:initLights(view)
     -- 玩家状态
     playerView:initPlayerStatus()
     -- -- 滑动拖牌
@@ -70,7 +72,28 @@ function PlayerView.new(viewUnityNode, viewChairID)
 
     return playerView
 end
+function PlayerView:initLights(view)
+    -- 手牌列表
+    local lights = {}
+    if (self.viewChairID ~= 1) then
+        local tilesNode = view:GetChild("lights")
+        for i = 1, 16 do
+            local cname = "n" .. i
+            local go = tilesNode:GetChild(cname)
+            if go ~= nil then
+                local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
+                card.scale = go.scale
+                card.position = go.position
+                tilesNode:AddChild(card)
+                lights[i] = card
+            else
+                logger.error("can not found child:", cname)
+            end
+        end
 
+        self.lights = lights
+    end
+end
 function PlayerView:initHands(view)
     -- 手牌列表
     local hands = {}
@@ -190,6 +213,8 @@ function PlayerView:initHeadView(view)
     head.scoreBg = view:GetChild("score")
     head.readyIndicator = view:GetChild("ready")
     head.scoreText = view:GetChild("scoreText")
+    head.countDownImage = view:GetChild("count")
+    head.countDownText = view:GetChild("countDown")
     head.headImg = headImg
 
     self.head = head
@@ -253,9 +278,31 @@ end
 -- 设置头像特殊效果是否显示（当前出牌者则显示）
 -----------------------------------
 function PlayerView:setHeadEffectBox(isShow)
-    if self.head.effectBox ~= nil then
-        self.head.effectBox:SetActive(isShow)
+    self.head.countDownImage.visible = isShow
+    self.head.countDownText.visible = isShow
+    if isShow then
+        self.leftTime = 20
+        --起定时器
+        self.viewUnityNode:StartTimer(
+            "playerCountDown",
+            1,
+            0,
+            function()
+                self.leftTime = self.leftTime - 1
+                self.head.countDownText.text = self.leftTime
+                if self.leftTime <= 0 then
+                    self.viewUnityNode:StopTimer("playerCountDown")
+                end
+            end,
+            self.leftTime
+        )
+    else
+        --清理定时器
+        self.viewUnityNode:StopTimer("playerCountDown")
     end
+    -- if self.head.effectBox ~= nil then
+    --     self.head.effectBox:SetActive(isShow)
+    -- end
 end
 
 ------------------------------------
@@ -269,6 +316,7 @@ function PlayerView:hideAll()
         self.handsNumber.text = ""
     end
     self:hideHands()
+    self:hideLights()
     self:hideDiscarded()
 end
 
@@ -278,13 +326,13 @@ end
 function PlayerView:resetForNewHand()
     self:hideHands()
     -- self:hideFlowers()
-    -- self:hideLights()
+    self:hideLights()
     -- self:clearDiscardable()
     self:hideDiscarded()
     --特效列表
     --self:cleanEffectObjLists()
     --self.head.ting:SetActive(false)
-    -- self:setHeadEffectBox(false)
+    self:setHeadEffectBox(false)
     self:hideGaoJing()
     --这里还要删除特效
     if self.viewChairID == 1 then
@@ -306,8 +354,10 @@ end
 --隐藏摊开牌列表
 -------------------------------------
 function PlayerView:hideLights()
-    for _, h in ipairs(self.lights) do
-        h:SetActive(false)
+    if self.lights then
+        for _, h in ipairs(self.lights) do
+            h.visible = false
+        end
     end
 end
 
@@ -319,14 +369,15 @@ function PlayerView:hideHands()
     for _, h in ipairs(self.hands) do
         h.visible = false
     end
+    if self.handsNumber then
+        self.handsNumber.visible = false
+    end
 end
 
 ------------------------------------------
 --显示打出去的牌，明牌显示
 ------------------------------------------
 function PlayerView:showDiscarded(tilesDiscarded)
-    local player = self.player
-
     --先隐藏所有的打出牌节点
     self:hideDiscarded()
     local discards = self.discards
@@ -335,22 +386,12 @@ function PlayerView:showDiscarded(tilesDiscarded)
     local tileCount = #tilesDiscarded
 
     local begin = 1
-    if tileCount < 4 then
-        --居中显示
-        begin = 2
-        tileCount = tileCount + 1
+    if self.viewChairID == 1 then
+        --自己打出去的牌 需要居中显示
+        local s = #discards / 2 --8
+        begin = s - math.ceil(tileCount / 2) + 1
+        tileCount = begin + tileCount - 1
     end
-
-    --打出牌的挂载点个数
-    --local dCount = #discards
-    --从那张牌开始挂载，由于tileCount可能大于dCount
-    --因此，需要选择tilesDiscarded末尾的dCount个牌显示即可
-    -- local begin = tileCount - dCount + 1
-    -- if begin < 1 then
-    --     begin = 1
-    -- end
-    --local dianShu = 0
-    --i计数器对应tilesDiscarded列表
     local j = 1
     for i = begin, tileCount do
         --local d = discards[(i - 1) % dCount + 1]
@@ -526,25 +567,26 @@ end
 ------------------------------------------
 function PlayerView:hand2Exposed(wholeMove)
     --playerView.lights
-    --不需要手牌显示了，全部摊开
-    self:hideLights()
+    if self.lights then
+        --不需要手牌显示了，全部摊开
+        self:hideLights()
 
-    local player = self.player
-    local cardsOnHand = player.cardsOnHand
-    local cardCountOnHand = #cardsOnHand
+        local player = self.player
+        local cardsOnHand = player.cardsOnHand
+        local cardCountOnHand = #cardsOnHand
 
-    --蛋疼需求，手牌要居中显示，所以要计算开始位置跟结束位置
-    local cardsHandMax = 16 --满牌数
-    local var = math.floor((cardsHandMax - cardCountOnHand) / 2) -- 两边需要空的位置
-    local begin = 1 + var
-    local endd = cardCountOnHand + var
-    local j = 1
-    for i = begin, endd do
-        local h = self.lights[i]
-        tileMounter:mountTileImage(h, cardsOnHand[j])
-        h:SetActive(true)
-        j = j + 1
-    end
+        --手牌要居中显示，所以要计算开始位置跟结束位置
+        local cardsHandMax = 16 --满牌数
+        local var = math.floor((cardsHandMax - cardCountOnHand) / 2) -- 两边需要空的位置
+        local begin = 1 + var
+        local endd = cardCountOnHand + var
+        local j = 1
+        for i = begin, endd do
+            local h = self.lights[i]
+            tileMounter:mountTileImage(h, cardsOnHand[j])
+            h.visible = true
+            j = j + 1
+        end
     -- local j = 1
     -- for i = begin, endd do
     --     local light = self.lights[j]
@@ -552,6 +594,7 @@ function PlayerView:hand2Exposed(wholeMove)
     --     light:SetActive(true)
     --     j = j + 1
     -- end
+    end
 end
 
 ------------------------------------------

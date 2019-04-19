@@ -41,7 +41,8 @@ namespace FairyGUI
 		public const string Name = "Stage Camera";
 		public const string LayerName = "UI";
 
-		public static float DefaultCameraSize = 5;
+        // LLWANT modify from '5' to '30'
+		public static float DefaultCameraSize = 30;
 		public static float UnitsPerPixel = 0.02f;
 
 		void OnEnable()

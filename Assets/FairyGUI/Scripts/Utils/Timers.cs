@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace FairyGUI
 {
+    [XLua.CSharpCallLua]
 	public delegate void TimerCallback(object param);
 
 	/// <summary>
@@ -50,6 +51,14 @@ namespace FairyGUI
 			_toRemove = new List<Anymous_T>();
 			_pool = new List<Anymous_T>(100);
 		}
+
+        public void Clear()
+        {
+            _items.Clear();
+            _toAdd.Clear();
+            _toRemove.Clear();
+            _pool.Clear();
+        }
 
 		public void Add(float interval, int repeat, TimerCallback callback)
 		{

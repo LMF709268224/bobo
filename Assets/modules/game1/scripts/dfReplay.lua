@@ -4,28 +4,20 @@
 local DFReplay = {}
 
 local mt = {__index = DFReplay}
-local dfPath = "GuanZhang/Script/"
-local Room = require(dfPath .. "dfMahjong/room")
-
-local Acc = g_ModuleMgr:GetModule("AccModule")
-
-local bit = require(dfPath .. "dfMahjong/bit")
-local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
-require(dfPath .. "Proto/game_pokerface_rf_pb")
-local pokerfaceRf = game_pokerface_rf_pb
+local logger = require "lobby/lcore/logger"
+local fairy = require "lobby/lcore/fairygui"
 
 --local pkproto2 = game_mahjong_s2s_pb
 
-function DFReplay:new(df, userID, msgHandRecord)
+function DFReplay.new(df, userID, msgHandRecord)
     local dfReplay = {}
-    setmetatable(dfReplay, mt)
 
     dfReplay.df = df
     --dfReplay.replayRoom = replayRoom
     dfReplay.msgHandRecord = msgHandRecord
     dfReplay.user = {userID = userID}
 
-    return dfReplay
+    return setmetatable(dfReplay, mt)
 end
 
 function DFReplay:gogogo(isShare)

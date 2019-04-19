@@ -1,5 +1,5 @@
 local M = {
-	EventContext  = CS.FairyGUI.EventContext,
+	EventContext = CS.FairyGUI.EventContext,
 	EventListener = CS.FairyGUI.EventListener,
 	EventDispatcher = CS.FairyGUI.EventDispatcher,
 	InputEvent = CS.FairyGUI.InputEvent,
@@ -36,7 +36,8 @@ local M = {
 	RelationType = CS.FairyGUI.RelationType,
 	UIPanel = CS.FairyGUI.UIPanel,
 	UIPainter = CS.FairyGUI.UIPainter,
-	TypingEffect = CS.FairyGUI.TypingEffect
+	TypingEffect = CS.FairyGUI.TypingEffect,
+	Gtween = CS.FairyGUI.GTween
 }
 
 return M

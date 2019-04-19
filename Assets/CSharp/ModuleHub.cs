@@ -77,7 +77,7 @@ public class ModuleHub
     /// <summary>
     /// 执行main.lua
     /// </summary>
-    public void Launch()
+    public void Launch(string jsonString = null)
     {
         // 给lua虚拟机注入一些模块，例如jason模块，protocol buffer模块等等
         LuaEnvInit.AddBasicBuiltin(luaenv);
@@ -87,6 +87,11 @@ public class ModuleHub
 
         // 设置this到lua虚拟机中，脚本可以通过thisMod访问module hub对象
         luaenv.Global.Set("thisMod", this);
+
+        if (jsonString != null)
+        {
+            luaenv.Global.Set("launchArgs", jsonString);
+        }
 
         // 约定每一个模块都必须有一个main.lua文件，从这个文件开始执行
         var entryLuaFile = $"{modName}/main";
@@ -264,7 +269,7 @@ public class ModuleHub
     /// 新建一个游戏模块
     /// </summary>
     /// <param name="gameModName">游戏模块名字</param>
-    public void LaunchGameModule(string gameModName)
+    public void LaunchGameModule(string gameModName, string jsonString)
     {
         // 只有大厅模块的parent才不为null，其他所有游戏模块的parent必须是null
         if (parent != null)
@@ -297,7 +302,7 @@ public class ModuleHub
         subModules.Add(gameModName, m);
 
         // 执行模块目录下的mian.lua文件
-        m.Launch();
+        m.Launch(jsonString);
     }
 
     /// <summary>

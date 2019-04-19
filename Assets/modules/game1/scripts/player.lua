@@ -195,8 +195,7 @@ end
 ------------------------------------
 function Player:hand2Exposed()
     local playerView = self.playerView
-    playerView:hideHands()
-
+    -- playerView:hideHands()
     playerView:hand2Exposed()
 end
 

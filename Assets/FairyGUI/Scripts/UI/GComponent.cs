@@ -30,7 +30,7 @@ namespace FairyGUI
 		internal List<Controller> _controllers;
 		internal List<Transition> _transitions;
 		internal bool _buildingDisplayList;
-
+        internal Dictionary<string, ComponentTimer> _timers = new Dictionary<string, ComponentTimer>();
 		protected Margin _margin;
 		protected bool _trackBounds;
 		protected bool _boundsChanged;
@@ -66,7 +66,9 @@ namespace FairyGUI
 
 		override public void Dispose()
 		{
-			int cnt = _transitions.Count;
+            ClearTimers();
+
+            int cnt = _transitions.Count;
 			for (int i = 0; i < cnt; ++i)
 			{
 				Transition trans = _transitions[i];
@@ -93,6 +95,7 @@ namespace FairyGUI
 				obj.Dispose();
 			}
 
+
 #if FAIRYGUI_TOLUA
 			if (_peerTable != null)
 			{
@@ -102,6 +105,64 @@ namespace FairyGUI
 #endif
 		}
 
+        internal class ComponentTimer
+        {
+            public TimerCallback luaCb;
+            public TimerCallback csCb;
+            public object luaParam;
+        }
+
+        public bool StartTimer(string timerName, int interval, int repeat, TimerCallback callback, object callbackParam)
+        {
+            if (_timers.ContainsKey(timerName))
+            {
+                return false;
+            }
+
+            ComponentTimer ct = new ComponentTimer();
+            ct.luaCb = callback;
+            ct.luaParam = callbackParam;
+
+            ct.csCb = (object param) =>
+            {
+                ct.luaCb?.Invoke(ct.luaParam);
+            };
+
+            Timers.inst.Add(interval, repeat, ct.csCb);
+            _timers.Add(timerName, ct);
+            Debug.Log($"StartTimer add new Timer:{timerName}");
+            return true;
+        }
+
+        public bool StopTimer(string timerName)
+        {
+            ComponentTimer ct;
+            if (_timers.TryGetValue(timerName, out ct))
+            {
+                Debug.Log("StopTimer remove timer");
+                ct.luaCb = null;
+                ct.luaParam = null;
+                _timers.Remove(timerName);
+                Timers.inst.Remove(ct.csCb);
+                return true;
+            }
+
+            return false;
+        }
+
+        public void ClearTimers()
+        {
+            foreach (var ct in _timers.Values)
+            {
+                Debug.Log("ClearTimers remove timer");
+                ct.luaCb = null;
+                ct.luaParam = null;
+                Timers.inst.Remove(ct.csCb);
+            }
+
+            _timers.Clear();
+        }
+    
 		/// <summary>
 		/// Dispatched when an object was dragged and dropped to this component.
 		/// </summary>
