@@ -7,6 +7,7 @@ local mt = {__index = PlayerView}
 local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
+local animation = require "lobby/lcore/animations"
 local tileMounter = require("scripts/tileImageMounter")
 
 -----------------------------------------------
@@ -37,7 +38,8 @@ function PlayerView.new(viewUnityNode, viewChairID)
     end
     playerView.viewChairID = viewChairID
     playerView.viewUnityNode = viewUnityNode
-
+    playerView.myView = view
+    playerView.aniPos = view:GetChild("aniPos")
     -- -- self.texiaoPos = myTilesNode.transform:Find("texiaoPos") --特效的位置
     -- local operationPanel = view:GetChild("n31")
     -- 头像相关
@@ -158,11 +160,11 @@ end
 --保存操作按钮
 -------------------------------------------------
 function PlayerView:initOperationButtons()
-    local viewUnityNode = self.operationPanel
+    local view = self.operationPanel
     local pv = self
-    self.skipBtn = viewUnityNode:GetChild("pass")
-    self.tipBtn = viewUnityNode:GetChild("tip")
-    self.discardBtn = viewUnityNode:GetChild("discard")
+    self.skipBtn = view:GetChild("pass")
+    self.tipBtn = view:GetChild("tip")
+    self.discardBtn = view:GetChild("discard")
     self.skipBtn.onClick:Add(
         function(obj)
             local player = pv.player
@@ -824,6 +826,7 @@ end
 
 --不要动画并等待
 function PlayerView:playSkipAnimation()
+    self:playerOperationEffectWhitGZ("Effects_zi_buyao", "")
     --local waitCo = coroutine.running()
     -- self:playerOperationEffectWhitGZ(dfConfig.EFF_DEFINE.SUB_GUANZHANG_BUYAO, "buyao")
     --self.player:playSound("hua")
@@ -841,36 +844,25 @@ function PlayerView:playSkipAnimation()
 end
 
 ----------------------------------------------------------
---特效播放
-----------------------------------------------------------
-function PlayerView:playerOperationEffect(effectName, sound)
-    local effectObj = Animator.Play(dfConfig.PATH.EFFECTS .. effectName .. ".prefab", self.viewUnityNode.order)
-
-    effectObj:SetParent(self.operationTip)
-    effectObj.localPosition = Vector3(0, 0, 0)
-
-    if sound ~= nil then
-        self.player:playSound(sound)
-    end
-end
-
-----------------------------------------------------------
 --特效播放 关张
 ----------------------------------------------------------
 function PlayerView:playerOperationEffectWhitGZ(effectName, sound)
-    local effectObj = Animator.Play(dfConfig.PATH.EFFECTS_GZ .. effectName .. ".prefab", self.viewUnityNode.order + 1)
+    -- local effectObj = Animator.Play(dfConfig.PATH.EFFECTS_GZ .. effectName .. ".prefab", self.viewUnityNode.order + 1)
 
     -- local effectObj =
     --     Animator.PlayLoop(
     --         dfConfig.PATH.EFFECTS_GZ .. effectName .. ".prefab",
     --     self.viewUnityNode.order
     -- )
-    effectObj:SetParent(self.operationTip)
-    effectObj.localPosition = Vector3(0, 0, 0)
+    -- effectObj:SetParent(self.operationTip)
+    -- effectObj.localPosition = Vector3(0, 0, 0)
     --table.insert(self.effectObjLists, effectObj)
-    if sound ~= nil and sound ~= "" then
-        self.player:playSound(sound)
-    end
+    -- if sound ~= nil and sound ~= "" then
+    --     self.player:playSound(sound)
+    -- end
+    --新代码
+    -- self.aniPos.visible = true
+    animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
 end
 
 ----------------------------------------------------------
