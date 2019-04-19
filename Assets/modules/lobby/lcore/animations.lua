@@ -8,7 +8,6 @@ Note:
 
 	类名可以大写开头。
 --]]
-
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
 
@@ -25,7 +24,7 @@ local function createGameObject(prefabName)
 	end
 
 	-- 实例化
-	local go = CS.UnityEngine.Object.Instantiate(prefab);
+	local go = CS.UnityEngine.Object.Instantiate(prefab)
 	-- 给动画节点加一个canvas，以便它里面的canvas renderer能够绘图
 	CS.UIHelper.AddCanvas(go, 1136, 640)
 
@@ -48,33 +47,39 @@ local function playGameObject(goCached)
 
 	-- 启动定时器，去检测动画是否完成
 	parentComponent:StopTimer(goCached.prefabName)
-	parentComponent:StartTimer(goCached.prefabName, 0.5, 0, function ()
-		local animator = goCached.animator
-		local stateInfo = animator:GetCurrentAnimatorStateInfo(0);
-		--logger.debug('playGameObject timer callback:', stateInfo.normalizedTime)
-		if stateInfo.normalizedTime < 1 then
-			return
-		end
+	parentComponent:StartTimer(
+		goCached.prefabName,
+		0.5,
+		0,
+		function()
+			local animator = goCached.animator
+			local stateInfo = animator:GetCurrentAnimatorStateInfo(0)
+			--logger.debug('playGameObject timer callback:', stateInfo.normalizedTime)
+			if stateInfo.normalizedTime < 1 then
+				return
+			end
 
-		-- 检查是否所有的粒子都完成
-		if not CS.UIHelper.IsParticleFinished(goCached.particles) then
-			return
-		end
+			-- 检查是否所有的粒子都完成
+			if not CS.UIHelper.IsParticleFinished(goCached.particles) then
+				return
+			end
 
-		-- 动画已经结束
-		parentComponent:StopTimer(goCached.prefabName)
-		goCached.wrapper.visible = false
-		goCached.go:SetActive(false)
-	end)
+			-- 动画已经结束
+			parentComponent:StopTimer(goCached.prefabName)
+			goCached.wrapper.visible = false
+			goCached.go:SetActive(false)
+		end
+	)
 end
 
 function AnimationMgr.play(prefabName, parentComponent, x, y)
-	logger.debug('AnimationMgr.play prefabName:', prefabName)
+	logger.debug("AnimationMgr.play prefabName:", prefabName)
 
 	-- 检查是否有可用的game object，如果有则直接使用
 	local goCached = gameObjectsCached[prefabName]
 	if goCached == nil then
 		logger.debug('AnimationMgr.play, goCached nil, create new game Object for:', prefabName)
+
 		goCached = createGameObject(prefabName)
 		gameObjectsCached[prefabName] = goCached
 
