@@ -208,14 +208,15 @@ function Player:discarded2UI(discardTileIds)
 end
 --显示打出去的牌的类型。。。
 function Player:showCardHandType(cardHandType, discardTileId)
+    logger.debug("显示打出去的牌的类型。。。 : ", cardHandType)
     local tip = ""
     local effectName = "" -- 音效
     if cardHandType == pokerfaceRf.CardHandType.Flush then
-        tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_SHUNZI
+        tip = "Effects_shunzi"
         --顺子
         effectName = "sunzi"
     elseif cardHandType == pokerfaceRf.CardHandType.Bomb then
-        tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_ZHADAN
+        tip = "Effects_zi_zhadan"
         --炸弹
         effectName = "zhadan"
     elseif cardHandType == pokerfaceRf.CardHandType.Single then
@@ -224,24 +225,25 @@ function Player:showCardHandType(cardHandType, discardTileId)
     elseif cardHandType == pokerfaceRf.CardHandType.Pair then
         tip = "" --对子
         self:playReadTileSound(discardTileId, true)
-    elseif cardHandType == pokerfaceRf.Pair2X then
-        tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_LIANDUI
+    elseif cardHandType == pokerfaceRf.CardHandType.Pair2X then
+        tip = "Effects_liandui"
         --连对
         effectName = "liandui"
     elseif cardHandType == pokerfaceRf.CardHandType.Triplet then
-        tip = ""
         --三张
         self:playSound("sange")
+        tip = "Effects_sandaier"
     elseif cardHandType == pokerfaceRf.CardHandType.TripletPair then
-        tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_SANDAIER --三带二
+        tip = "Effects_sandaier" --三带二
         effectName = "sandaiyi"
     elseif cardHandType == pokerfaceRf.CardHandType.Triplet2X then
-        tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_SANLIANDUI -- 飞机
+        tip = "Effects_zi_FeiJi" -- 飞机
         effectName = "feiji"
     elseif cardHandType == pokerfaceRf.CardHandType.Triplet2X2Pair then
-        tip = dfConfig.EFF_DEFINE.SUB_GUANZHANG_HANG --夯加飞机
+        tip = "Effects_zi_FeiJiDaiChiBang" --夯加飞机
         effectName = "feijidaicibang"
     end
+    logger.debug("tip : ", tip)
     if tip ~= "" then
         self.playerView:playerOperationEffectWhitGZ(tip, effectName)
     end
@@ -266,23 +268,23 @@ end
 --播放音效
 ------------------------------------
 function Player:playSound(effectName)
-    if effectName ~= nil and effectName ~= "" then
-        local gender = "loc_"
-        local path = "localize/"
-        if self.sex == 1 then
-            gender = gender .. "boy"
-            path = path .. "boy/"
-        else
-            gender = gender .. "girl"
-            path = path .. "girl/"
-        end
-        local asset = string.format("%s_%s", gender, effectName)
-        -- if isMp3 then
-        --     dfCompatibleAPI:soundPlayMp3(path .. asset)
-        --     return
-        -- end
-        dfCompatibleAPI:soundPlay(path .. asset)
-    end
+    -- if effectName ~= nil and effectName ~= "" then
+    --     local gender = "loc_"
+    --     local path = "localize/"
+    --     if self.sex == 1 then
+    --         gender = gender .. "boy"
+    --         path = path .. "boy/"
+    --     else
+    --         gender = gender .. "girl"
+    --         path = path .. "girl/"
+    --     end
+    --     local asset = string.format("%s_%s", gender, effectName)
+    --     -- if isMp3 then
+    --     --     dfCompatibleAPI:soundPlayMp3(path .. asset)
+    --     --     return
+    --     -- end
+    --     dfCompatibleAPI:soundPlay(path .. asset)
+    -- end
 end
 
 ------------------------------------
