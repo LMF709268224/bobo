@@ -49,6 +49,7 @@ local function playGameObject(goCached, noAutoHide, coYield)
 		return
 	end
 
+	local particleLoopKilled = 0
 	local co = nil
 	-- 启动定时器，去检测动画是否完成
 	parentComponent:StopTimer(goCached.prefabName)
@@ -64,8 +65,10 @@ local function playGameObject(goCached, noAutoHide, coYield)
 				return
 			end
 
+			particleLoopKilled = particleLoopKilled + 1
+
 			-- 检查是否所有的粒子都完成
-			if not CS.UIHelper.IsParticleFinished(goCached.particles) then
+			if not CS.UIHelper.IsParticleFinished(goCached.particles) and particleLoopKilled < 6 then
 				return
 			end
 

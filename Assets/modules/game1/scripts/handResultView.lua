@@ -277,6 +277,7 @@ function HandResultView:updateAllData()
 end
 --显示赢标志
 function HandResultView:showWin(c)
+    -- animation.play("animations/Effects_jiemian_huosheng.prefab", c.group, c.aniPos.x, c.aniPos.y, true)
     -- local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_WIN .. ".prefab", self.canvasOrder)
     -- effobj:SetParent(c.group.transform, false)
     -- effobj.localPosition = c.winImagePos.localPosition --Vector3(1.6, 0.8, 0)
@@ -341,6 +342,8 @@ function HandResultView:initAllView()
         -- contentGroupData.winImagePos = group:Find("WinImagePos")
         --剩余牌数
         contentGroupData.textPlayerScore = group:GetChild("remainderHands")
+        --获胜节点位置
+        contentGroupData.aniPos = group:GetChild("aniPos")
 
         --保存userID
         contentGroupData.userID = ""
@@ -359,12 +362,14 @@ end
 -------------------------------------------
 function HandResultView:onAgainButtonClick()
     -- 降低消息队列的优先级为0
+    logger.debug("onAgainButtonClick --------------------------------")
     self.room.host.mq:unblockNormal()
 
     self.win:Hide()
     if self.msgHandOver.continueAble then
         self.room.host:sendPlayerReadyMsg()
     else
+        logger.debug("onAgainButtonClick --------------------------------2")
         --显示大结算
         self.room:loadGameOverResultView()
     end
