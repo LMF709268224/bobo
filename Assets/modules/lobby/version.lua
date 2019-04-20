@@ -1,4 +1,3 @@
-CS.UnityEngine.Debug.Log("lobby:Version.lua")
 local Version = {}
 Version.MODULE_NAME = "lobby"
 Version.VER_STR = "v1.0.1"

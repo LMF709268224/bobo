@@ -120,7 +120,7 @@ end
 
 -- 更新表情列表
 function ChatView:updateExpressionList()
-    for i = 1, 16 do
+    for _ = 1, 16 do
         local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_expression_item")
         self.expressionList:AddChild(obj)
     end

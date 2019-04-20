@@ -4,6 +4,7 @@
 local Dialog = {}
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
+local CS = _ENV.CS
 
 function Dialog.showDialog(msg, callBackOK, callBackCancel)
     if Dialog.viewNode then
@@ -71,16 +72,16 @@ function Dialog.coShowDialog(msg, callBackOK, callBackCancel)
     local yes
     local no
 
-	-- 确保只调用一次
+    -- 确保只调用一次
     local resumeOnce = function()
-		if waitCoroutine ~= nil then
-			local wc = waitCoroutine
-			waitCoroutine = nil
-			local r, err = coroutine.resume(wc)
-			if not r then
-				logger.error(debug.traceback(wc, err))
-			end
-		end
+        if waitCoroutine ~= nil then
+            local wc = waitCoroutine
+            waitCoroutine = nil
+            local r, err = coroutine.resume(wc)
+            if not r then
+                logger.error(debug.traceback(wc, err))
+            end
+        end
     end
 
     if callBackOK then

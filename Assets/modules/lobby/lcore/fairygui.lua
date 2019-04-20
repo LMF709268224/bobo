@@ -1,3 +1,4 @@
+local CS = _ENV.CS
 local M = {
 	EventContext = CS.FairyGUI.EventContext,
 	EventListener = CS.FairyGUI.EventListener,
