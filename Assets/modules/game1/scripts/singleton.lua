@@ -36,11 +36,11 @@ end
 function SG:tryEnterRoom(url, myUser, roomInfo)
     self.isEnterRoom = true
 
-    --logger.debug(" tryEnterRoom, date2: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
+    --logger.debug(" tryEnterRoom, date2: ", os.date(), ", timeStamp:", os.time(), ", clock:", os.clock())
     --测试用
     url = url or "ws://localhost:3001/prunfast/uuid/ws/monkey?userID=6&roomID=monkey-room"
 
-    logger.debug(" tryEnterRoom, url:" .. url)
+    logger.debug(" tryEnterRoom, url:", url)
 
     myUser = myUser or {userID = "6"}
 
@@ -213,7 +213,7 @@ end
 --如果超时，则认为连接断开
 ------------------------------------------
 function SG:waitWebsocketMessage(showProgressTips)
-    logger.debug("SG:waitWebsocketMessage, " .. showProgressTips)
+    logger.debug("SG:waitWebsocketMessage, ", showProgressTips)
 
     local msg = self.mq:getMsg()
 
@@ -232,7 +232,7 @@ end
 --以避免等待过于长久
 ------------------------------------------
 function SG:waitConnect(showProgressTips)
-    logger.debug("SG:waitConnect, " .. showProgressTips)
+    logger.debug("SG:waitConnect, ", showProgressTips)
 
     local msg = self.mq:getMsg()
 
@@ -347,7 +347,7 @@ function SG:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
     --把配置内容替换配置ID，兼容老代码
     msgHandRecorder.roomConfigID = msgAccLoadReplayRecord.roomJSONConfig
 
-    logger.debug(" sr-actions count:" .. #msgHandRecorder.actions)
+    logger.debug(" sr-actions count:", #msgHandRecorder.actions)
     local isShare = false
     --如果不提供userID,则必须提供chairID，然后根据chairID获得userID
     if not userID then
@@ -367,7 +367,7 @@ function SG:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
         prompt.showPrompt("您输入的回放码不存在,或录像已过期!")
         return
     else
-        logger.debug(" tryEnterReplayRoom userID " .. userID)
+        logger.debug(" tryEnterReplayRoom userID ", userID)
     end
     -- self.locked = true
 

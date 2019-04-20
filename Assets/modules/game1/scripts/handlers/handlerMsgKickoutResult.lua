@@ -53,7 +53,7 @@ function Handler.onMsg(msgData, room)
     end
 
     if msg ~= "" then
-        logger.debug(" kickout:" .. msg)
+        logger.debug(" kickout:", msg)
     --dfCompatibleAPI:showTip(msg)
     end
 end

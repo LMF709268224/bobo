@@ -132,7 +132,7 @@ function HandResultView:updateRoomData()
     -- end
     -- local roomConfig = self.room.roomInfo.config
     -- if roomConfig ~= nil and roomConfig ~= "" then
-    --     logger.debug("roomConfig : " .. roomConfig)
+    --     logger.debug("roomConfig : ", roomConfig)
     --     local config = Json.decode(roomConfig)
     --     if config.payType ~= nil then
     --         self.payType.text = "付费:房主支付"

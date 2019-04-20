@@ -132,7 +132,7 @@ function DisbandVoteView:updateTexts(msgDisbandNotify)
         local p = self.playerList[msgDisbandNotify.applicant + 1]
         nick = self:getPlayerNick(msgDisbandNotify.applicant)
         p.nameText.text = nick
-        logger.debug(" player " .. nick .. "refused")
+        logger.debug(" player ", nick, "refused")
         p.spState_Agree.visible = true
         p.root.visible = true
     -- index = index + 1
@@ -141,14 +141,14 @@ function DisbandVoteView:updateTexts(msgDisbandNotify)
     -- local index = 1
     --等待中的玩家列表
     if msgDisbandNotify.waits ~= nil then
-        logger.debug(" msgDisbandNotify.waits length:" .. #msgDisbandNotify.waits)
+        logger.debug(" msgDisbandNotify.waits length:", #msgDisbandNotify.waits)
         for _, chairID in ipairs(msgDisbandNotify.waits) do
             if self.room:getPlayerByChairID(chairID) ~= nil then
-                logger.debug(" msgDisbandNotify.waits chairID:" .. chairID)
+                logger.debug(" msgDisbandNotify.waits chairID:", chairID)
                 local p = self.playerList[chairID + 1]
                 nick = self:getPlayerNick(chairID)
                 p.nameText.text = nick
-                logger.debug(" player " .. nick .. "thinking")
+                logger.debug(" player ", nick, "thinking")
                 p.spState_Thinking.visible = true
                 p.root.visible = true
             -- index = index + 1
@@ -158,13 +158,13 @@ function DisbandVoteView:updateTexts(msgDisbandNotify)
 
     --同意的玩家列表
     if msgDisbandNotify.agrees ~= nil then
-        logger.debug(" msgDisbandNotify.agrees length:" .. #msgDisbandNotify.agrees)
+        logger.debug(" msgDisbandNotify.agrees length:", #msgDisbandNotify.agrees)
         for _, chairID in ipairs(msgDisbandNotify.agrees) do
             if self.room:getPlayerByChairID(chairID) ~= nil then
                 local p = self.playerList[chairID + 1]
                 nick = self:getPlayerNick(chairID)
                 p.nameText.text = nick
-                logger.debug(" player " .. nick .. "agree")
+                logger.debug(" player ", nick, "agree")
                 p.spState_Agree.visible = true
                 p.root.visible = true
             -- index = index + 1
@@ -174,14 +174,14 @@ function DisbandVoteView:updateTexts(msgDisbandNotify)
 
     --拒绝的玩家列表
     if msgDisbandNotify.rejects ~= nil then
-        logger.debug(" msgDisbandNotify.rejectslength:" .. #msgDisbandNotify.rejects)
+        logger.debug(" msgDisbandNotify.rejectslength:", #msgDisbandNotify.rejects)
         local isShowTip = true
         for _, chairID in ipairs(msgDisbandNotify.rejects) do
             if self.room:getPlayerByChairID(chairID) ~= nil then
                 local p = self.playerList[chairID + 1]
                 nick = self:getPlayerNick(chairID)
                 p.nameText.text = nick
-                logger.debug(" player " .. nick .. "refused")
+                logger.debug(" player ", nick, "refused")
                 p.spState_Refuse.visible = true
                 p.root.visible = true
                 -- index = index + 1

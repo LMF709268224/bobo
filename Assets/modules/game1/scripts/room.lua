@@ -164,7 +164,7 @@ function Room:dispatchWeboscketMessage(gmsg)
     local op = gmsg.Ops
     local handler = self.Handlers[op]
     if handler == nil then
-        logger.debug(" Room:dispatchWeboscketMessage, no handler for:" .. op)
+        logger.debug(" Room:dispatchWeboscketMessage, no handler for:", op)
         return
     end
 
@@ -663,7 +663,7 @@ function Room:updatePlayerLocation(msgUpdateLocation)
     local userID = msgUpdateLocation.userID
     local player = self.players[userID]
     if not player then
-        logger.debug(" updatePlayerLocation, can't find player " .. userID)
+        logger.debug(" updatePlayerLocation, can't find player ", userID)
         return
     end
     player.location = msgUpdateLocation.location

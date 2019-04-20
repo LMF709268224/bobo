@@ -34,7 +34,7 @@ function DFReplay:gogogo(isShare)
     -- self.room.host = self.df
     -- --self.room.roomInfo = roomInfo
 
-    -- logger.debug(" room info : " .. self.msgHandRecord.roomConfigID)
+    -- logger.debug(" room info : ", self.msgHandRecord.roomConfigID)
     -- local roomInfo = accessory_pb.RoomInfo {}
     -- roomInfo.roomID = ""
     -- roomInfo.roomNumber = self.msgHandRecord.roomNumber
@@ -63,7 +63,7 @@ function DFReplay:gogogo(isShare)
     -- local players = self.msgHandRecord.players
     -- for _, p in ipairs(players) do
     --     --if p.userID == acc.userID then
-    --     logger.debug(" p.userID " .. p.userID)
+    --     logger.debug(" p.userID ", p.userID)
     --     if p.userID == self.user.userID then
     --         room:createMyPlayer(p)
     --     end

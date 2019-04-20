@@ -454,7 +454,7 @@ end
 --@param wholeMove 是否整体移动
 ---------------------------------------------
 function PlayerView:showHandsForMe(_, isShow)
-    --logger.debug(" showHandsForMe ---------------------" .. tostring(self.player.cardsOnHand))
+    --logger.debug(" showHandsForMe ---------------------", tostring(self.player.cardsOnHand))
     if isShow == nil then
         isShow = true
     end
@@ -762,7 +762,7 @@ function PlayerView:showHeadImg()
     -- end
 
     -- if player.headIconURI then
-    --     logger.debug("showHeadImg player.headIconURI = "..player.headIconURI)
+    --     logger.debug("showHeadImg player.headIconURI = ", player.headIconURI)
     --     tool:SetUrlImage(self.head.headImg.transform, player.headIconURI)
     -- else
     --     logger.error("showHeadIcon,  player.headIconURI == nil")

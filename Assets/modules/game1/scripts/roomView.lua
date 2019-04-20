@@ -238,7 +238,7 @@ function RoomView.new(room)
     --     )
     -- end
 
-    -- logger.debug("进入子游戏关张房间完成，当前系统时间：" .. os.time())
+    -- logger.debug("进入子游戏关张房间完成，当前系统时间：", os.time())
     return roomView
 end
 
@@ -876,7 +876,7 @@ function RoomView:initRoomStatus()
 
         local config = self.room:getRoomConfig()
         if config ~= nil then
-            logger.debug(" players:" .. room:playerCount() .. ", required:" .. config.playerNumAcquired)
+            logger.debug(" players:", room:playerCount(), ", required:", config.playerNumAcquired)
             if room:playerCount() >= config.playerNumAcquired then
                 roomView.invitButton:SetActive(false)
             else
@@ -946,7 +946,7 @@ end
 function RoomView:updateLeaveAndDisbandButtons()
     local room = self.room
 
-    --logger.debug("room:me().userID == "..room:me().userID)
+    --logger.debug("room:me().userID == ", room:me().userID)
 
     local handStartted = room.handStartted
     if handStartted > 0 then
@@ -1181,7 +1181,7 @@ function RoomView:getInvitationDescription()
 
         rule = rule .. "大丰关张，大丰人最喜爱的纸牌游戏，仅此一家！"
 
-        logger.debug("llwant , RoomView:getInvitationDescription rule : " .. rule)
+        logger.debug("llwant , RoomView:getInvitationDescription rule : ", rule)
     end
     return rule
 end

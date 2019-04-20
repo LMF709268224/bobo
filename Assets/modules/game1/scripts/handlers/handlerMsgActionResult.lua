@@ -28,7 +28,7 @@ function Handler.onMsg(msgData, room)
     local handler = actionhandlers[action]
 
     if handler == nil then
-        logger.debug(" no action handler for:" .. action)
+        logger.debug(" no action handler for:", action)
         return
     end
 

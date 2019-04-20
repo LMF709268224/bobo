@@ -355,14 +355,14 @@ function Player:updateByPlayerInfo(playerInfo)
     player.charm = playerInfo.charm
     player.avatarID = playerInfo.avatarID
     player.groupIds = playerInfo.clubIDs
-    -- logger.debug("player.avatarID:" .. tostring(player.avatarID))
+    -- logger.debug("player.avatarID:" , tostring(player.avatarID))
     -- if self:isMe() and not self.room:isReplayMode() then
     --     local singleton = acc
     --     singleton.charm = playerInfo.charm
     --     g_dataModule:GetUserData():SetCharm(playerInfo.charm)
     -- end
     self.state = playerInfo.state
-    -- logger.debug("player id:" .. player.userID .. ", avatarID:" .. player.avatarID)
+    -- logger.debug("player id:", player.userID, ", avatarID:" , player.avatarID)
     self:updateHeadEffectBox()
 end
 
@@ -410,7 +410,7 @@ function Player:onTipBtnClick()
     local tipCard = tipCards[self.tipCardsIndex]
     if tipCard then
         local cs = tipCard.cards
-        logger.debug(tostring(self.tipCardsIndex) .. "提示 cs : " .. tostring(cs))
+        logger.debug(self.tipCardsIndex, ", 提示 cs : ", cs)
         if cs then
             for i = 1, 16 do
                 local handsClickCtrl = handsClickCtrls[i]
@@ -599,7 +599,7 @@ end
 
 function Player:onPlayerDiscardTile(tileID)
     local room = self.room
-    logger.debug(" discard tile:" .. tileID)
+    logger.debug(" discard tile:", tileID)
     if self.allowedActionMsg ~= nil then
         local actionMsg = pokerface.MsgPlayerAction()
         actionMsg.qaIndex = self.allowedActionMsg.qaIndex

@@ -53,7 +53,7 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     player.tipCards = nil
     player.tipCardsIndex = 0
 
-    logger.debug(" processMyAllowedActions actions : " .. tostring(actions))
+    logger.debug(" processMyAllowedActions actions : ", actions)
     --如果可以过
     if proto.actionsHasAction(actions, proto.prunfast.ActionType.enumActionType_SKIP) then
         logger.debug(" can skip")

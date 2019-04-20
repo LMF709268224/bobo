@@ -18,7 +18,7 @@ function Handler.onMsg(msgData, room)
 
     -- 房间状态
     room.state = msgRoomUpdate.state
-    logger.debug(" room update state = " .. tostring(room.state))
+    logger.debug(" room update state = ", tostring(room.state))
 
     room.ownerID = msgRoomUpdate.ownerID
     room.roomNumber = msgRoomUpdate.roomNumber
@@ -27,7 +27,7 @@ function Handler.onMsg(msgData, room)
     --有人退出为 -1 有人进来为 1 没有变动为 0
     local updatePlayer = 0
 
-    --logger.debug(" room handStartted ".. room.handStartted)
+    --logger.debug(" room handStartted ", room.handStartted)
 
     -- 显示房间号
     room.roomView:showRoomNumber()
@@ -145,7 +145,7 @@ function Handler.onMsg(msgData, room)
     end
     for _, player in pairs(room.players) do
         if player ~= nil and player.totalScores ~= nil then
-            logger.debug(" 更新 player.totalScores ： " .. player.totalScores)
+            logger.debug(" 更新 player.totalScores ： ", player.totalScores)
         -- player.playerView:setGold(player.totalScores)
         end
     end

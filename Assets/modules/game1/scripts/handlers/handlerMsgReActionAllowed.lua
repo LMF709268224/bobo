@@ -58,7 +58,7 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
     playerView.discardBtn.visible = false
     playerView.tipBtn.visible = true
     -- playerView.skipHuiBtn:SetActive(true)
-    logger.debug(" processMyAllowedReActions actions : " .. tostring(actions))
+    logger.debug(" processMyAllowedReActions actions : ", tostring(actions))
 
     --如果可以过
     if proto.actionsHasAction(actions, proto.prunfast.ActionType.enumActionType_SKIP) then
