@@ -30,6 +30,7 @@ namespace FairyGUI
 		internal List<Controller> _controllers;
 		internal List<Transition> _transitions;
 		internal bool _buildingDisplayList;
+        private int delayRunTimerIndex = 0;
         internal Dictionary<string, ComponentTimer> _timers = new Dictionary<string, ComponentTimer>();
 		protected Margin _margin;
 		protected bool _trackBounds;
@@ -112,6 +113,24 @@ namespace FairyGUI
             public object luaParam;
         }
 
+        public void DelayRun(int interval, TimerCallback callback)
+        {
+            ComponentTimer ct = new ComponentTimer();
+            ct.luaCb = callback;
+            var timerName = $"dr_{delayRunTimerIndex++}";
+
+            ct.csCb = (object param) =>
+            {
+                var luaCb = ct.luaCb;
+                StopTimer(timerName);
+
+                luaCb?.Invoke(ct.luaParam);
+            };
+
+            Timers.inst.Add(interval, 1, ct.csCb);
+            _timers.Add(timerName, ct);
+        }
+
         public bool StartTimer(string timerName, int interval, int repeat, TimerCallback callback, object callbackParam)
         {
             if (_timers.ContainsKey(timerName))
@@ -130,7 +149,7 @@ namespace FairyGUI
 
             Timers.inst.Add(interval, repeat, ct.csCb);
             _timers.Add(timerName, ct);
-            Debug.Log($"StartTimer add new Timer:{timerName}");
+            // Debug.Log($"StartTimer add new Timer:{timerName}");
             return true;
         }
 
@@ -139,7 +158,7 @@ namespace FairyGUI
             ComponentTimer ct;
             if (_timers.TryGetValue(timerName, out ct))
             {
-                Debug.Log("StopTimer remove timer");
+                // Debug.Log("StopTimer remove timer");
                 ct.luaCb = null;
                 ct.luaParam = null;
                 _timers.Remove(timerName);

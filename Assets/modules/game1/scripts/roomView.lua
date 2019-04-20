@@ -53,7 +53,7 @@ function RoomView.new(room)
     local voiceBtn = view:GetChild("voice")
     voiceBtn.visible = false
     local chatBtn = view:GetChild("chat")
-    chatBtn.onClick:Add(
+    chatBtn.onClick:Set(
         function()
             chatView.showChatView()
         end
@@ -65,7 +65,7 @@ function RoomView.new(room)
     infoBtn.visible = true
 
     roomView.readyButton = view:GetChild("ready")
-    roomView.readyButton.onClick:Add(
+    roomView.readyButton.onClick:Set(
         function()
             roomView.room:onReadyButtonClick()
         end
@@ -73,7 +73,7 @@ function RoomView.new(room)
 
     roomView.roundInfo = view:GetChild("top_room_info")
 
-    settingBtn.onClick:Add(
+    settingBtn.onClick:Set(
         function()
             roomView:onDissolveClick()
         end

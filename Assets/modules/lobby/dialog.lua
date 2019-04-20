@@ -39,7 +39,7 @@ function Dialog.showDialog(msg, callBackOK, callBackCancel)
     if callBackOK then
         logger.debug("showDialog, callBackOK valid")
         yesBtn.visible = true
-        yesBtn.onClick:Add(
+        yesBtn.onClick:Set(
             function()
                 Dialog.win:Hide()
                 callBackOK()
@@ -53,7 +53,7 @@ function Dialog.showDialog(msg, callBackOK, callBackCancel)
     if callBackCancel then
         logger.debug("showDialog, callBackCancel valid")
         noBtn.visible = true
-        noBtn.onClick:Add(
+        noBtn.onClick:Set(
             function()
                 Dialog.win:Hide()
                 callBackCancel()
@@ -71,24 +71,29 @@ function Dialog.coShowDialog(msg, callBackOK, callBackCancel)
     local yes
     local no
 
-    local resume = function()
-        local r, err = coroutine.resume(waitCoroutine)
-        if not r then
-            logger.error(debug.traceback(waitCoroutine, err))
-        end
+	-- 确保只调用一次
+    local resumeOnce = function()
+		if waitCoroutine ~= nil then
+			local wc = waitCoroutine
+			waitCoroutine = nil
+			local r, err = coroutine.resume(wc)
+			if not r then
+				logger.error(debug.traceback(wc, err))
+			end
+		end
     end
 
     if callBackOK then
         yes = function()
             callBackOK()
-            resume()
+            resumeOnce()
         end
     end
 
     if callBackCancel then
         no = function()
             callBackCancel()
-            resume()
+            resumeOnce()
         end
     end
 

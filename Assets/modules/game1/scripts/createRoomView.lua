@@ -65,7 +65,7 @@ function CreateRoomView.new()
     end
 
     local createBtn = CreateRoomView.unityViewNode:GetChild("createBtn")
-    createBtn.onClick:Add(
+    createBtn.onClick:Set(
         function()
             -- CreateRoomView:onCloseButtonClick()
         end
@@ -80,13 +80,13 @@ function CreateRoomView:initAllView()
     self.togglePay[1] = self.unityViewNode:GetChild("pay1")
     self.togglePay[2] = self.unityViewNode:GetChild("pay2")
     self.togglePay[1].selected = true
-    self.togglePay[1].onClick:Add(
+    self.togglePay[1].onClick:Set(
         function()
             self.togglePay[2].selected = false
             self:UpdateComsumer()
         end
     )
-    self.togglePay[2].onClick:Add(
+    self.togglePay[2].onClick:Set(
         function()
             self.togglePay[1].selected = false
             self:UpdateComsumer()
@@ -109,21 +109,21 @@ function CreateRoomView:initAllView()
     self.toggleCount[2] = self.unityViewNode:GetChild("hand8")
     self.toggleCount[3] = self.unityViewNode:GetChild("hand16")
     self.toggleCount[1].selected = true
-    self.toggleCount[1].onClick:Add(
+    self.toggleCount[1].onClick:Set(
         function()
             self.toggleCount[2].selected = false
             self.toggleCount[3].selected = false
             self:UpdateComsumer()
         end
     )
-    self.toggleCount[2].onClick:Add(
+    self.toggleCount[2].onClick:Set(
         function()
             self.toggleCount[1].selected = false
             self.toggleCount[3].selected = false
             self:UpdateComsumer()
         end
     )
-    self.toggleCount[3].onClick:Add(
+    self.toggleCount[3].onClick:Set(
         function()
             self.toggleCount[1].selected = false
             self.toggleCount[2].selected = false

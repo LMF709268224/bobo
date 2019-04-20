@@ -111,7 +111,7 @@ function PlayerView:initHands(view)
                 card.position = go.position
                 myHandTilesNode:AddChild(card)
                 local btn = card:GetChild("n0")
-                btn.onClick:Add(
+                btn.onClick:Set(
                     function(context)
                         self:onHandTileBtnClick(i)
                     end
@@ -165,19 +165,19 @@ function PlayerView:initOperationButtons()
     self.skipBtn = view:GetChild("pass")
     self.tipBtn = view:GetChild("tip")
     self.discardBtn = view:GetChild("discard")
-    self.skipBtn.onClick:Add(
+    self.skipBtn.onClick:Set(
         function(obj)
             local player = pv.player
             player:onSkipBtnClick(false, obj)
         end
     )
-    self.tipBtn.onClick:Add(
+    self.tipBtn.onClick:Set(
         function(obj)
             local player = pv.player
             player:onTipBtnClick(false, obj)
         end
     )
-    self.discardBtn.onClick:Add(
+    self.discardBtn.onClick:Set(
         function(obj)
             local player = pv.player
             player:onDiscardBtnClick(false, obj)

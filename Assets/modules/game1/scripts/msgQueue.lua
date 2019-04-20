@@ -33,6 +33,8 @@ function MQ:getMsg()
     coroutine.yield()
     self.waitCoroutine = nil
 
+    assert(#self.messages > 0, "getMsg coroutine been resume with empty msg")
+
     return table.remove(self.messages, 1) --返回并删除列表里第一个消息
 end
 
@@ -74,7 +76,7 @@ function MQ:pushMsg(msg)
         isBlocked = true
         if msg.mt == MsgType.wsData then
             local p = priorityMap[msg.data.Ops]
-            if p ~= nil and p > self.priority then
+            if p ~= nil and p >= self.priority then
                 isBlocked = false
             end
         end
@@ -90,6 +92,31 @@ end
 
 function MQ:blockNormal()
     self.priority = 1
+    logger.debug("MQ:blockNormal")
+    -- 如果此时消息队列有消息，需要把消息迁移到
+    -- blocked 队列中
+    if #self.messages > 0 then
+        logger.debug("MQ:blockNormal, current msg count:", #self.messages)
+        local unblockedMsgs = {}
+        for _, msg in ipairs(self.messages) do
+            local isBlocked = true
+            if msg.mt == MsgType.wsData then
+                local p = priorityMap[msg.data.Ops]
+                if p ~= nil and p >= self.priority then
+                    isBlocked = false
+                end
+            end
+
+            if isBlocked then
+                table.insert(self.blockedMsgs, msg)
+            else
+                table.insert(unblockedMsgs, msg)
+            end
+        end
+
+        self.messages = unblockedMsgs
+        logger.debug("MQ:blockNormal, after migrate, msg count:", #self.messages)
+    end
 end
 
 function MQ:unblockNormal()
@@ -105,6 +132,7 @@ function MQ:unblockNormal()
 end
 
 function MQ:wakeupCoroutine()
+    assert(#self.messages > 0, "wakeupCoroutine without any msg")
     if self.waitCoroutine ~= nil then
         local waitCoroutine = self.waitCoroutine
         self.waitCoroutine = nil
