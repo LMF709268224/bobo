@@ -132,7 +132,7 @@ function DisbandVoteView:updateTexts(msgDisbandNotify)
         local p = self.playerList[msgDisbandNotify.applicant + 1]
         nick = self:getPlayerNick(msgDisbandNotify.applicant)
         p.nameText.text = nick
-        logger.debug(" player ", nick, "refused")
+        logger.debug(" player ", nick, " applicate")
         p.spState_Agree.visible = true
         p.root.visible = true
     -- index = index + 1
@@ -148,7 +148,7 @@ function DisbandVoteView:updateTexts(msgDisbandNotify)
                 local p = self.playerList[chairID + 1]
                 nick = self:getPlayerNick(chairID)
                 p.nameText.text = nick
-                logger.debug(" player ", nick, "thinking")
+                logger.debug(" player ", nick, " thinking")
                 p.spState_Thinking.visible = true
                 p.root.visible = true
             -- index = index + 1
@@ -164,7 +164,7 @@ function DisbandVoteView:updateTexts(msgDisbandNotify)
                 local p = self.playerList[chairID + 1]
                 nick = self:getPlayerNick(chairID)
                 p.nameText.text = nick
-                logger.debug(" player ", nick, "agree")
+                logger.debug(" player ", nick, " agree")
                 p.spState_Agree.visible = true
                 p.root.visible = true
             -- index = index + 1
@@ -181,7 +181,7 @@ function DisbandVoteView:updateTexts(msgDisbandNotify)
                 local p = self.playerList[chairID + 1]
                 nick = self:getPlayerNick(chairID)
                 p.nameText.text = nick
-                logger.debug(" player ", nick, "refused")
+                logger.debug(" player ", nick, " refused")
                 p.spState_Refuse.visible = true
                 p.root.visible = true
                 -- index = index + 1
@@ -335,7 +335,7 @@ function DisbandVoteView:destroy()
     self.room.disbandLocked = nil
     self.msgDisbandNotify = nil
 
-    self.viewObj:Destroy()
+    self.viewObj:Dispose()
 end
 
 return DisbandVoteView
