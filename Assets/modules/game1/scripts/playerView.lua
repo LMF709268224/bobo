@@ -509,23 +509,24 @@ function PlayerView:CenterAlign(ZJHandCards)
     local isSingular = showCardsNum % 2 == 1
     local centerCardIdx = showCardsNum % 2 == 1 and math.ceil(showCardsNum / 2) or showCardsNum / 2
     for i = 1, showCardsNum do
+        local pos = 568
         if isSingular then
             if i == centerCardIdx then
-                pos = Vector3(0, 0, 0)
+                pos = 568
             elseif i < centerCardIdx then
-                pos = Vector3(0 - (centerCardIdx - i) * _cardWidth, 0, 0)
+                pos = 568 - (centerCardIdx - i) * _cardWidth
             elseif i > centerCardIdx then
-                pos = Vector3((i - centerCardIdx) * _cardWidth, 0, 0)
+                pos = 568 + (i - centerCardIdx) * _cardWidth
             end
         else
             if i <= centerCardIdx then
-                pos = Vector3(0 - ((centerCardIdx - i) * _cardWidth + _cardWidth / 2), 0, 0)
+                pos = 568 - ((centerCardIdx - i) * _cardWidth + _cardWidth / 2)
             elseif i > centerCardIdx then
-                pos = Vector3((i - 1 - centerCardIdx) * _cardWidth + _cardWidth / 2, 0, 0)
+                pos = 568 + (i - 1 - centerCardIdx) * _cardWidth + _cardWidth / 2
             end
         end
-        ZJHandCards[i].transform.localPosition = pos
-        ZJHandCards[i]:SetActive(true)
+        ZJHandCards[i].x = pos
+        ZJHandCards[i].visible = true
         --ZJHandCards[i].setResumePos(pos)
         -- if i < showCardsNum and not _isDiPai then
         -- -- if not ZJHandCards[i].IsWang() then
@@ -536,14 +537,29 @@ function PlayerView:CenterAlign(ZJHandCards)
 end
 --发牌动画，另外两位玩家的 手牌数量 递增。。。没有其他动画效果
 function PlayerView:dealOther()
+    self.handsNumber.text = 0
     for i = 1, 16 do
-        self.viewUnityNode:DelayRun(
-            0.06 * i,
+        self.myView:DelayRun(
+            0.1 * i,
             function()
                 self.handsNumber.text = i
             end
         )
     end
+    -- self.dealNumer = 0
+    -- self.viewUnityNode:StartTimer(
+    --     "playerDeal",
+    --     1,
+    --     0,
+    --     function()
+    --         self.dealNumer = self.dealNumer + 1
+    --         self.handsNumber.text = self.dealNumer
+    --         if self.dealNumer >= 16 then
+    --             self.viewUnityNode:StopTimer("playerDeal")
+    --         end
+    --     end,
+    --     self.dealNumer
+    -- )
 end
 --发牌动画。。。玩家1 手牌展现
 function PlayerView:deal()
@@ -554,8 +570,8 @@ function PlayerView:deal()
         for j = 1, i do
             table.insert(cardsInfo, zjHandArr[j])
         end
-        self.viewUnityNode:DelayRun(
-            0.06 * i,
+        self.myView:DelayRun(
+            0.1 * i,
             function()
                 --local zjHandCardList = GenerateCardList(CardContainer.tZJHandCards, cardsInfo, CARD_ITEM_TYPE.ZJ_HAND)
                 self:CenterAlign(cardsInfo)

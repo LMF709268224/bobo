@@ -59,9 +59,6 @@ function Handler.onMsg(msgData, room)
         --player:addFlowerTiles(playerTileList.tilesFlower)
     end
 
-    --播放发牌动画，并使用coroutine等待动画完成
-    -- room.roomView:dealAnimation()
-
     --自己手牌排一下序
     local mySelf = room:me()
     mySelf:sortHands(false)
@@ -69,11 +66,11 @@ function Handler.onMsg(msgData, room)
     --显示各个玩家的手牌（对手只显示暗牌）和花牌
     for _, p in pairs(players) do
         logger.debug(" 显示各个玩家的手牌")
-        p:hand2UI(false, true)
+        p:hand2UI(false, false)
     end
 
     --播放发牌动画，并使用coroutine等待动画完成
-    -- room.roomView:dealAnimation(mySelf, player1, player2)
+    room.roomView:dealAnimation(mySelf, player1, player2)
 
     --等待庄家出牌
     local bankerPlayer = room:getPlayerByChairID(room.bankerChairID)

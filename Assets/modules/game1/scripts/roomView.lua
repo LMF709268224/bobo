@@ -393,9 +393,9 @@ function RoomView:dealAnimation(me, player1, player2)
     player2.playerView:dealOther()
 
     self.unityViewNode:DelayRun(
-        1,
+        2,
         function()
-            self.FaPaiAniObj:Hide()
+            -- self.FaPaiAniObj:Hide()
             local flag, msg = coroutine.resume(waitCo)
             if not flag then
                 msg = debug.traceback(waitCo, msg)
@@ -408,57 +408,6 @@ function RoomView:dealAnimation(me, player1, player2)
 
     coroutine.yield()
 end
-----------------------------------------------
--- 播放发牌动画
-----------------------------------------------
--- function RoomView:dealAnimation()
---     local waitCo = coroutine.running()
-
---     for i = 1, 3 do
---         self:CommonHideAll(self.tFaPaiAniNaCard[i])
---     end
-
---     self.FaPaiAniObj:Show()
---     local aniObj = self:initFapaiAnimation()
---     dfCompatibleAPI:soundPlay("animator_fapai")
-
---     for i = 1, 3 do
---         local playerView = self.playerViews[i]
---         local t = self.tFaPaiAniNaCard[i]
---         if playerView.player ~= nil then
---             for i = 1, 3 do
---                 t[i]:SetActive(true)
---             end
---         else
---             for i = 1, 3 do
---                 t[i]:SetActive(false)
---             end
---         end
-
---         --logger.debug('llwant banker chair id = ' .. self.room.bankerChairID)
---         --拿牌动画
---         t[5]:SetActive(self.room.bankerChairID + 1 == i)
---     end
-
---     self.unityViewNode:DelayRun(
---         dfConfig.ANITIME_DEFINE.FAPAIANIPLAYTIME,
---         function()
---             self.FaPaiAniObj:Hide()
---             aniObj.gameObject:Destroy()
---             self.tFaPaiAniNaCard = {{}, {}, {}, {}}
-
---             local flag, msg = coroutine.resume(waitCo)
---             if not flag then
---                 msg = debug.traceback(waitCo, msg)
---                 --error(msg)
---                 logger.error(msg)
---                 return
---             end
---         end
---     )
-
---     coroutine.yield()
--- end
 
 ----------------------------------------------
 -- 播放牌局开始动画

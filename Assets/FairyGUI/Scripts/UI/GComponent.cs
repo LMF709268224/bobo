@@ -113,7 +113,7 @@ namespace FairyGUI
             public object luaParam;
         }
 
-        public void DelayRun(int interval, TimerCallback callback)
+        public void DelayRun(float interval, TimerCallback callback)
         {
             ComponentTimer ct = new ComponentTimer();
             ct.luaCb = callback;
