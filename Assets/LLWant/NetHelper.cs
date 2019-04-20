@@ -28,6 +28,21 @@ public static class NetHelper
         req.Send();
     }
 
+    public static void HttpPost(string url, byte[] postData, BestHTTP.OnRequestFinishedDelegate onFinished)
+    {
+        var req = NewHttpRequest(url, BestHTTP.HTTPMethods.Post, onFinished);
+        req.RawData = postData;
+        req.Send();
+    }
+
+    public static BestHTTP.WebSocket.WebSocket NewWebSocket(string url)
+    {
+        var ws = new BestHTTP.WebSocket.WebSocket(new System.Uri(url));
+        // TODO: 设置https证书自定义检验、代理、等等
+
+        return ws;
+    }
+
     /// <summary>
     /// 主要是使用UnityWebRequest来加载本地文件，由于android系统打包时，文件被压缩到apk包中，
     /// 因此直接System.IO.File来读取是不行的，需要UnityWebRequest来理解apk格式
@@ -54,6 +69,12 @@ public static class NetHelper
         }
     }
 
+    /// <summary>
+    /// LUA脚本中调用本函数，从APK包中抽取资源到SDCard中
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="dst"></param>
+    /// <param name="overrided"></param>
     public static void UnityWebRequestLocalCopy(string src, string dst, bool overrided)
     {
         if (System.IO.File.Exists(dst) && !overrided)
@@ -63,21 +84,6 @@ public static class NetHelper
 
         var bs = UnityWebRequestLocalGet(src);
         System.IO.File.WriteAllBytes(dst, bs);
-    }
-
-    public static void HttpPost(string url, byte[] postData, BestHTTP.OnRequestFinishedDelegate onFinished)
-    {
-        var req = NewHttpRequest(url, BestHTTP.HTTPMethods.Post, onFinished);
-        req.RawData = postData;
-        req.Send();
-    }
-
-    public static BestHTTP.WebSocket.WebSocket NewWebSocket(string url)
-    {
-        var ws = new BestHTTP.WebSocket.WebSocket(new System.Uri(url));
-        // TODO: 设置https证书自定义检验、代理、等等
-
-        return ws;
     }
 
     public static bool WriteBytesToFile(string path, byte[] bytes)

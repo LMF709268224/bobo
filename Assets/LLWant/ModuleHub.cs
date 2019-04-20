@@ -83,13 +83,15 @@ public class ModuleHub
         LuaEnvInit.AddBasicBuiltin(luaenv);
 
         // 选择模块的目录，例如可能是只读目录，或者可写目录
-        SelectModulePath();
+        SelectModuleLoader();
 
         // 设置this到lua虚拟机中，脚本可以通过thisMod访问module hub对象
         luaenv.Global.Set("thisMod", this);
 
+        // 模块的启动参数，主要是传递一些参数给lua脚本，参数是一个json字符串
         if (jsonString != null)
         {
+            // lua脚本中通过launchArgs访问该json字符串
             luaenv.Global.Set("launchArgs", jsonString);
         }
 
@@ -164,14 +166,14 @@ public class ModuleHub
     }
 
     /// <summary>
-    /// 选择一个资源加载路径
+    /// 选择一个资源加载器
     /// 
     /// 1. 如果可写目录下存在模块目录，则优先使用可写目录作为资源目录
     /// 2. 如果可写目录不存在模块目录，则两种情况：
     /// 2.1 如果处于编辑器模式，则使用assets目录
     /// 2.2 如果不处于编辑器模式，则使用streamingAssets目录
     /// </summary>
-    void SelectModulePath()
+    void SelectModuleLoader()
     {
 
         var writeModuleDir = Path.Combine(Application.persistentDataPath, "modules", modName);
@@ -430,6 +432,14 @@ public class ModuleHub
         }
     }
 
+    /// <summary>
+    /// 给资源路径增加模块名字，规则是，如果路径已经包含了lobby前缀了，那就不做修改；
+    /// 如果路径已经以模块名字开头，也不做修改了；
+    /// 否则就把模块名字作为前缀加到路径名上
+    /// </summary>
+    /// <param name="assetPath">资源的路径名</param>
+    /// <param name="moduleName">模块名</param>
+    /// <returns></returns>
     internal static string AppendModPrefix(string assetPath, string moduleName)
     {
         if (assetPath.StartsWith("lobby"))

@@ -32,6 +32,11 @@ public class UIHelper
         return particels.TrueForAll(e => e != null && e.isStopped);
     }
 
+    /// <summary>
+    /// LUA脚本使用本函数把动画prefab的粒子都cache起来，以便后面检查粒子是否完成了
+    /// </summary>
+    /// <param name="go"></param>
+    /// <returns></returns>
     public static List<ParticleSystem> GetAllParticle(GameObject go)
     {
         var particels = new List<ParticleSystem>();

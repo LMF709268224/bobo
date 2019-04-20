@@ -137,10 +137,17 @@ public class Boot : MonoBehaviour
     void OnDestroy()
     {
         Debug.Log("Boot.OnDestroy");
+        // 销毁UI残余界面，否则可能UI组件引用着LUA中的回调函数
+        // 就会导致销毁lua虚拟机时抛异常
         FairyGUI.Timers.inst.Clear();
         FairyGUI.GRoot.inst.Dispose();
-        lobby.OnDestroy();
-        lobby = null;
+
+        // 最后销毁大厅模块
+        if (lobby != null)
+        {
+            lobby.OnDestroy();
+            lobby = null;
+        }
     }
 
     void OnApplicationQuit()
