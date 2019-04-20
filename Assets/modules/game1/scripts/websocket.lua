@@ -50,7 +50,7 @@ function WS:open()
     end
 
     bestHTTPws.OnError = function(ws)
-        logger.error("ws error")
+        logger.debug("ws error")
         wsClean(ws)
 
         this:onBestHTTPWebsocketError()
