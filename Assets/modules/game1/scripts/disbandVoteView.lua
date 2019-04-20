@@ -1,5 +1,4 @@
 local DisbandVoteView = {}
-DisbandVoteView.VERSION = "1.0"
 
 local mt = {__index = DisbandVoteView}
 

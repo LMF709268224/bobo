@@ -1,9 +1,10 @@
 --[[
 外面调用getSingleton获得唯一实例单件
 ]]
-local DF = {}
+--luacheck: no self
+local SG = {}
 
-local mt = {__index = DF}
+local mt = {__index = SG}
 
 local websocket = require "scripts/websocket"
 local msgQueue = require "scripts/msgQueue"
@@ -15,7 +16,7 @@ local dialog = require "lobby/dialog"
 
 local singleTon = nil
 
-function DF.getSingleton()
+function SG.getSingleton()
     if singleTon ~= nil then
         return singleTon
     else
@@ -32,7 +33,7 @@ end
 --websocket彻底销毁
 --@param myUser 用户对象，至少包含userID
 -----------------------------------
-function DF:tryEnterRoom(url, myUser, roomInfo)
+function SG:tryEnterRoom(url, myUser, roomInfo)
     self.isEnterRoom = true
 
     --logger.debug(" tryEnterRoom, date2: "..os.date().. ", timeStamp:"..os.time()..", clock:"..os.clock())
@@ -75,11 +76,11 @@ function DF:tryEnterRoom(url, myUser, roomInfo)
         self.room = nil
     end
 
-    if self.forceExit then
-        --self:logout()
-    elseif self.isTokenExpire then
-    --self:logout("登录超时，请重新登录")
-    end
+    -- if self.forceExit then
+    --     --self:logout()
+    -- elseif self.isTokenExpire then
+    -- --self:logout("登录超时，请重新登录")
+    -- end
     --self.forceExit = false
     -- self.locked = false
 
@@ -91,7 +92,7 @@ function DF:tryEnterRoom(url, myUser, roomInfo)
     _ENV.thisMod:BackToLobby()
 end
 
-function DF:doEnterRoom(url, myUser, roomInfo)
+function SG:doEnterRoom(url, myUser, roomInfo)
     logger.info("doEnterRoom enter---")
     -- 每次进入本函数时都重置retry为false
     -- 如果发生断线重连且用户选择了重连那么后面的代码
@@ -167,7 +168,7 @@ function DF:doEnterRoom(url, myUser, roomInfo)
     logger.info("doEnterRoom leave---")
 end
 
-function DF:createRoom(roomInfo)
+function SG:createRoom(roomInfo)
     self.room = room.new(self.myUser)
     self.room.host = self
     self.room.roomInfo = roomInfo
@@ -175,7 +176,7 @@ function DF:createRoom(roomInfo)
     self.isEnterRoom = false
 end
 
-function DF:pumpMsg()
+function SG:pumpMsg()
     while true do
         local mq = self.mq
         local msg = mq:getMsg()
@@ -211,8 +212,8 @@ end
 --等待服务器的消息（主要是等待服务器的进入房间回复）
 --如果超时，则认为连接断开
 ------------------------------------------
-function DF:waitWebsocketMessage(showProgressTips)
-    logger.debug("DF:waitWebsocketMessage, " .. showProgressTips)
+function SG:waitWebsocketMessage(showProgressTips)
+    logger.debug("SG:waitWebsocketMessage, " .. showProgressTips)
 
     local msg = self.mq:getMsg()
 
@@ -230,12 +231,12 @@ end
 --需要c# websocket设置tcpclient的链接超时时间
 --以避免等待过于长久
 ------------------------------------------
-function DF:waitConnect(showProgressTips)
-    logger.debug("DF:waitConnect, " .. showProgressTips)
+function SG:waitConnect(showProgressTips)
+    logger.debug("SG:waitConnect, " .. showProgressTips)
 
     local msg = self.mq:getMsg()
 
-    logger.debug("DF:waitConnect, mq:getMsg return:", msg)
+    logger.debug("SG:waitConnect, mq:getMsg return:", msg)
 
     if msg.mt == msgQueue.MsgType.wsOpen then
         return 0
@@ -248,7 +249,7 @@ end
 --显示重连对话框，如果用户选择重试
 --则return true，否则返回false
 ---------------------------------------
-function DF:showRetryMsgBox(msg)
+function SG:showRetryMsgBox(msg)
     msg = msg or "连接游戏服务器失败，是否重连？"
     dialog.coShowDialog(
         msg,
@@ -264,7 +265,7 @@ end
 ---------------------------------------
 --显示进入房间的错误信息
 ---------------------------------------
-function DF:showEnterRoomError(status)
+function SG:showEnterRoomError(status)
     local msg = proto.getEnterRoomErrorCode(status)
     logger.warn("enter room failed, server return error：", msg)
     dialog.coShowDialog(
@@ -279,7 +280,7 @@ end
 ------------------------------------------
 --向游戏服务器发送ready消息
 ------------------------------------------
-function DF:sendPlayerReadyMsg()
+function SG:sendPlayerReadyMsg()
     -- local gmsg = pokerfaceProto.GameMessage()
     -- gmsg.Ops = pokerfaceProto.OPPlayerReady
 
@@ -294,7 +295,7 @@ end
 ------------------------------------------
 --向游戏服务器发送离开房间消息
 ------------------------------------------
-function DF:sendLeaveRoomMsg()
+function SG:sendLeaveRoomMsg()
     -- local gmsg = pokerfaceProto.GameMessage()
     -- gmsg.Ops = pokerfaceProto.OPPlayerLeaveRoom
 
@@ -310,7 +311,7 @@ end
 --向服务器发送退出房间请求，并等待回复
 --如果超时而未能收到服务器回复，直接回到大厅
 ------------------------------------------
-function DF:doLeaveRoom()
+function SG:doLeaveRoom()
     --先向服务器发送离开请求
     self:sendLeaveRoomMsg()
     -- local df = self
@@ -326,40 +327,11 @@ function DF:doLeaveRoom()
     --     0
     -- )
     local canLeave = true
-    --等待服务器回复
-    while true do
-        local ws = self.ws
-        local result = ws:waitWebsocketMessageEx()
-        if result.ev == websocket.websocketEvent then
-            local msg = result.data
-            if msg == nil then
-                -- 网络连接断开,break循环
-                break
-            else
-                -- 如果不是OPPlayerLeaveRoom，则抛弃消息继续等待
-                if pokerfaceProto.OPPlayerLeaveRoom == msgHelper.decodeMessageCode(msg) then
-                    --等到服务器的回复，终止循环
-                    local leaveReplyMsg = msgHelper:decodeEnterRoomResult(msg)
-                    if leaveReplyMsg ~= nil and leaveReplyMsg.status ~= 0 then
-                        canLeave = false
-                    -- dfCompatibleAPI:showTip("游戏已经开始或者房间正在申请解散，不能退出")
-                    end
-                    break
-                end
-            end
-        elseif result.ev == websocket.timeoutEvent then
-            --超时了，由于滚动圈超时回调，把timeout event放到websocket上导致其返回
-            --因此终止循环
-            break
-        end
-    end
 
-    --关闭滚动圈
-    -- g_commonModule:CloseWaitTip()
     return canLeave
 end
 
-function DF:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
+function SG:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
     -- if self.locked then
     --     logger.debug(" df is locked")
     --     return
@@ -370,8 +342,7 @@ function DF:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
     end
 
     --local pkproto2 = game_mahjong_s2s_pb
-    local msgHandRecorder = pokerfaceS2s.SRMsgHandRecorder()
-    msgHandRecorder:ParseFromString(msgAccLoadReplayRecord.replayRecordBytes)
+    local msgHandRecorder = proto.decodeMessage("pokerface.SRMsgHandRecorder", msgAccLoadReplayRecord.replayRecordBytes)
 
     --把配置内容替换配置ID，兼容老代码
     msgHandRecorder.roomConfigID = msgAccLoadReplayRecord.roomJSONConfig
@@ -390,9 +361,10 @@ function DF:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
         end
     end
 
+    local prompt = require "lobby/prompt"
     if userID == nil then
         -- 根据chairID获取不到userID，说明输入的回放码不正确或已过期
-        g_commonModule:ShowTip("您输入的回放码不存在,或录像已过期!")
+        prompt.showPrompt("您输入的回放码不存在,或录像已过期!")
         return
     else
         logger.debug(" tryEnterReplayRoom userID " .. userID)
@@ -406,7 +378,7 @@ function DF:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
     local Replay = require(path .. "dfMahjong.dfReplay")
 
     if Replay == nil then
-        logError("Replay == nil")
+        logger.error("Replay == nil")
     end
 
     local rp = Replay:new(self, userID, msgHandRecorder)
@@ -417,7 +389,7 @@ function DF:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
 end
 
 -- 退出到登录界面
-function DF:forceExit2LoginView()
+function SG:forceExit2LoginView()
     if self.room ~= nil then
         self.room:completedWait()
         self.room.isDestroy = true
@@ -435,24 +407,24 @@ function DF:forceExit2LoginView()
     end
 end
 
-function DF:logout(msg)
-    logger.debug("dfsingleton logout")
-    local config = {
-        content = msg or "您已在其他地方登录，请重新登录！",
-        ignoreCloseBtn = true,
-        callback = function(...)
-            dispatcher:dispatch("LOGOUT", arg)
-            UnityEngine.PlayerPrefs.SetString("weiChat_openid", "")
-            UnityEngine.PlayerPrefs.SetString("weiChat_token", "")
-            local accModule = require("AccComponent.Script.AccModule")
-            g_ModuleMgr:RemoveModule(accModule.moduleName)
+function SG:logout(msg)
+    logger.debug("dfsingleton logout:", msg)
+    -- local config = {
+    --     content = msg or "您已在其他地方登录，请重新登录！",
+    --     ignoreCloseBtn = true,
+    --     callback = function(...)
+    --         dispatcher:dispatch("LOGOUT", arg)
+    --         UnityEngine.PlayerPrefs.SetString("weiChat_openid", "")
+    --         UnityEngine.PlayerPrefs.SetString("weiChat_token", "")
+    --         local accModule = require("AccComponent.Script.AccModule")
+    --         g_ModuleMgr:RemoveModule(accModule.moduleName)
 
-            local loginModule = require("LoginComponent.Script.LoginModule")
-            g_ModuleMgr:AddModule(loginModule.moduleName, loginModule)
-            dispatcher:dispatch("OPEN_LOGINVIEW", {isLogout = true})
-        end
-    }
-    g_commonModule:ShowDialog(config)
+    --         local loginModule = require("LoginComponent.Script.LoginModule")
+    --         g_ModuleMgr:AddModule(loginModule.moduleName, loginModule)
+    --         dispatcher:dispatch("OPEN_LOGINVIEW", {isLogout = true})
+    --     end
+    -- }
+    -- g_commonModule:ShowDialog(config)
 end
 
-return DF
+return SG

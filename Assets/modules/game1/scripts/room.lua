@@ -2,8 +2,8 @@
     Room保存着所有player
     players用chairId索引
 ]]
+--luacheck: no self
 local Room = {}
-Room.VERSION = "1.0"
 
 local mt = {__index = Room}
 
@@ -311,95 +311,90 @@ end
 
 ------------------------------------
 --接收消息，显示到对应的player里面
+--参数：msgChat
 ------------------------------------
-function Room:onChatMsg(msgChat)
-    if not self.emoji then
-        self.emoji = {}
-    end
-
-    --logError("onChatMsg ： " .. tostring(msgChat))
-    --self.roomView:OnPlayerChat(msgChat)
-    local scope = msgChat.scope
-    local from = msgChat.from
-    local to = msgChat.to
-    local dataType = msgChat.dataType
-    local player = self:getPlayerByUserId(from)
-    local playerView = player.playerView
-    --清理之前的消息框
-    if playerView.textChatDelayRun ~= nil then
-        self.roomView.unityViewNode:CancelDelayRun(playerView.textChatDelayRun)
-    end
-    if playerView.oCurTextChat ~= nil then
-        playerView.oCurTextChat:Hide()
-        playerView.oCurTextChat = nil
-    end
-    if dataType == accessory_pb.Voice then
-        --VoiceChatUtl.RevClipData(msgChat.data);
-        --self.roomView:OnPlayReceivedChatData(from,10)
-        --语音消息处理
-        --logError("msgChat.data ---------------- :" .. #msgChat.data)
-    else
-        local record = rapidjson.decode(msgChat.data)
-        local chatMessage = record["msg"]
-
-        local oCurTextChat = nil
-        if dataType == accessory_pb.Text or dataType == accessory_pb.Buildin then
-            oCurTextChat = playerView.head.textChat
-            --一行限制在15个字符
-            chatMessage = chatMessage or ""
-            local showMsg = tool:StringInsert(chatMessage, "\n", 15)
-
-            oCurTextChat:SubGet("msg", "Text").text = tostring(chatMessage)
-            oCurTextChat:Show()
-        elseif dataType == accessory_pb.Emoji then
-            local data = rapidjson.decode(msgChat.data)
-            local emojiName = data.msg
-            oCurTextChat = playerView.head.faceChat
-
-            g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE):DestroyAllChilds(oCurTextChat)
-            if not self.emoji[emojiName] then
-                --local emojiObj = resMgr.LoadAsset("LanZhouMaJiang/prefab/bund1/",emojiName)
-                local emojiObj = ResourceManager:LoadPrefab("GameModule/GuanZhang/_AssetsBundleRes/prefab/bund1/" .. emojiName .. ".prefab")
-                emojiObj:SetParent(self.roomView.unityViewNode.transform, false)
-                emojiObj:Hide()
-                if emojiObj then
-                    self.emoji[emojiName] = emojiObj
-                else
-                    logError("加载表情失败 ： " .. tostring(emojiName))
-                    return
-                end
-            end
-
-            local prefab = self.emoji[emojiName]
-            local obj = tool:UguiAddChild(oCurTextChat, prefab, "emoji")
-            obj.transform.localPosition = Vector3(0, -40, 0)
-            oCurTextChat:Show()
-        end
-
-        if dataType == accessory_pb.Buildin then
-            local chatIndex = record["index"]
-            local sSpeakSoundName = self:getChatCommonSpeakeRname(player.chairID, chatIndex)
-            if sSpeakSoundName ~= "" then
-                dfCompatibleAPI:soundPlay(sSpeakSoundName)
-            end
-        end --内置快捷消息的声音
-
-        playerView.oCurTextChat = oCurTextChat
-        playerView.textChatDelayRun =
-            self.roomView.unityViewNode:DelayRun(
-            dfConfig.ANITIME_DEFINE.CHATQIPAOSHOWTIME,
-            function()
-                oCurTextChat:Hide()
-                oCurTextChat = nil
-            end
-        )
-    end
+function Room:onChatMsg()
+    -- if not self.emoji then
+    --     self.emoji = {}
+    -- end
+    -- --logError("onChatMsg ： " .. tostring(msgChat))
+    -- --self.roomView:OnPlayerChat(msgChat)
+    -- local scope = msgChat.scope
+    -- local from = msgChat.from
+    -- local to = msgChat.to
+    -- local dataType = msgChat.dataType
+    -- local player = self:getPlayerByUserId(from)
+    -- local playerView = player.playerView
+    -- --清理之前的消息框
+    -- if playerView.textChatDelayRun ~= nil then
+    --     self.roomView.unityViewNode:CancelDelayRun(playerView.textChatDelayRun)
+    -- end
+    -- if playerView.oCurTextChat ~= nil then
+    --     playerView.oCurTextChat:Hide()
+    --     playerView.oCurTextChat = nil
+    -- end
+    -- if dataType == accessory_pb.Voice then
+    --     --VoiceChatUtl.RevClipData(msgChat.data);
+    --     --self.roomView:OnPlayReceivedChatData(from,10)
+    --     --语音消息处理
+    --     --logError("msgChat.data ---------------- :" .. #msgChat.data)
+    -- else
+    --     local record = rapidjson.decode(msgChat.data)
+    --     local chatMessage = record["msg"]
+    --     local oCurTextChat = nil
+    --     if dataType == accessory_pb.Text or dataType == accessory_pb.Buildin then
+    --         oCurTextChat = playerView.head.textChat
+    --         --一行限制在15个字符
+    --         chatMessage = chatMessage or ""
+    --         local showMsg = tool:StringInsert(chatMessage, "\n", 15)
+    --         oCurTextChat:SubGet("msg", "Text").text = tostring(chatMessage)
+    --         oCurTextChat:Show()
+    --     elseif dataType == accessory_pb.Emoji then
+    --         local data = rapidjson.decode(msgChat.data)
+    --         local emojiName = data.msg
+    --         oCurTextChat = playerView.head.faceChat
+    --         g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE):DestroyAllChilds(oCurTextChat)
+    --         if not self.emoji[emojiName] then
+    --             --local emojiObj = resMgr.LoadAsset("LanZhouMaJiang/prefab/bund1/",emojiName)
+    --             --local emojiPrefab = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund1/" .. emojiName .. ".prefab"
+    --             local emojiObj = ResourceManager:LoadPrefab(emojiPrefab)
+    --             emojiObj:SetParent(self.roomView.unityViewNode.transform, false)
+    --             emojiObj:Hide()
+    --             if emojiObj then
+    --                 self.emoji[emojiName] = emojiObj
+    --             else
+    --                 logError("加载表情失败 ： " .. tostring(emojiName))
+    --                 return
+    --             end
+    --         end
+    --         local prefab = self.emoji[emojiName]
+    --         local obj = tool:UguiAddChild(oCurTextChat, prefab, "emoji")
+    --         obj.transform.localPosition = Vector3(0, -40, 0)
+    --         oCurTextChat:Show()
+    --     end
+    --     if dataType == accessory_pb.Buildin then
+    --         local chatIndex = record["index"]
+    --         local sSpeakSoundName = self:getChatCommonSpeakeRname(player.chairID, chatIndex)
+    --         if sSpeakSoundName ~= "" then
+    --             dfCompatibleAPI:soundPlay(sSpeakSoundName)
+    --         end
+    --     end --内置快捷消息的声音
+    --     playerView.oCurTextChat = oCurTextChat
+    --     playerView.textChatDelayRun =
+    --         self.roomView.unityViewNode:DelayRun(
+    --         dfConfig.ANITIME_DEFINE.CHATQIPAOSHOWTIME,
+    --         function()
+    --             oCurTextChat:Hide()
+    --             oCurTextChat = nil
+    --         end
+    --     )
+    -- end
 end
 ------------------------------------
 --获取语音文件
 -----------------------------------
 function Room:getChatCommonSpeakeRname(chairId, chatIndex)
-    local sSpeakSoundName = ""
+    local sSpeakSoundName
     local player = self:getPlayerByChairID(chairId)
     if player ~= nil and player.sex == 1 then
         sSpeakSoundName = "commonLanguage/boy/speak" .. chatIndex
@@ -411,53 +406,54 @@ end
 ------------------------------------
 --接收语音消息 user_dbid:用户id   voiceTime:语音时长
 -----------------------------------
-function Room:OnPlayReceivedVoiceData(user_dbid, voiceTime)
+function Room:OnPlayReceivedVoiceData()
     --if not UserData.voiceCfg.chatIsOn then return end 	--聊天未开放 不显示语音气泡
     --logError("test Room OnPlayReceivedVoiceData")
-    local delayRunMap = self.roomView.delayRunMap
-    delayRunMap[user_dbid] = delayRunMap[user_dbid] or {}
-    local receivedClickDelay = delayRunMap[user_dbid].receivedClickDelay
-    local receivedDelay = delayRunMap[user_dbid].receivedDelay
-    self.roomView.unityViewNode:CancelDelayRun(receivedClickDelay)
-    self.roomView.unityViewNode:CancelDelayRun(receivedDelay)
-    soundMgr:SetBackMusicVolume(0)
-    local player = self:getPlayerByUserId(tostring(user_dbid))
-    if player ~= nil then
-        local playerView = player.playerView
-        local chairID = playerView.viewChairID
-        playerView.head.playerVoiceNode:SetActive(true)
-        playerView.head.playerVoiceTextNode.text = tostring(voiceTime)
-        self:showPlayerVoiceAnimation(player)
-        receivedDelay =
-            self.roomView.unityViewNode:DelayRun(
-            voiceTime,
-            function()
-                self.roomView.unityViewNode:CancelDelayRun(receivedDelay)
-                self:stopPlayerVoiceAnimation(player)
-                self:resumeBackMusicVolume()
-            end
-        )
-        delayRunMap[user_dbid].receivedDelay = receivedDelay
-    -- self.unityViewNode:AddClick(self.ViewNodes.playerVoiceNodes[chairID], function()
-    -- 	self.unityViewNode:CancelDelayRun(receivedDelay)
-    -- 	self.unityViewNode:CancelDelayRun(receivedClickDelay)
-    -- 	soundMgr:SetBackMusicVolume(0);
-    -- 	self:stopPlayerVoiceAnimation(player);
-    -- 	local seconds = VoiceChatUtl.PlayLastVoiceClip(user_dbid)
-    --     logError("seconds: "..tostring(seconds))
-    -- 	self:showPlayerVoiceAnimation(player);
-    -- 	receivedClickDelay = self.unityViewNode:DelayRun(seconds, function()
-    -- 		self.unityViewNode:CancelDelayRun(receivedClickDelay)
-    -- 		self:stopPlayerVoiceAnimation(player);
-    -- 		self:resumeBackMusicVolume()
-    -- 	end)
-    -- 	self.delayRunMap[user_dbid].receivedClickDelay = receivedClickDelay
-    -- end)
-    end
+    -- local delayRunMap = self.roomView.delayRunMap
+    -- delayRunMap[user_dbid] = delayRunMap[user_dbid] or {}
+    -- local receivedClickDelay = delayRunMap[user_dbid].receivedClickDelay
+    -- local receivedDelay = delayRunMap[user_dbid].receivedDelay
+    -- self.roomView.unityViewNode:CancelDelayRun(receivedClickDelay)
+    -- self.roomView.unityViewNode:CancelDelayRun(receivedDelay)
+    -- soundMgr:SetBackMusicVolume(0)
+    -- local player = self:getPlayerByUserId(tostring(user_dbid))
+    -- if player ~= nil then
+    --     local playerView = player.playerView
+    --     local chairID = playerView.viewChairID
+    --     playerView.head.playerVoiceNode:SetActive(true)
+    --     playerView.head.playerVoiceTextNode.text = tostring(voiceTime)
+    --     self:showPlayerVoiceAnimation(player)
+    --     receivedDelay =
+    --         self.roomView.unityViewNode:DelayRun(
+    --         voiceTime,
+    --         function()
+    --             self.roomView.unityViewNode:CancelDelayRun(receivedDelay)
+    --             self:stopPlayerVoiceAnimation(player)
+    --             self:resumeBackMusicVolume()
+    --         end
+    --     )
+    --     delayRunMap[user_dbid].receivedDelay = receivedDelay
+    -- -- self.unityViewNode:AddClick(self.ViewNodes.playerVoiceNodes[chairID], function()
+    -- -- 	self.unityViewNode:CancelDelayRun(receivedDelay)
+    -- -- 	self.unityViewNode:CancelDelayRun(receivedClickDelay)
+    -- -- 	soundMgr:SetBackMusicVolume(0);
+    -- -- 	self:stopPlayerVoiceAnimation(player);
+    -- -- 	local seconds = VoiceChatUtl.PlayLastVoiceClip(user_dbid)
+    -- --     logError("seconds: "..tostring(seconds))
+    -- -- 	self:showPlayerVoiceAnimation(player);
+    -- -- 	receivedClickDelay = self.unityViewNode:DelayRun(seconds, function()
+    -- -- 		self.unityViewNode:CancelDelayRun(receivedClickDelay)
+    -- -- 		self:stopPlayerVoiceAnimation(player);
+    -- -- 		self:resumeBackMusicVolume()
+    -- -- 	end)
+    -- -- 	self.delayRunMap[user_dbid].receivedClickDelay = receivedClickDelay
+    -- -- end)
+    -- end
 end
 
 --背景声音
-function Room:resumeBackMusicVolume(backMusicVolume)
+--参数：backMusicVolume
+function Room:resumeBackMusicVolume()
     --if self:DelayRunCanceled() then
     -- if backMusicVolume then
     --     soundMgr:SetBackMusicVolume(backMusicVolume)
@@ -516,7 +512,7 @@ end
 
 function Room:stopPlayerVoiceAnimation(player)
     if player.playerView.head.playerVoiceAction and player.playerView.head.playerVoiceAction then
-        for index, action in ipairs(player.playerView.head.playerVoiceAction) do
+        for _, action in ipairs(player.playerView.head.playerVoiceAction) do
             action:Kill(false)
             player.playerView.head.playerVoiceNode:SetActive(false)
         end

@@ -2,37 +2,25 @@
     处理服务器下发的发牌消息，发牌消息意味一手牌开始
 ]]
 local Handler = {}
-Handler.VERSION = "1.0"
 
 local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"
 
 function Handler.onMsg(msgData, room)
-    logger.debug(" deal msg")
+    logger.debug("deal msg")
 
     local msgDeal = proto.decodeMessage("pokerface.MsgDeal", msgData)
 
     room:resetForNewHand()
-
-    --隐藏gps
-    -- room.roomView.distanceView:SetActive(false)
 
     --保存一些房间属性
     room.bankerChairID = msgDeal.bankerChairID
     --是否连庄
     room.isContinuousBanker = msgDeal.isContinuousBanker
     room.windFlowerID = msgDeal.windFlowerID
-    --room.tilesInWall = msgDeal.cardsInWall
-    --大丰 1：就表示家家庄    -- 盐城 >0 表示加价局计数
-    --logger.debug("msgDeal.markup : " .. msgDeal.markup)
-    room.markup = msgDeal.markup
-    --logger.debug("handlerMsgRestore ---------------"..tostring(msgDeal.markup))
 
+    room.markup = msgDeal.markup
     local players = room.players
-    --隐藏复制按钮
-    --room.roomView.copyRoomNumber:SetActive(false)
-    --对局开始动画
-    -- room.roomView:gameStartAnimation()
 
     local player1 = nil
     local player2 = nil
@@ -54,9 +42,6 @@ function Handler.onMsg(msgData, room)
             end
             player.cardCountOnHand = playerTileList.cardCountOnHand
         end
-
-        --填充花牌列表
-        --player:addFlowerTiles(playerTileList.tilesFlower)
     end
 
     --自己手牌排一下序

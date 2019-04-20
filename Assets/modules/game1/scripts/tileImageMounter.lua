@@ -1,15 +1,12 @@
 --[[
     牌的图片挂载
 ]]
+--luacheck: no self
 local Mounter = {}
-Mounter.VERSION = "1.0"
+
 local AgariIndex = require("scripts/AgariIndex")
-local logger = require "lobby/lcore/logger"
--- local dfPath = "GuanZhang/Script/"
--- local AgariIndex = require(dfPath .. "dfMahjong/AgariIndex")
--- local TileImageMap = require(dfPath .. "dfMahjong/tileImageMap")
--- local Loader = require(dfPath .. "dfMahjong/spriteLoader")
--- local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
+-- local logger = require "lobby/lcore/logger"
+
 local countMap = {
 	-- 点数: 红色 2 - 10 J Q K A 王 15张
 	-- 点数: 黑色 2 - 10 J Q K A 王 15张
@@ -65,56 +62,6 @@ local bigImageMap = {
 	["bigImage_red_15"] = "ui://p966ud2tef8p15", --红王
 	["bigImage_black_15"] = "ui://p966ud2tef8p16" --黑王
 }
------------------------------------------------
---为手牌或者花牌挂上牌的图片
------------------------------------------------
-function Mounter:mountTileImageOld(btn, tileID)
-	local hImg = btn:SubGet("hua", "Image")
-	local hImghuasbig = btn:SubGet("huasbig", "Image")
-	local hImghuasmall = btn:SubGet("huasmall", "Image")
-	--hImg:SetActive(true)
-	local artID = AgariIndex.tileId2ArtId(tileID)
-	local dianShu = math.floor(artID / 4) + 2
-	local huaSe = artID % 4
-	local pathHuaSeBig = ""
-	local pathHuaSe = ""
-	local pathDianShu = ""
-
-	local huaSe_path = "suit_hong_"
-	local huaSeABC_path = "suit_honghua_%s_big"
-	if huaSe == 1 then
-		pathHuaSeBig = "suit_fk_big"
-		pathHuaSe = "suit_fk"
-	elseif huaSe == 2 then
-		pathHuaSeBig = "suit_mh_big"
-		pathHuaSe = "suit_mh"
-		huaSe_path = "suit_hei_"
-		huaSeABC_path = "suit_heihua_%s_big"
-	elseif huaSe == 0 then
-		pathHuaSeBig = "suit_hx_big"
-		pathHuaSe = "suit_hx"
-	else
-		pathHuaSeBig = "suit_ht_big"
-		pathHuaSe = "suit_ht"
-		huaSe_path = "suit_hei_"
-		huaSeABC_path = "suit_heihua_%s_big"
-	end
-	pathDianShu = huaSe_path .. tostring(dianShu)
-
-	if dianShu > 10 and dianShu < 14 then
-		pathHuaSeBig = string.format(huaSeABC_path, tostring(dianShu))
-	else
-		--大小鬼 15
-		--A 14
-		if dianShu == 14 then
-			pathDianShu = huaSe_path .. "1"
-		end
-	end
-	hImg.sprite = dfCompatibleAPI:loadDynPic("tiles/" .. pathDianShu)
-	hImghuasbig.sprite = dfCompatibleAPI:loadDynPic("tiles/" .. pathHuaSeBig)
-	hImghuasmall.sprite = dfCompatibleAPI:loadDynPic("tiles/" .. pathHuaSe)
-	hImghuasbig:SetNativeSize()
-end
 
 function Mounter:mountTileImage(btn, tileID)
 	local artID = AgariIndex.tileId2ArtId(tileID)
@@ -127,12 +74,12 @@ function Mounter:mountTileImage(btn, tileID)
 	flag.visible = false
 	local big = btn:GetChild("n3")
 	big.visible = false
-	local p = nil
+	local p
 
 	local pathHuaSeBig = "bigImage_" .. tostring(huaSe)
 	local pathHuaSeBig_2 = "bigImage_"
 	local pathHuaSe = "flower_" .. tostring(huaSe)
-	local pathDianShu = ""
+	local pathDianShu
 	if huaSe == 1 or huaSe == 0 then
 		-- 方块 红桃
 		pathDianShu = "red_"
@@ -167,29 +114,6 @@ function Mounter:mountTileImage(btn, tileID)
 	-- logger.error("big.position : ", big.position)
 	big.url = bigImageMap[pathHuaSeBig]
 	big.visible = true
-end
-
---组牌显示
-function Mounter:mountMeldEnableImage(btn, tileID, viewChairID)
-	local tileData = TileImageMap[viewChairID].melds
-	local hImg = btn:Find("hua")
-	hImg:SetActive(true)
-
-	local skin = btn:GetComponent("SkinBehaviour")
-	skin:ReplaceSkin(tileData.bg_show)
-
-	self:mountTileImage(btn, tileID)
-end
-
---组牌隐藏
-function Mounter:mountMeldDisableImage(btn, tileID, viewChairID)
-	local tileData = TileImageMap[viewChairID].melds
-
-	local hImg = btn:Find("hua")
-	hImg:SetActive(false)
-
-	local skin = btn:GetComponent("SkinBehaviour")
-	skin:ReplaceSkin(tileData.bg_hide)
 end
 
 return Mounter

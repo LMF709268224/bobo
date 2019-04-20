@@ -1,8 +1,8 @@
 --[[
     显示一手牌结束后的得分结果
 ]]
+--luacheck: no self
 local HandResultView = {}
-HandResultView.VERSION = "1.0"
 
 -- local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"
@@ -98,32 +98,9 @@ function HandResultView:updateRoomData()
     --if self.msgHandOver.endType ~= pokerfacerf.enumHandOverType_None then
     local effectName = "Effects_JieMian_ShiBai"
     if self.room:me().score.score > 0 then
-        --self.bgImageWin:SetActive(true)
-        -- local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_YING .. ".prefab", self.canvasOrder)
-        -- effobj:SetParent(self.unityViewNode.transform, false)
-        -- effobj.localPosition = Vector3(1.6, 0.8, 0)
-        -- self.effect = effobj
         effectName = "Effects_JieMian_ShengLi"
-    else
-        -- self.bgImageLose:SetActive(true)
-        -- local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_SHU .. ".prefab", self.canvasOrder)
-        -- effobj:SetParent(self.unityViewNode.transform, false)
-        -- effobj.localPosition = Vector3(1.6, 0.8, 0)
-        -- self.effect = effobj
     end
     animation.play("animations/" .. effectName .. ".prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
-    -- else
-    --     self.bgImageLose:SetActive(true)
-    --     local effobj =
-    --         Animator.PlayLoop(
-    --         dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_HUANGZHUANG .. ".prefab",
-    --         self.canvasOrder
-    --     )
-    --     effobj:SetParent(self.unityViewNode.transform, false)
-    --     effobj.localPosition = Vector3(1.6, 0.8, 0)
-    --     self.effect = effobj
-    -- end
-    --self:orderAdd(self.effect)
 
     --日期时间
     local date
@@ -202,7 +179,8 @@ function HandResultView:updatePlayerInfoData(player, c)
     -- end
 
     -- if player.avatarID ~= nil and player.avatarID ~= 0 then
-    -- c.headBox.transform:SetImage(string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png", player.avatarID))
+    -- local imagePath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png", player.avatarID)
+    -- c.headBox.transform:SetImage(imagePath)
     -- c.headBox.transform:GetComponent("Image"):SetNativeSize()
     -- c.headBox.transform.localScale = Vector3(0.8, 0.8, 1)
     -- end
@@ -276,9 +254,10 @@ function HandResultView:updateAllData()
     end
 end
 --显示赢标志
-function HandResultView:showWin(c)
+function HandResultView:showWin()
     -- animation.play("animations/Effects_jiemian_huosheng.prefab", c.group, c.aniPos.x, c.aniPos.y, true)
-    -- local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_WIN .. ".prefab", self.canvasOrder)
+    -- local prefabName = dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_WIN .. ".prefab"
+    -- local effobj = Animator.PlayLoop(prefabName, self.canvasOrder)
     -- effobj:SetParent(c.group.transform, false)
     -- effobj.localPosition = c.winImagePos.localPosition --Vector3(1.6, 0.8, 0)
 end
@@ -387,14 +366,14 @@ function HandResultView:onShareButtonClick()
     --OnlineLogic.ShowShareView()
     --ViewManager.OpenMessageBoxWithOrder("ShareView", 5, 9)
     --self.room:openMessageBoxFromDaFeng("ShareView", 5, 9)
-    local shareMudule = g_ModuleMgr:GetModule(ModuleName.SHARE_MODULE)
-    shareMudule:ShareGameResult(1, "", 32, 1)
-    local u8sdk = U8SDK.SDKWrapper.Instance
-    local fSuccess = function(data)
-        local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
-        tool:SendShareRecord(2)
-    end
-    u8sdk.OnShareSuccess = fSuccess
+    -- local shareMudule = g_ModuleMgr:GetModule(ModuleName.SHARE_MODULE)
+    -- shareMudule:ShareGameResult(1, "", 32, 1)
+    -- local u8sdk = U8SDK.SDKWrapper.Instance
+    -- local fSuccess = function(data)
+    --     local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
+    --     tool:SendShareRecord(2)
+    -- end
+    -- u8sdk.OnShareSuccess = fSuccess
 end
 
 return HandResultView

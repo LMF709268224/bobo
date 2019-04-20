@@ -2,7 +2,6 @@
     处理服务器下发的通知各个玩家，房间已经被解散，或者被删除
 ]]
 local Handler = {}
-Handler.VERSION = "1.0"
 
 local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"

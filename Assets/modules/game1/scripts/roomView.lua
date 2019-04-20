@@ -10,6 +10,7 @@ local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local dialog = require "lobby/dialog"
 local chatView = require "lobby/chatView"
+local prompt = require "lobby/prompt"
 
 local mt = {__index = RoomView}
 -- local dfPath = "GuanZhang/Script/"
@@ -259,46 +260,44 @@ function RoomView:hide2ReadyButton()
 end
 
 function RoomView:openChatView()
-    local singleton = require(dfPath .. "dfMahjong/dfSingleton")
-    local instance = singleton:getSingleton()
-
-    local layer =
-        viewModule:CreatePanel(
-        {
-            luaPath = "ChatComponent.Script.ChatView",
-            resPath = "Component/ChatComponent/Bundle/prefab/ChatPanelInGame.prefab",
-            superClass = self.unityViewNode,
-            parentNode = self.unityViewNode.transform
-        },
-        instance,
-        dfConfig.CommonLanguage
-    )
-    local uiDepth = layer:GetComponent("UIDepth")
-    if not uiDepth then
-        uiDepth = layer:AddComponent(UIDepth)
-    end
-    uiDepth.canvasOrder = self.unityViewNode.order + 2
-    return layer
+    -- local singleton = require(dfPath .. "dfMahjong/dfSingleton")
+    -- local instance = singleton:getSingleton()
+    -- local layer =
+    --     viewModule:CreatePanel(
+    --     {
+    --         luaPath = "ChatComponent.Script.ChatView",
+    --         resPath = "Component/ChatComponent/Bundle/prefab/ChatPanelInGame.prefab",
+    --         superClass = self.unityViewNode,
+    --         parentNode = self.unityViewNode.transform
+    --     },
+    --     instance,
+    --     dfConfig.CommonLanguage
+    -- )
+    -- local uiDepth = layer:GetComponent("UIDepth")
+    -- if not uiDepth then
+    --     uiDepth = layer:AddComponent(UIDepth)
+    -- end
+    -- uiDepth.canvasOrder = self.unityViewNode.order + 2
+    -- return layer
 end
 
 function RoomView:iniChatButtons()
-    self.chatTextBtn = self.unityViewNode.transform:Find("ExtendFuc/RightBtns/chat_text_btn")
-    --self.PengBtn:SetActive(false)
-    -- initChatPanelInGame()
-    self.chatView = self:openChatView()
-    self.chatView:Hide()
-
-    self.unityViewNode:AddClick(
-        self.chatTextBtn,
-        function()
-            if not self.chatView then
-                self.chatView = self:openChatView()
-            else
-                self.chatView:Show()
-            end
-            --ShowInGameChatPanel(self.unityViewNode)
-        end
-    )
+    -- self.chatTextBtn = self.unityViewNode.transform:Find("ExtendFuc/RightBtns/chat_text_btn")
+    -- --self.PengBtn:SetActive(false)
+    -- -- initChatPanelInGame()
+    -- self.chatView = self:openChatView()
+    -- self.chatView:Hide()
+    -- self.unityViewNode:AddClick(
+    --     self.chatTextBtn,
+    --     function()
+    --         if not self.chatView then
+    --             self.chatView = self:openChatView()
+    --         else
+    --             self.chatView:Show()
+    --         end
+    --         --ShowInGameChatPanel(self.unityViewNode)
+    --     end
+    -- )
 end
 
 --隐藏游戏内聊天面板
@@ -313,31 +312,15 @@ function RoomView:onExitButtonClicked()
     local roomView = self
 
     if roomView.room ~= nil and roomView.room.handStartted > 0 then
-        dfCompatibleAPI:showTip("牌局已经开始，请申请解散房间")
+        prompt.showPrompt("牌局已经开始，请申请解散房间")
         return
     end
 
     local room = roomView.room
-    local me = room:me()
-
-    -- local aaModel = 1
-    -- if roomView.room ~= nil then
-    --     local roomConfig = roomView.room:getRoomConfig()
-    --     if roomConfig.payType == aaModel then
-    --         if room.ownerID == me.userID then
-    --             dfCompatibleAPI:showTip("平摊钻石房间，请申请解散房间")
-    --             return
-    --         end
-    --     end
-    -- end
-
-    msg = "确实要退出房间吗？"
-    dfCompatibleAPI:showMessageBox(
+    local msg = "确实要退出房间吗？"
+    dialog:showDialog(
         msg,
         function()
-            local room = roomView.room
-            --先向服务器发送退出房间请求
-
             room.host:triggerLeaveRoom()
         end,
         function()
@@ -347,20 +330,20 @@ function RoomView:onExitButtonClicked()
 end
 
 function RoomView:showRuleView()
-    if self.room.disbandVoteView then
-        return
-    end
-    Util.SaveToPlayerPrefs("isOpenRuleMsgBox", "1")
-    self.ruleTipNode:SetActive(false)
-    self.unityViewNode:StopAction(self.fingerMoveAction1)
-    self.RoomRuleMsgBox =
-        viewModule:OpenMsgBox(
-        {
-            luaPath = "GuanZhang.Script.View.RoomRuleMsgBox",
-            resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/RoomRuleMsgBox.prefab"
-        },
-        self.room:getRoomConfig()
-    )
+    -- if self.room.disbandVoteView then
+    --     return
+    -- end
+    -- Util.SaveToPlayerPrefs("isOpenRuleMsgBox", "1")
+    -- self.ruleTipNode:SetActive(false)
+    -- self.unityViewNode:StopAction(self.fingerMoveAction1)
+    -- self.RoomRuleMsgBox =
+    --     viewModule:OpenMsgBox(
+    --     {
+    --         luaPath = "GuanZhang.Script.View.RoomRuleMsgBox",
+    --         resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/RoomRuleMsgBox.prefab"
+    --     },
+    --     self.room:getRoomConfig()
+    -- )
 end
 
 function RoomView:closeRuleView()
@@ -370,13 +353,13 @@ function RoomView:closeRuleView()
 end
 
 function RoomView:ShowGameRuleView()
-    viewModule:OpenMsgBox(
-        {
-            luaPath = "RuleComponent.Script.RuleView",
-            resPath = "Component/RuleComponent/Bundle/prefab/RuleView.prefab"
-        },
-        10045
-    )
+    -- viewModule:OpenMsgBox(
+    --     {
+    --         luaPath = "RuleComponent.Script.RuleView",
+    --         resPath = "Component/RuleComponent/Bundle/prefab/RuleView.prefab"
+    --     },
+    --     10045
+    -- )
 end
 
 ----------------------------------------------
@@ -414,13 +397,11 @@ end
 ----------------------------------------------
 function RoomView:gameStartAnimation()
     --开始骰子动画 关闭所有的弹窗
-    if not self.room.disbandVoteView then
-        viewModule:CloseAllMsgBox()
-    end
-    local waitCo = coroutine.running()
-
-    dfCompatibleAPI:soundPlay("effect/effect_paijukaishi")
-
+    -- if not self.room.disbandVoteView then
+    --     viewModule:CloseAllMsgBox()
+    -- end
+    -- local waitCo = coroutine.running()
+    -- dfCompatibleAPI:soundPlay("effect/effect_paijukaishi")
     --开局头像动画播放
     --self:playInfoGroupAnimation()
     -- local ani = Animator.Play(
@@ -428,21 +409,20 @@ function RoomView:gameStartAnimation()
     --     self.unityViewNode.order,
     --     nil
     -- )
-
-    self.unityViewNode:DelayRun(
-        0.2,
-        function()
-            -- ani:SetActive(false)
-            local flag, msg = coroutine.resume(waitCo)
-            if not flag then
-                msg = debug.traceback(waitCo, msg)
-                --error(msg)
-                logger.error(msg)
-                return
-            end
-        end
-    )
-    coroutine.yield()
+    -- self.unityViewNode:DelayRun(
+    --     0.2,
+    --     function()
+    --         -- ani:SetActive(false)
+    --         local flag, msg = coroutine.resume(waitCo)
+    --         if not flag then
+    --             msg = debug.traceback(waitCo, msg)
+    --             --error(msg)
+    --             logger.error(msg)
+    --             return
+    --         end
+    --     end
+    -- )
+    -- coroutine.yield()
 end
 
 ----------------------------------------------
@@ -508,28 +488,29 @@ function RoomView:initRoomNumber()
     self.roomNumberObject = self.unityViewNode.transform:Find("RoomInfo/RoomIDText")
     self.tipNode = self.roomInfoNode:Find("TipNode")
     self.finger = self.tipNode:Find("Finger")
-    local isCopyRoomNum = Util.GetFromPlayerPrefs("isCopyRoomNum")
-    if isCopyRoomNum == "1" then --复制过房号 则隐藏
-        self.tipNode:SetActive(false)
-    else
-        self.tipNode:SetActive(true)
-        local function fingerMove(posY)
-            self.fingerMoveAction =
-                self.unityViewNode:RunAction(
-                self.finger,
-                {
-                    "localMoveBy",
-                    0,
-                    posY,
-                    0.5,
-                    onEnd = function()
-                        fingerMove(-posY)
-                    end
-                }
-            )
-        end
-        fingerMove(20)
-    end
+    -- local isCopyRoomNum = Util.GetFromPlayerPrefs("isCopyRoomNum")
+
+    -- if isCopyRoomNum == "1" then --复制过房号 则隐藏
+    --     self.tipNode:SetActive(false)
+    -- else
+    --     self.tipNode:SetActive(true)
+    --     local function fingerMove(posY)
+    --         self.fingerMoveAction =
+    --             self.unityViewNode:RunAction(
+    --             self.finger,
+    --             {
+    --                 "localMoveBy",
+    --                 0,
+    --                 posY,
+    --                 0.5,
+    --                 onEnd = function()
+    --                     fingerMove(-posY)
+    --                 end
+    --             }
+    --         )
+    --     end
+    --     fingerMove(20)
+    -- end
     self.roomNumber = self.unityViewNode:SubGet("RoomInfo/RoomIDText", "Text")
     self.roundInfo = self.unityViewNode:SubGet("RoomInfo/RoundInfo", "Text")
 
@@ -542,10 +523,10 @@ function RoomView:initRoomNumber()
                 return
             end
             self.tipNode:SetActive(false)
-            local content = "大丰关张:房号【" .. self.room.roomNumber .. "】, " .. self:getInvitationDescription()
-            Util.CopyClipboard(content)
-            dfCompatibleAPI:showTip("复制房间信息成功，你可前往其他地方粘贴发送给好友！")
-            Util.SaveToPlayerPrefs("isCopyRoomNum", "1")
+            -- local content = "大丰关张:房号【" .. self.room.roomNumber .. "】, " .. self:getInvitationDescription()
+            -- Util.CopyClipboard(content)
+            prompt.showPrompt("复制房间信息成功，你可前往其他地方粘贴发送给好友！")
+            -- Util.SaveToPlayerPrefs("isCopyRoomNum", "1")
             self.unityViewNode:StopAction(self.fingerMoveAction)
             self.finger:Hide()
         end
@@ -553,72 +534,69 @@ function RoomView:initRoomNumber()
 end
 
 function RoomView:initRoomTip()
-    self.scrollTip = self.unityViewNode:FindChild("ExtendFuc/ScrollTip")
-    -- ios提审
-    if configModule:IsIosAudit() then
-        return
-    end
-
-    self.scrollTip:SetActive(true)
-
-    self.scrollTipText = self.scrollTip:Find("Tip")
-    local tips = clone(dfConfig.RoomTips)
-    local function showTip(time1, time2)
-        if self.unityViewNode then
-            self.unityViewNode:RunAction(
-                self.scrollTipText,
-                {
-                    "fadeTo",
-                    0,
-                    time1,
-                    function(...)
-                        math.newrandomseed()
-                        local curTipIndex = math.random(1, #tips)
-                        self.scrollTipText.text = tips[curTipIndex]
-                        table.remove(tips, curTipIndex)
-                        if #tips <= 0 then
-                            tips = clone(dfConfig.RoomTips)
-                        end
-                        self.unityViewNode:RunAction(self.scrollTipText, {"fadeTo", 255, time2})
-                    end
-                }
-            )
-        end
-    end
-    showTip(0, 2)
-    self.unityViewNode:StartTimer(
-        "SHowTips",
-        5,
-        function(...)
-            showTip(1, 1)
-        end,
-        -1
-    )
-
-    self.ruleTipNode = self.unityViewNode:FindChild("ExtendFuc/TipNode")
-    self.ruleFinger = self.ruleTipNode:Find("Finger")
-    local isOpenRuleMsgBox = Util.GetFromPlayerPrefs("isOpenRuleMsgBox")
-    if isOpenRuleMsgBox == "1" then --复制过房号 则隐藏
-        self.ruleTipNode:SetActive(false)
-    else
-        self.ruleTipNode:SetActive(true)
-        local function fingerMove(posY)
-            self.fingerMoveAction1 =
-                self.unityViewNode:RunAction(
-                self.ruleFinger,
-                {
-                    "localMoveBy",
-                    0,
-                    posY,
-                    0.5,
-                    onEnd = function()
-                        fingerMove(-posY)
-                    end
-                }
-            )
-        end
-        fingerMove(20)
-    end
+    -- self.scrollTip = self.unityViewNode:FindChild("ExtendFuc/ScrollTip")
+    -- -- ios提审
+    -- if configModule:IsIosAudit() then
+    --     return
+    -- end
+    -- self.scrollTip:SetActive(true)
+    -- self.scrollTipText = self.scrollTip:Find("Tip")
+    -- local tips = clone(dfConfig.RoomTips)
+    -- local function showTip(time1, time2)
+    --     if self.unityViewNode then
+    --         self.unityViewNode:RunAction(
+    --             self.scrollTipText,
+    --             {
+    --                 "fadeTo",
+    --                 0,
+    --                 time1,
+    --                 function(...)
+    --                     math.newrandomseed()
+    --                     local curTipIndex = math.random(1, #tips)
+    --                     self.scrollTipText.text = tips[curTipIndex]
+    --                     table.remove(tips, curTipIndex)
+    --                     if #tips <= 0 then
+    --                         tips = clone(dfConfig.RoomTips)
+    --                     end
+    --                     self.unityViewNode:RunAction(self.scrollTipText, {"fadeTo", 255, time2})
+    --                 end
+    --             }
+    --         )
+    --     end
+    -- end
+    -- showTip(0, 2)
+    -- self.unityViewNode:StartTimer(
+    --     "SHowTips",
+    --     5,
+    --     function(...)
+    --         showTip(1, 1)
+    --     end,
+    --     -1
+    -- )
+    -- self.ruleTipNode = self.unityViewNode:FindChild("ExtendFuc/TipNode")
+    -- self.ruleFinger = self.ruleTipNode:Find("Finger")
+    -- local isOpenRuleMsgBox = Util.GetFromPlayerPrefs("isOpenRuleMsgBox")
+    -- if isOpenRuleMsgBox == "1" then --复制过房号 则隐藏
+    --     self.ruleTipNode:SetActive(false)
+    -- else
+    --     self.ruleTipNode:SetActive(true)
+    --     local function fingerMove(posY)
+    --         self.fingerMoveAction1 =
+    --             self.unityViewNode:RunAction(
+    --             self.ruleFinger,
+    --             {
+    --                 "localMoveBy",
+    --                 0,
+    --                 posY,
+    --                 0.5,
+    --                 onEnd = function()
+    --                     fingerMove(-posY)
+    --                 end
+    --             }
+    --         )
+    --     end
+    --     fingerMove(20)
+    -- end
 end
 
 --------------------------------------
@@ -629,7 +607,7 @@ function RoomView:showRoomNumber()
         return
     end
 
-    local obj = self.unityViewNode.transform:Find("RuleTop")
+    -- local obj = self.unityViewNode.transform:Find("RuleTop")
     local room = self.room
     if room.roomNumber ~= nil then
         -- obj:SetActive(true)
@@ -638,7 +616,8 @@ function RoomView:showRoomNumber()
     end
     self.roundInfo:SetActive(true)
     local roundstr = "局数:<color=#e9bf89>%s/%s</color>"
-    self.roundInfo.text = string.format(roundstr, tostring(self.room.handStartted) or "0", tostring((self.room.handNum)))
+    local roomNumberStr = tostring(self.room.handNum)
+    self.roundInfo.text = string.format(roundstr, tostring(self.room.handStartted) or "0", roomNumberStr)
     if self.room.handStartted and self.room.handStartted > 0 then
         self.returnHallBtn:Hide()
     end
@@ -648,96 +627,93 @@ end
 --------------------------------------
 function RoomView:initPhoneInfo()
     -- iOS提审
-    if configModule:IsIosAudit() then
-        return
-    end
-
-    local timeObj = self.unityViewNode.transform:Find("ExtendFuc/Time")
-    local pingObj = self.unityViewNode.transform:Find("ExtendFuc/Ping")
-    local wifiObj = self.unityViewNode.transform:Find("ExtendFuc/Wifi")
-    local cmcObj = self.unityViewNode.transform:Find("ExtendFuc/CMC")
-    local powerObj = self.unityViewNode.transform:Find("ExtendFuc/Power")
-    timeObj:SetActive(true)
-    pingObj:SetActive(true)
-    wifiObj:SetActive(true)
-    cmcObj:SetActive(false)
-    powerObj:SetActive(true)
-
-    self.time = self.unityViewNode:SubGet("ExtendFuc/Time", "Text")
-    self.ping = self.unityViewNode:SubGet("ExtendFuc/Ping", "Text")
-    self.wifi = {}
-    for i = 1, 2 do
-        self.wifi[i] = self.unityViewNode.transform:Find("ExtendFuc/Wifi/Wifi" .. i)
-    end
-    self.cmc = {}
-    for i = 1, 2 do
-        self.cmc[i] = self.unityViewNode.transform:Find("ExtendFuc/CMC/CMC" .. i)
-    end
-    self.power = {}
-    for i = 1, 3 do
-        self.power[i] = self.unityViewNode.transform:Find("ExtendFuc/Power/Power" .. i)
-    end
-    local function updatePhoneInfo(...)
-        local delay = self:getNetDelay()
-        self.time.text = os.date("%H:%M", os.time())
-        local battery = Util.GetBattery()
-        local netAvailable = Util.NetAvailable
-        local isWifi = Util.IsWifi
-        if battery >= 90 then
-            self.power[1]:SetActive(true)
-            self.power[2]:SetActive(false)
-            self.power[3]:SetActive(false)
-        elseif battery >= 30 and battery < 90 then
-            self.power[2]:SetActive(true)
-            self.power[1]:SetActive(false)
-            self.power[3]:SetActive(false)
-        else
-            self.power[3]:SetActive(true)
-            self.power[2]:SetActive(false)
-            self.power[1]:SetActive(false)
-        end
-
-        if netAvailable then
-            if isWifi then
-                wifiObj:SetActive(true)
-                cmcObj:SetActive(false)
-                self.ping.text = delay .. "ms"
-                if delay > 200 then
-                    self.ping:SetActive(true)
-                    self.wifi[1]:SetActive(false)
-                    self.wifi[2]:SetActive(true)
-                else
-                    self.ping:SetActive(false)
-                    self.wifi[1]:SetActive(true)
-                    self.wifi[2]:SetActive(false)
-                end
-            else
-                wifiObj:SetActive(false)
-                cmcObj:SetActive(true)
-                self.ping.text = delay .. "ms"
-                if delay > 200 then
-                    self.ping:SetActive(true)
-                    self.cmc[1]:SetActive(false)
-                    self.cmc[2]:SetActive(true)
-                else
-                    self.ping:SetActive(false)
-                    self.cmc[1]:SetActive(true)
-                    self.cmc[2]:SetActive(false)
-                end
-            end
-        else
-            logger.debug("net is not Available！！")
-        end
-    end
-    updatePhoneInfo()
-    self.unityViewNode:StartTimer(
-        "Clock",
-        10,
-        function(...)
-            updatePhoneInfo()
-        end,
-        -1
-    )
+    -- if configModule:IsIosAudit() then
+    --     return
+    -- end
+    -- local timeObj = self.unityViewNode.transform:Find("ExtendFuc/Time")
+    -- local pingObj = self.unityViewNode.transform:Find("ExtendFuc/Ping")
+    -- local wifiObj = self.unityViewNode.transform:Find("ExtendFuc/Wifi")
+    -- local cmcObj = self.unityViewNode.transform:Find("ExtendFuc/CMC")
+    -- local powerObj = self.unityViewNode.transform:Find("ExtendFuc/Power")
+    -- timeObj:SetActive(true)
+    -- pingObj:SetActive(true)
+    -- wifiObj:SetActive(true)
+    -- cmcObj:SetActive(false)
+    -- powerObj:SetActive(true)
+    -- self.time = self.unityViewNode:SubGet("ExtendFuc/Time", "Text")
+    -- self.ping = self.unityViewNode:SubGet("ExtendFuc/Ping", "Text")
+    -- self.wifi = {}
+    -- for i = 1, 2 do
+    --     self.wifi[i] = self.unityViewNode.transform:Find("ExtendFuc/Wifi/Wifi" .. i)
+    -- end
+    -- self.cmc = {}
+    -- for i = 1, 2 do
+    --     self.cmc[i] = self.unityViewNode.transform:Find("ExtendFuc/CMC/CMC" .. i)
+    -- end
+    -- self.power = {}
+    -- for i = 1, 3 do
+    --     self.power[i] = self.unityViewNode.transform:Find("ExtendFuc/Power/Power" .. i)
+    -- end
+    -- local function updatePhoneInfo(...)
+    --     local delay = self:getNetDelay()
+    --     self.time.text = os.date("%H:%M", os.time())
+    --     local battery = Util.GetBattery()
+    --     local netAvailable = Util.NetAvailable
+    --     local isWifi = Util.IsWifi
+    --     if battery >= 90 then
+    --         self.power[1]:SetActive(true)
+    --         self.power[2]:SetActive(false)
+    --         self.power[3]:SetActive(false)
+    --     elseif battery >= 30 and battery < 90 then
+    --         self.power[2]:SetActive(true)
+    --         self.power[1]:SetActive(false)
+    --         self.power[3]:SetActive(false)
+    --     else
+    --         self.power[3]:SetActive(true)
+    --         self.power[2]:SetActive(false)
+    --         self.power[1]:SetActive(false)
+    --     end
+    --     if netAvailable then
+    --         if isWifi then
+    --             wifiObj:SetActive(true)
+    --             cmcObj:SetActive(false)
+    --             self.ping.text = delay .. "ms"
+    --             if delay > 200 then
+    --                 self.ping:SetActive(true)
+    --                 self.wifi[1]:SetActive(false)
+    --                 self.wifi[2]:SetActive(true)
+    --             else
+    --                 self.ping:SetActive(false)
+    --                 self.wifi[1]:SetActive(true)
+    --                 self.wifi[2]:SetActive(false)
+    --             end
+    --         else
+    --             wifiObj:SetActive(false)
+    --             cmcObj:SetActive(true)
+    --             self.ping.text = delay .. "ms"
+    --             if delay > 200 then
+    --                 self.ping:SetActive(true)
+    --                 self.cmc[1]:SetActive(false)
+    --                 self.cmc[2]:SetActive(true)
+    --             else
+    --                 self.ping:SetActive(false)
+    --                 self.cmc[1]:SetActive(true)
+    --                 self.cmc[2]:SetActive(false)
+    --             end
+    --         end
+    --     else
+    --         logger.debug("net is not Available！！")
+    --     end
+    -- end
+    -- updatePhoneInfo()
+    -- self.unityViewNode:StartTimer(
+    --     "Clock",
+    --     10,
+    --     function(...)
+    --         updatePhoneInfo()
+    --     end,
+    --     -1
+    -- )
 end
 
 --------------------------------------
@@ -784,7 +760,7 @@ end
 --播放玩家开局头像动画
 --------------------------------------
 function RoomView:playInfoGroupAnimation()
-    for i, v in ipairs(self.playerViews) do
+    for _, v in ipairs(self.playerViews) do
         v:playInfoGroupAnimation()
     end
 end
@@ -820,11 +796,11 @@ function RoomView:unInitialize()
 
     self.skinManager:Clear()
 
-    for k, v in pairs(self.timer) do
-        if v then
-            StopTimer(v)
-        end
-    end
+    -- for k, v in pairs(self.timer) do
+    --     if v then
+    --         StopTimer(v)
+    --     end
+    -- end
 end
 
 --------------------------------------
@@ -840,47 +816,48 @@ end
 --------------------------------------
 function RoomView:initVoiceButton()
     -- 控制逻辑
-    self.voiceButton = self.unityViewNode.transform:Find("ExtendFuc/RightBtns/chat_audio_btn")
-    local w = self.voiceButton.width
-    local h = self.voiceButton.height
-    local scrPos = Util.GetUICamera():GetComponent(typeof(UnityEngine.Camera)):WorldToScreenPoint(self.voiceButton.position)
-    local rect = UnityEngine.Rect(scrPos.x - w / 2, scrPos.y - h / 2, w, h)
-    local init = function()
-        if not self.voiceLayer then
-            self.voiceLayer = self:createVoiceLayer()
-            self.voiceLayer:SetVoiceButtonRect(rect)
-            self.voiceLayer:ResetMode()
-        end
-    end
-    init() -- 初始化
-    self.voiceButton.onDown = function()
-        self.voiceLayer:OnVoiceButtonDown(self.room.user.userID)
-    end
-    self.voiceButton.onUp = function()
-        self.voiceLayer:OnVoiceButtonUp(self.room.user.userID)
-    end
-    self.voiceButton.onDrag = function(sender, eventData)
-        self.voiceLayer:OnVoiceButtonDrag(sender, eventData)
-    end
-    self.delayRunMap = {}
+    -- self.voiceButton = self.unityViewNode.transform:Find("ExtendFuc/RightBtns/chat_audio_btn")
+    -- local w = self.voiceButton.width
+    -- local h = self.voiceButton.height
+    -- local camera = Util.GetUICamera():GetComponent(typeof(UnityEngine.Camera))
+    -- local scrPos = camera:WorldToScreenPoint(self.voiceButton.position)
+    -- local rect = UnityEngine.Rect(scrPos.x - w / 2, scrPos.y - h / 2, w, h)
+    -- local init = function()
+    --     if not self.voiceLayer then
+    --         self.voiceLayer = self:createVoiceLayer()
+    --         self.voiceLayer:SetVoiceButtonRect(rect)
+    --         self.voiceLayer:ResetMode()
+    --     end
+    -- end
+    -- init() -- 初始化
+    -- self.voiceButton.onDown = function()
+    --     self.voiceLayer:OnVoiceButtonDown(self.room.user.userID)
+    -- end
+    -- self.voiceButton.onUp = function()
+    --     self.voiceLayer:OnVoiceButtonUp(self.room.user.userID)
+    -- end
+    -- self.voiceButton.onDrag = function(sender, eventData)
+    --     self.voiceLayer:OnVoiceButtonDrag(sender, eventData)
+    -- end
+    -- self.delayRunMap = {}
 end
 
 function RoomView:createVoiceLayer()
-    local layer =
-        viewModule:CreatePanel(
-        {
-            luaPath = "VoiceComponent.Script.VoiceLayer",
-            resPath = "Component/VoiceComponent/Bundle/prefab/VoiceLayer.prefab",
-            superClass = self.unityViewNode,
-            parentNode = self.unityViewNode.transform
-        }
-    )
-    local uiDepth = layer:GetComponent("UIDepth")
-    if not uiDepth then
-        uiDepth = layer:AddComponent(UIDepth)
-    end
-    uiDepth.canvasOrder = self.unityViewNode.order + 2
-    return layer
+    -- local layer =
+    --     viewModule:CreatePanel(
+    --     {
+    --         luaPath = "VoiceComponent.Script.VoiceLayer",
+    --         resPath = "Component/VoiceComponent/Bundle/prefab/VoiceLayer.prefab",
+    --         superClass = self.unityViewNode,
+    --         parentNode = self.unityViewNode.transform
+    --     }
+    -- )
+    -- local uiDepth = layer:GetComponent("UIDepth")
+    -- if not uiDepth then
+    --     uiDepth = layer:AddComponent(UIDepth)
+    -- end
+    -- uiDepth.canvasOrder = self.unityViewNode.order + 2
+    -- return layer
 end
 
 ----------------------------------------------------------
@@ -903,11 +880,11 @@ function RoomView:initRoomStatus()
             if room:playerCount() >= config.playerNumAcquired then
                 roomView.invitButton:SetActive(false)
             else
-                roomView.invitButton:SetActive(true)
                 -- IOS 提审
-                if configModule:IsIosAudit() then
-                    roomView.invitButton:SetActive(false)
-                end
+                -- if configModule:IsIosAudit() then
+                --     roomView.invitButton:SetActive(false)
+                -- end
+                roomView.invitButton:SetActive(true)
             end
         end
 
@@ -926,7 +903,7 @@ function RoomView:initRoomStatus()
 
         --if not room:isReplayMode() then
         --<color=#775D42FF>" .. formatStr .. "</color>
-        local roundstr = "局数:<color=#e9bf89>%s/%s</color>"
+        -- local roundstr = "局数:<color=#e9bf89>%s/%s</color>"
         --roomView.tilesInWall:SetActive(true)
         -- roomView.tipNode:SetActive(false)
         -- roomView.ruleTipNode:SetActive(false)
@@ -958,7 +935,7 @@ function RoomView:initRoomStatus()
 end
 
 function RoomView:hideNoFriendTips()
-    for i, tip in ipairs(self.noFriendTips) do
+    for _, tip in ipairs(self.noFriendTips) do
         tip:Hide()
     end
 end
@@ -1079,7 +1056,8 @@ function RoomView:ruleTopDisplayEvent()
     local config = self.room:getRoomConfig()
 
     local isdDoubleScoreWhenSelfDrawn = config.doubleScoreWhenSelfDrawn ~= nil and config.doubleScoreWhenSelfDrawn
-    local isDoubleScoreWhenContinuousBanker = config.doubleScoreWhenContinuousBanker ~= nil and config.doubleScoreWhenContinuousBanker
+    local dscb = config.doubleScoreWhenContinuousBanker ~= nil and config.doubleScoreWhenContinuousBanker
+    local isDoubleScoreWhenContinuousBanker = dscb
 
     local isDoubleScoreWhenZuoYuanZi = config.doubleScoreWhenZuoYuanZi ~= nil and config.doubleScoreWhenZuoYuanZi
     local isAA = config.payType
@@ -1116,15 +1094,13 @@ end
 -- --------------------------------------------------------
 -- 邀请好友进入游戏
 -- --------------------------------------------------------
-function RoomView:getInvitationDescription(isLoadDouble)
+function RoomView:getInvitationDescription()
     local rule = ""
     local config = self.room:getRoomConfig()
     local players = self.room.players
-    local playerNumber = 0
-    for _, p in pairs(players) do
-        playerNumber = playerNumber + 1
-    end
-    local playerNumAcquired = ""
+    local playerNumber = #players
+
+    -- local playerNumAcquired = ""
     local p = ""
     if config ~= nil then
         if config.playerNumAcquired ~= nil then

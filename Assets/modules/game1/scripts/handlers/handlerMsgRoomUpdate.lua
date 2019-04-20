@@ -6,7 +6,6 @@
         有玩家状态改变，例如变为离线，准备好，等等
 ]]
 local Handler = {}
-Handler.VERSION = "1.0"
 
 local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"
@@ -97,6 +96,8 @@ function Handler.onMsg(msgData, room)
 
     --如果房间是等待状态，那么检查自己的状态是否已经是ready状态
     if msgRoomUpdate.state == roomStateEnum.SRoomWaiting then
+        -- if updatePlayer ~= 0 then
+        -- end
         if me.state ~= playerStateEnum.PSReady then
             -- 显示准备按钮，以便玩家可以点击
             room.roomView:show2ReadyButton()
@@ -104,9 +105,7 @@ function Handler.onMsg(msgData, room)
             -- 并隐藏to ready按钮
             room.roomView:hide2ReadyButton()
         end
-        if updatePlayer ~= 0 then
-        end
-    elseif msgRoomUpdate.state == roomStateEnum.SRoomPlaying then
+    -- elseif msgRoomUpdate.state == roomStateEnum.SRoomPlaying then
     -- room.roomView:hideDistanceView()
     end
 

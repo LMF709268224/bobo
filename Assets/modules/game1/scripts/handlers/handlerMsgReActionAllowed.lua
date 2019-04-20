@@ -2,7 +2,6 @@
     处理服务器要求自己对别人打出牌后的动作的请求，例如过，吃椪杠，吃铳胡等
 ]]
 local Handler = {}
-Handler.VERSION = "1.0"
 
 local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"

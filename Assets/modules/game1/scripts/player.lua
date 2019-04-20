@@ -2,8 +2,8 @@
     Player表示一个玩家，只有进入房间才会新建Player
     每个Player首先有其对应的牌数据（其中手牌是不公开的），然后是其对应的界面节点
 ]]
+--luacheck: no self
 local Player = {}
-Player.VERSION = "1.0"
 
 local logger = require "lobby/lcore/logger"
 local mt = {__index = Player}
@@ -14,15 +14,15 @@ local pokerfaceRf = proto.prunfast
 local pokerface = proto.pokerface
 
 --音效文件定义
-local SoundDef = {
-    Chow = "chi",
-    Pong = "peng",
-    Kong = "gang",
-    Ting = "ting",
-    WinChuck = "hu", --被点炮
-    WinDraw = "zimo", --自摸
-    Common = "effect_common"
-}
+-- local SoundDef = {
+--     Chow = "chi",
+--     Pong = "peng",
+--     Kong = "gang",
+--     Ting = "ting",
+--     WinChuck = "hu", --被点炮
+--     WinDraw = "zimo", --自摸
+--     Common = "effect_common"
+-- }
 
 function Player.new(userID, chairID, room)
     local player = {userID = userID, chairID = chairID, room = room}
@@ -86,7 +86,7 @@ end
 ---------------------------------------
 --根据规则排序手牌
 ---------------------------------------
-function Player:sortHands(excludeLast)
+function Player:sortHands()
     if self.cardsOnHand ~= nil then
         -- local last
         -- if excludeLast then
@@ -267,7 +267,7 @@ end
 ------------------------------------
 --播放音效
 ------------------------------------
-function Player:playSound(effectName)
+function Player:playSound()
     -- if effectName ~= nil and effectName ~= "" then
     --     local gender = "loc_"
     --     local path = "localize/"
@@ -308,7 +308,7 @@ end
 function Player:playOperationSound(effectName)
     self:playSound(effectName)
     --执行音效
-    dfCompatibleAPI:soundPlay("effect/" .. SoundDef.Common)
+    -- dfCompatibleAPI:soundPlay("effect/" .. SoundDef.Common)
 end
 
 ------------------------------------
@@ -370,10 +370,10 @@ end
 -- 玩家选择提示
 -- 上下文必然是allowedReActionMsg
 ----------------------------------------
-function Player:onTipBtnClick(isHui, btnObj)
+function Player:onTipBtnClick()
     --if isHui then return end
     self.playerView:restoreHandPositionAndClickCount()
-    local room = self.room
+    -- local room = self.room
     local tipCards = self.tipCards
     local handsClickCtrls = self.playerView.handsClickCtrls
     if tipCards == nil then
@@ -429,7 +429,7 @@ end
 ----------------------------------------
 -- 玩家选择出牌
 ----------------------------------------
-function Player:onDiscardBtnClick(isHui, btnObj)
+function Player:onDiscardBtnClick(isHui)
     if isHui then
         --提示。。。无牌可出
         logger.error("ERR_ROOM_NOTDISCARDS")
@@ -455,16 +455,18 @@ end
 -- 当上下文是allowedActionMsg时，表示不起手听牌
 -- 当上下文是allowedReActionMsg时，表示不吃椪杠胡
 ----------------------------------------
-function Player:onSkipBtnClick(isHui, btnObj)
+function Player:onSkipBtnClick(isHui)
     if isHui then
+        local dfConfig = require "scripts/dfConfig"
         --提示 不可以过
         if self.allowedActionMsg ~= nil then
-            dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSKIP_2)
+            prompt.showPrompt(dfConfig.ErrorInRoom.ERR_ROOM_NOTSKIP_2)
             return
         end
-        dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSKIP)
+        prompt.showPrompt(dfConfig.ErrorInRoom.ERR_ROOM_NOTSKIP)
         return
     end
+
     local room = self.room
 
     local discardAble = false
@@ -490,27 +492,26 @@ end
 -----------------------------------------------------------
 function Player:waitSecond(someSecond)
     local waitCo = coroutine.running()
-    StartTimer(
+    self.playerView.viewUnityNode:DelayRun(
         someSecond,
         function()
             local flag, msg = coroutine.resume(waitCo)
             if not flag then
-                logError(msg)
+                logger.error(msg)
                 return
             end
-        end,
-        1,
-        true
+        end
     )
     coroutine.yield()
 end
+
 -----------------------------------------------------------
 --执行自动打牌操作
 -----------------------------------------------------------
 function Player:autoDiscard()
     self:waitSecond(1)
-    if self.allowedActionMsg ~= nil then
-    end
+    -- if self.allowedActionMsg ~= nil then
+    -- end
 
     if self.allowedReActionMsg ~= nil then
         -- local actionMsg = pokerface.MsgPlayerAction()
@@ -525,6 +526,7 @@ function Player:autoDiscard()
         self:onPlayerDiscardCards(disCards)
     end
 end
+
 function Player:onPlayerDiscardCards(disCards)
     logger.debug(" onPlayerDiscardCards tile .")
     --dump(disCards , "----------------- disCards ---------------------------")
@@ -544,7 +546,7 @@ function Player:onPlayerDiscardCards(disCards)
         return
     end
 
-    local cards_ = {}
+    -- local cards_ = {}
     actionMsg.cards = {}
     for i = 1, #disCards do
         local disCard = disCards[i]
