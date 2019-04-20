@@ -131,7 +131,7 @@ namespace FairyGUI
             _timers.Add(timerName, ct);
         }
 
-        public bool StartTimer(string timerName, int interval, int repeat, TimerCallback callback, object callbackParam)
+        public bool StartTimer(string timerName, float interval, int repeat, TimerCallback callback, object callbackParam)
         {
             if (_timers.ContainsKey(timerName))
             {
