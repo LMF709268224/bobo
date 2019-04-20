@@ -211,38 +211,52 @@ function Player:showCardHandType(cardHandType, discardTileId)
     logger.debug("显示打出去的牌的类型。。。 : ", cardHandType)
     local tip = ""
     local effectName = "" -- 音效
-    if cardHandType == pokerfaceRf.CardHandType.Flush then
-        tip = "Effects_zi_shunzi"
-        --顺子
-        effectName = "sunzi"
-    elseif cardHandType == pokerfaceRf.CardHandType.Bomb then
-        tip = "Effects_zi_zhadan"
-        --炸弹
-        effectName = "zhadan"
-    elseif cardHandType == pokerfaceRf.CardHandType.Single then
-        tip = "" --单张
-        self:playReadTileSound(discardTileId, false)
-    elseif cardHandType == pokerfaceRf.CardHandType.Pair then
-        tip = "" --对子
-        self:playReadTileSound(discardTileId, true)
-    elseif cardHandType == pokerfaceRf.CardHandType.Pair2X then
-        tip = "Effects_liandui"
-        --连对
-        effectName = "liandui"
-    elseif cardHandType == pokerfaceRf.CardHandType.Triplet then
-        --三张
-        self:playSound("sange")
-        tip = "Effects_sandaier"
-    elseif cardHandType == pokerfaceRf.CardHandType.TripletPair then
-        tip = "Effects_sandaier" --三带二
-        effectName = "sandaiyi"
-    elseif cardHandType == pokerfaceRf.CardHandType.Triplet2X then
-        tip = "Effects_zi_FeiJi" -- 飞机
-        effectName = "feiji"
-    elseif cardHandType == pokerfaceRf.CardHandType.Triplet2X2Pair then
-        tip = "Effects_zi_FeiJiDaiChiBang" --夯加飞机
-        effectName = "feijidaicibang"
-    end
+    local handTypeMap = {
+        [pokerfaceRf.CardHandType.Flush] = function()
+            tip = "Effects_zi_shunzi"
+            --顺子
+            effectName = "sunzi"
+        end,
+        [pokerfaceRf.CardHandType.Bomb] = function()
+            tip = "Effects_zi_zhadan"
+            --炸弹
+            effectName = "zhadan"
+        end,
+        [pokerfaceRf.CardHandType.Single] = function()
+            tip = "" --单张
+            self:playReadTileSound(discardTileId, false)
+        end,
+        [pokerfaceRf.CardHandType.Pair] = function()
+            tip = "" --对子
+            self:playReadTileSound(discardTileId, true)
+        end,
+        [pokerfaceRf.CardHandType.Pair2X] = function()
+            tip = "Effects_liandui"
+            --连对
+            effectName = "liandui"
+        end,
+        [pokerfaceRf.CardHandType.Triplet] = function()
+            --三张
+            self:playSound("sange")
+            tip = "Effects_sandaier"
+        end,
+        [pokerfaceRf.CardHandType.TripletPair] = function()
+            tip = "Effects_sandaier" --三带二
+            effectName = "sandaiyi"
+        end,
+        [pokerfaceRf.CardHandType.Triplet2X] = function()
+            tip = "Effects_zi_FeiJi" -- 飞机
+            effectName = "feiji"
+        end,
+        [pokerfaceRf.CardHandType.Triplet2X] = function()
+            tip = "Effects_zi_FeiJiDaiChiBang" --夯加飞机
+            effectName = "feijidaicibang"
+        end
+    }
+
+    local fn = handTypeMap[cardHandType]
+    fn()
+
     logger.debug("tip : ", tip)
     if tip ~= "" then
         self.playerView:playerOperationEffectWhitGZ(tip, effectName)
