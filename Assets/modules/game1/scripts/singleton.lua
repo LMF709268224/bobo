@@ -111,7 +111,7 @@ function SG:doEnterRoom(url, myUser, roomInfo)
 
     -- 构建websocket
     local mq = msgQueue.new()
-    local ws = websocket.new(url, mq)
+    local ws = websocket.new(url, mq, self.room.roomView.unityViewNode)
 
     self.mq = mq
     self.ws = ws

@@ -23,6 +23,7 @@ function WS:open()
 
     local reqWrapper = httpHelper.websocket(self.comp, self.url)
     local bestHTTPws = reqWrapper.ws
+    self.ws = bestHTTPws
     self.reqWrapper = reqWrapper
     local this = self
 
