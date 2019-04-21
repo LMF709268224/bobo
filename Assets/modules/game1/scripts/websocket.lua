@@ -8,17 +8,10 @@ local mt = {__index = WS}
 local CS = _ENV.CS
 
 local logger = require "lobby/lcore/logger"
+local httpHelper = require "lobby/lcore/httpHelper"
 
-local wsClean = function(w)
-    w.OnOpen = nil
-    w.OnClosed = nil
-    w.OnError = nil
-    w.OnMessage = nil
-    w.OnBinary = nil
-end
-
-function WS.new(url, msgQueue)
-    local ws = {url = url, mq = msgQueue}
+function WS.new(url, msgQueue, comp)
+    local ws = {url = url, mq = msgQueue, comp = comp}
     return setmetatable(ws, mt)
 end
 
@@ -28,8 +21,9 @@ function WS:open()
         return
     end
 
-    local bestHTTPws = CS.NetHelper.NewWebSocket(self.url)
-    self.ws = bestHTTPws
+    local reqWrapper = httpHelper.websocket(self.comp, self.url)
+    local bestHTTPws = reqWrapper.ws
+    self.reqWrapper = reqWrapper
     local this = self
 
     bestHTTPws.OnOpen = function(ws)
@@ -42,16 +36,16 @@ function WS:open()
         this:onBestHTTPWebsocketOpen()
     end
 
-    bestHTTPws.OnClosed = function(ws, code, msg)
+    bestHTTPws.OnClosed = function(_, code, msg)
         logger.debug("ws closed, code:", code, ",msg:", msg)
-        wsClean(ws)
+        httpHelper.cleanWebsocket(reqWrapper)
 
         this:onBestHTTPWebsocketClose()
     end
 
-    bestHTTPws.OnError = function(ws)
+    bestHTTPws.OnError = function(_)
         logger.debug("ws error")
-        wsClean(ws)
+        httpHelper.cleanWebsocket(reqWrapper)
 
         this:onBestHTTPWebsocketError()
     end
@@ -69,10 +63,10 @@ function WS:open()
 end
 
 function WS:close()
-    if self.ws ~= nil then
-        self.ws:Close()
-        wsClean(self.ws)
-        self.ws = nil
+    if self.reqWrapper ~= nil then
+        self.reqWrapper.ws:Close()
+        httpHelper.cleanWebsocket(self.reqWrapper)
+        self.reqWrapper = nil
     end
 end
 

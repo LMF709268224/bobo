@@ -7,42 +7,6 @@ using UnityEngine.Networking;
 /// </summary>
 public static class NetHelper
 {
-    public static BestHTTP.HTTPRequest NewHttpRequest(string url, BestHTTP.HTTPMethods method, BestHTTP.OnRequestFinishedDelegate onFinished)
-    {
-        var req = new BestHTTP.HTTPRequest(new System.Uri(url), method, onFinished);
-        // TODO: 设置https证书自定义检验、代理、等等
-        return req;
-    }
-
-    public static void HttpGet(string url, BestHTTP.OnRequestFinishedDelegate onFinished)
-    {
-        var req = NewHttpRequest(url, BestHTTP.HTTPMethods.Get, onFinished);
-        req.Send();
-    }
-
-    public static void HttpGetWithProgress(string url, BestHTTP.OnRequestFinishedDelegate onFinished, BestHTTP.OnDownloadProgressDelegate onProgress)
-    {
-        var req = NewHttpRequest(url, BestHTTP.HTTPMethods.Get, onFinished);
-        req.OnProgress = onProgress;
-
-        req.Send();
-    }
-
-    public static void HttpPost(string url, byte[] postData, BestHTTP.OnRequestFinishedDelegate onFinished)
-    {
-        var req = NewHttpRequest(url, BestHTTP.HTTPMethods.Post, onFinished);
-        req.RawData = postData;
-        req.Send();
-    }
-
-    public static BestHTTP.WebSocket.WebSocket NewWebSocket(string url)
-    {
-        var ws = new BestHTTP.WebSocket.WebSocket(new System.Uri(url));
-        // TODO: 设置https证书自定义检验、代理、等等
-
-        return ws;
-    }
-
     /// <summary>
     /// 主要是使用UnityWebRequest来加载本地文件，由于android系统打包时，文件被压缩到apk包中，
     /// 因此直接System.IO.File来读取是不行的，需要UnityWebRequest来理解apk格式
