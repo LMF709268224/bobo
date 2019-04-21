@@ -29,12 +29,12 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 
 echo "Running Linters:"
-files=$(git diff --cached --name-status)
-while read st file; do
+files=$(git diff --cached --name-status --diff-filter=ACM)
+while read st file file2; do
 	# echo "file:$file"
 	# skip deleted files
 	if [ "$st" == 'D' ]; then continue; fi
-	echo "file non-d:$file"
+	# echo "file non-d:$file"
 	# do a check only on the php files
 	if [[ $file =~ .lua$ ]]; then
 		# echo "luacheck:$file"
