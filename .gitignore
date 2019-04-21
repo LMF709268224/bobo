@@ -8,9 +8,13 @@
 .vscode/
 win32/
 win64/
+
 AssetBundles/
 # Never ignore Asset meta data
 ![Aa]ssets/**/*.meta
+
+Assets/StreamingAssets/
+Assets/StreamingAssets.meta
 
 # Uncomment this line if you wish to ignore the asset store tools plugin
 # [Aa]ssets/AssetStoreTools*
