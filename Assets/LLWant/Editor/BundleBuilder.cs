@@ -22,6 +22,22 @@ public class BundleBuilder
         this.ctx = ctx;
 
         modulePath = Path.Combine(ctx.modulesRootPath, Cfg.Path);
+
+        CheckTextCfg();
+    }
+
+    /// <summary>
+    /// 如果文件类型包含".lua"文件，则检查是否配置为text
+    /// </summary>
+    private void CheckTextCfg()
+    {
+        var hasLua = Cfg.Filter.Contains(".lua");
+        var isText = Cfg.IsText;
+        if (hasLua != isText)
+        {
+            throw new Exception($"bundle cfg:{Cfg.Path} lua and text type mismatch,"+
+                " should config as text if has lua file, otherwise not");
+        }
     }
 
     public AssetBundleBuild CreateAssetBundleBuild()
