@@ -12,7 +12,7 @@ local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local room = require "scripts/room"
 local fairy = require "lobby/lcore/fairygui"
-local dialog = require "lobby/dialog"
+local dialog = require "lobby/lcore/dialog"
 
 local singleTon = nil
 
@@ -361,7 +361,7 @@ function SG:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
         end
     end
 
-    local prompt = require "lobby/prompt"
+    local prompt = require "lobby/lcore/prompt"
     if userID == nil then
         -- 根据chairID获取不到userID，说明输入的回放码不正确或已过期
         prompt.showPrompt("您输入的回放码不存在,或录像已过期!")

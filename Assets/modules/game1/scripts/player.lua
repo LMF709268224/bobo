@@ -8,7 +8,7 @@ local Player = {}
 local logger = require "lobby/lcore/logger"
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
-local prompt = require "lobby/prompt"
+local prompt = require "lobby/lcore/prompt"
 local agariIndex = require("scripts/AgariIndex")
 local pokerfaceRf = proto.prunfast
 local pokerface = proto.pokerface

@@ -3,7 +3,7 @@ local DisbandVoteView = {}
 local mt = {__index = DisbandVoteView}
 
 local logger = require "lobby/lcore/logger"
-local prompt = require "lobby/prompt"
+local prompt = require "lobby/lcore/prompt"
 local proto = require "scripts/proto/proto"
 local fairy = require "lobby/lcore/fairygui"
 

@@ -6,7 +6,7 @@ local DFReplay = {}
 
 local mt = {__index = DFReplay}
 local logger = require "lobby/lcore/logger"
-local prompt = require "lobby/prompt"
+local prompt = require "lobby/lcore/prompt"
 local proto = require "scripts/proto/proto"
 local actionType = proto.prunfast.ActionType
 local pokerfaceProto = proto.prunfast
