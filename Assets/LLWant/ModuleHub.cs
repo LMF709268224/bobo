@@ -8,15 +8,15 @@ using UnityEngine;
 
 /// <summary>
 /// 对应一个模块
-/// 
+///
 /// 例如大厅lobby模块，某某个游戏模块
 /// 主要是包含lua虚拟机，以及资源loader，以及界面节点等等
-/// 
+///
 /// 模块还可以启动子模块，例如大厅模块启动游戏模块
 /// 这个时候，子模块和大厅模块有联系，子模块加载资源时如果发现不属于它的资源
 /// 就会向大厅模块请求该资源。例如大厅模块含有一套通用的美术资源，所有子游戏
 /// 可以使用，子游戏使用该美术资源时，就需要请求大厅模块加载该资源。
-/// 
+///
 /// Unity启动后，首先是激活Boot.cs，后者则new一个ModuleHub，对应lobby大厅模块
 /// 之后进入大厅的环境和逻辑
 /// </summary>
@@ -167,7 +167,7 @@ public class ModuleHub
 
     /// <summary>
     /// 选择一个资源加载器
-    /// 
+    ///
     /// 1. 如果可写目录下存在模块目录，则优先使用可写目录作为资源目录
     /// 2. 如果可写目录不存在模块目录，则两种情况：
     /// 2.1 如果处于编辑器模式，则使用assets目录
@@ -208,7 +208,7 @@ public class ModuleHub
             // 用的是StreamingAssetsPath，而不用Resources目录，原因参考下面的链接：
             // https://unity3d.com/learn/tutorials/topics/best-practices/resources-folder
             var modePathRoot = Path.Combine(Application.streamingAssetsPath, "modules");
-            loader = new AssetBundleLoader(modName, parentLoader, modePathRoot); 
+            loader = new AssetBundleLoader(modName, parentLoader, modePathRoot);
 #endif
         }
 
@@ -287,7 +287,7 @@ public class ModuleHub
         }
 
         // 检查是否启动多于一个游戏模块，目前仅允许一个游戏在运行
-        if (subModules.Count > 1)
+        if (subModules.Count > 0)
         {
             throw new System.Exception($"LaunchGameModule {gameModName} failed, only support 1 game module on running");
         }
