@@ -1,11 +1,17 @@
 --[[
     控制回播
 ]]
+--luacheck: no self
 local DFReplay = {}
 
 local mt = {__index = DFReplay}
 local logger = require "lobby/lcore/logger"
-local fairy = require "lobby/lcore/fairygui"
+local prompt = require "lobby/lcore/prompt"
+local proto = require "scripts/proto/proto"
+local actionType = proto.prunfast.ActionType
+local pokerfaceProto = proto.prunfast
+
+-- local fairy = require "lobby/lcore/fairygui"
 
 --local pkproto2 = game_mahjong_s2s_pb
 
@@ -21,129 +27,129 @@ function DFReplay.new(df, userID, msgHandRecord)
 end
 
 function DFReplay:gogogo(isShare)
-    logger.debug(" gogogo")
+    logger.debug(" gogogo:", isShare)
 
-    --新建room和绑定roomView
-    self.room = Room:new(self.user, self)
-    self.room.host = self.df
-    --self.room.roomInfo = roomInfo
+    -- --新建room和绑定roomView
+    -- self.room = Room:new(self.user, self)
+    -- self.room.host = self.df
+    -- --self.room.roomInfo = roomInfo
 
-    logger.debug(" room info : " .. self.msgHandRecord.roomConfigID)
-    local roomInfo = accessory_pb.RoomInfo {}
-    roomInfo.roomID = ""
-    roomInfo.roomNumber = self.msgHandRecord.roomNumber
-    roomInfo.gameServerURL = ""
-    roomInfo.state = 1
-    roomInfo.config = self.msgHandRecord.roomConfigID
-    roomInfo.timeStamp = ""
-    roomInfo.handStartted = self.msgHandRecord.handNum
-    roomInfo.lastActiveTime = 0
+    -- logger.debug(" room info : ", self.msgHandRecord.roomConfigID)
+    -- local roomInfo = accessory_pb.RoomInfo {}
+    -- roomInfo.roomID = ""
+    -- roomInfo.roomNumber = self.msgHandRecord.roomNumber
+    -- roomInfo.gameServerURL = ""
+    -- roomInfo.state = 1
+    -- roomInfo.config = self.msgHandRecord.roomConfigID
+    -- roomInfo.timeStamp = ""
+    -- roomInfo.handStartted = self.msgHandRecord.handNum
+    -- roomInfo.lastActiveTime = 0
 
-    self.room.roomInfo = roomInfo
-    self.room.handStartted = self.msgHandRecord.handNum
-    self.room.roomNumber = self.msgHandRecord.roomNumber
+    -- self.room.roomInfo = roomInfo
+    -- self.room.handStartted = self.msgHandRecord.handNum
+    -- self.room.roomNumber = self.msgHandRecord.roomNumber
 
-    self.room:loadRoomView()
-    coroutine.waitDoFinish(self.room)
+    -- self.room:loadRoomView()
+    -- coroutine.waitDoFinish(self.room)
 
-    local df = require(dfPath .. "dfMahjong/dfSingleton")
-    local dfSingleton = df:getSingleton()
+    -- local df = require(dfPath .. "dfMahjong/dfSingleton")
+    -- local dfSingleton = df:getSingleton()
 
-    dfSingleton.room = self.room
+    -- dfSingleton.room = self.room
 
-    local room = self.room
-    --新建player以及绑定playerView
-    --先新建自己
-    local players = self.msgHandRecord.players
-    for _, p in ipairs(players) do
-        --if p.userID == acc.userID then
-        logger.debug(" p.userID " .. p.userID)
-        if p.userID == self.user.userID then
-            room:createMyPlayer(p)
-        end
-    end
-    --新建其他人
-    for _, p in ipairs(players) do
-        --if p.userID ~= acc.userID then
-        if p.userID ~= self.user.userID then
-            room:createPlayerByInfo(p)
-        end
-    end
+    -- local room = self.room
+    -- --新建player以及绑定playerView
+    -- --先新建自己
+    -- local players = self.msgHandRecord.players
+    -- for _, p in ipairs(players) do
+    --     --if p.userID == acc.userID then
+    --     logger.debug(" p.userID ", p.userID)
+    --     if p.userID == self.user.userID then
+    --         room:createMyPlayer(p)
+    --     end
+    -- end
+    -- --新建其他人
+    -- for _, p in ipairs(players) do
+    --     --if p.userID ~= acc.userID then
+    --     if p.userID ~= self.user.userID then
+    --         room:createPlayerByInfo(p)
+    --     end
+    -- end
 
-    --挂载action处理handler，复用action result handlers
-    self:armActionHandler()
-    self.speed = 48 -- 默认速度,每次等待48帧
-    self.normalSpeed = self.speed
+    -- --挂载action处理handler，复用action result handlers
+    -- self:armActionHandler()
+    -- self.speed = 48 -- 默认速度,每次等待48帧
+    -- self.normalSpeed = self.speed
 
-    self.exit = false
-    --循环播放
-    while not self.exit do
-        --重置房间
-        room:resetForNewHand()
-        --发牌
-        self:deal()
-        --隐藏继续按钮
-        --显示暂停按钮
-        room.roomView:pauseResumeButtons(true, false)
+    -- self.exit = false
+    -- --循环播放
+    -- while not self.exit do
+    --     --重置房间
+    --     room:resetForNewHand()
+    --     --发牌
+    --     self:deal()
+    --     --隐藏继续按钮
+    --     --显示暂停按钮
+    --     room.roomView:pauseResumeButtons(true, false)
 
-        --循环执行动作列表
-        local actionlist = self.msgHandRecord.actions
-        for i, a in ipairs(actionlist) do
-            if bit.band(a.flags, pokerfaceS2s.SRUserReplyOnly) == 0 then
-                self:waitActionDelay()
-                if self.pause then
-                    self:waitPauseResume()
-                end
-                if not self.exit then
-                    self:doAction(a, actionlist, i)
-                else
-                    break
-                end
-            end
-        end
+    --     --循环执行动作列表
+    --     local actionlist = self.msgHandRecord.actions
+    --     for i, a in ipairs(actionlist) do
+    --         if bit.band(a.flags, pokerfaceS2s.SRUserReplyOnly) == 0 then
+    --             self:waitActionDelay()
+    --             if self.pause then
+    --                 self:waitPauseResume()
+    --             end
+    --             if not self.exit then
+    --                 self:doAction(a, actionlist, i)
+    --             else
+    --                 break
+    --             end
+    --         end
+    --     end
 
-        --结算
-        if not self.exit then
-            if self.pause then
-                self:waitPauseResume()
-            end
-            self:handOver()
-        end
+    --     --结算
+    --     if not self.exit then
+    --         if self.pause then
+    --             self:waitPauseResume()
+    --         end
+    --         self:handOver()
+    --     end
 
-        --等待结束，或者重播
-        if not self.exit then
-            self:waitPauseResume()
-        end
+    --     --等待结束，或者重播
+    --     if not self.exit then
+    --         self:waitPauseResume()
+    --     end
 
-        --销毁结算页面
-        if self.room.handResultView ~= nil then
-            self.room.handResultView:destroy()
-            self.room.handResultView = nil
-        end
-    end
-    -- 取消游戏模块的逻辑监听
-    -- require "DFMJGame"
-    -- DFMJGame.Close()
-    -- room.roomView:destroyReplayView()
-    dfSingleton.room = nil
+    --     --销毁结算页面
+    --     if self.room.handResultView ~= nil then
+    --         self.room.handResultView:destroy()
+    --         self.room.handResultView = nil
+    --     end
+    -- end
+    -- -- 取消游戏模块的逻辑监听
+    -- -- require "DFMJGame"
+    -- -- DFMJGame.Close()
+    -- -- room.roomView:destroyReplayView()
+    -- dfSingleton.room = nil
 
-    local dispatcher = g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE)
-    local hallModule = require("HallComponent.Script.HallModule")
-    local hm = g_ModuleMgr:GetModule(hallModule.moduleName)
-    if not hm then
-        g_ModuleMgr:AddModule(hallModule.moduleName, hallModule)
-    end
+    -- local dispatcher = g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE)
+    -- local hallModule = require("HallComponent.Script.HallModule")
+    -- local hm = g_ModuleMgr:GetModule(hallModule.moduleName)
+    -- if not hm then
+    --     g_ModuleMgr:AddModule(hallModule.moduleName, hallModule)
+    -- end
 
-    if isShare then
-        --如果是从查看回放的入口进来的，则回到大厅,否则回到会播房间列表页面
-        logger.debug("back to hallview")
-        dispatcher:dispatch("OPEN_HALLVIEW")
-    else
-        local function cb()
-            dispatcher:dispatch("OPEN_GAME_RECORD_DETAIL_VIEW")
-        end
-        dispatcher:dispatch("OPEN_HALLVIEW", cb)
-    end
+    -- if isShare then
+    --     --如果是从查看回放的入口进来的，则回到大厅,否则回到会播房间列表页面
+    --     logger.debug("back to hallview")
+    --     dispatcher:dispatch("OPEN_HALLVIEW")
+    -- else
+    --     local function cb()
+    --         dispatcher:dispatch("OPEN_GAME_RECORD_DETAIL_VIEW")
+    --     end
+    --     dispatcher:dispatch("OPEN_HALLVIEW", cb)
+    -- end
 end
 
 ---------------------------------
@@ -151,7 +157,7 @@ end
 ---------------------------------
 function DFReplay:decreaseSpeed()
     if self.speed >= (4 * self.normalSpeed) then
-        dfCompatibleAPI:showTip("已经是最慢速度")
+        prompt.showPrompt("已经是最慢速度")
         return
     end
 
@@ -163,7 +169,7 @@ end
 ---------------------------------
 function DFReplay:increaseSpeed()
     if self.speed <= (self.normalSpeed / 4) then
-        dfCompatibleAPI:showTip("已经是最快速度")
+        prompt.showPrompt("已经是最快速度")
         return
     end
 
@@ -174,10 +180,10 @@ function DFReplay:showCurrentSpeed()
     local scale
     if self.speed <= self.normalSpeed then
         scale = self.normalSpeed / self.speed
-        dfCompatibleAPI:showTip("速度X" .. tostring(scale))
+        prompt.showPrompt("速度X" .. tostring(scale))
     else
         scale = self.speed / self.normalSpeed
-        dfCompatibleAPI:showTip("速度/" .. tostring(scale))
+        prompt.showPrompt("速度/" .. tostring(scale))
     end
 end
 ---------------------------------
@@ -233,31 +239,27 @@ end
 --等待action延时
 ---------------------------------
 function DFReplay:waitActionDelay()
-    local coWait = coroutine.running()
-
-    local dfReplay = self
-
-    --local unityViewNode = self.room.roomView.replayUnityViewNode
-    --unityViewNode:StartTimer("replayWaitAction", self.speed, function()
-    --    dfReplay:resumeCo()
-    --end , 0)
-    local action = function()
-        self.timer:Stop()
-        self.timer = nil
-        dfReplay:resumeCo()
-    end
-
-    self.timer = FrameTimer.New(action, self.speed, -1)
-    self.timer:Start()
-
-    self.coWait = coWait
-    coroutine.yield()
-    --unityViewNode:StopTimer("replayWaitAction")
-    if self.timer ~= nil then
-        self.timer:Stop()
-        self.timer = nil
-    end
-    self.coWait = nil
+    -- local coWait = coroutine.running()
+    -- local dfReplay = self
+    -- --local unityViewNode = self.room.roomView.replayUnityViewNode
+    -- --unityViewNode:StartTimer("replayWaitAction", self.speed, function()
+    -- --    dfReplay:resumeCo()
+    -- --end , 0)
+    -- local action = function()
+    --     self.timer:Stop()
+    --     self.timer = nil
+    --     dfReplay:resumeCo()
+    -- end
+    -- self.timer = FrameTimer.New(action, self.speed, -1)
+    -- self.timer:Start()
+    -- self.coWait = coWait
+    -- coroutine.yield()
+    -- --unityViewNode:StopTimer("replayWaitAction")
+    -- if self.timer ~= nil then
+    --     self.timer:Stop()
+    --     self.timer = nil
+    -- end
+    -- self.coWait = nil
 end
 ---------------------------------
 --继续coroutine
@@ -265,109 +267,94 @@ end
 function DFReplay:resumeCo()
     --local unityViewNode = self.room.roomView.replayUnityViewNode
     --unityViewNode:StopTimer("replayWaitAction")
-
-    if self.timer ~= nil then
-        self.timer:Stop()
-        self.timer = nil
-    end
-
-    if self.coWait ~= nil then
-        local coWait = self.coWait
-        local flag, msg = coroutine.resume(coWait)
-        if not flag then
-            msg = debug.traceback(coWait, msg)
-            --error(msg)
-            logError(msg)
-
-            return
-        end
-    end
+    -- if self.timer ~= nil then
+    --     self.timer:Stop()
+    --     self.timer = nil
+    -- end
+    -- if self.coWait ~= nil then
+    --     local coWait = self.coWait
+    --     local flag, msg = coroutine.resume(coWait)
+    --     if not flag then
+    --         msg = debug.traceback(coWait, msg)
+    --         --error(msg)
+    --         logError(msg)
+    --         return
+    --     end
+    -- end
 end
 ---------------------------------
 --发牌
 ---------------------------------
 function DFReplay:deal()
-    local room = self.room
-    --房间状态改为playing
-    room.state = pkproto2.SRoomPlaying
-    room.roomView:onUpdateStatus(room.state)
-
-    local deals = self.msgHandRecord.deals
-    --保存一些房间属性
-    room.bankerChairID = self.msgHandRecord.bankerChairID
-    --是否连庄
-    room.isContinuousBanker = self.msgHandRecord.isContinuousBanker
-    --room.windFlowerID = self.msgHandRecord.windFlowerID
-
-    local player1 = nil
-    local player2 = nil
-    local mySelf = nil
-    --所有玩家状态改为playing
-    local players = room.players
-    for _, p in pairs(players) do
-        p.state = pkproto2.PSPlaying
-        local onUpdate = p.playerView.onUpdateStatus[p.state]
-        onUpdate(room.state)
-        if p:isMe() then
-            mySelf = p
-        else
-            if player1 == nil then
-                player1 = p
-            else
-                player2 = p
-            end
-        end
-    end
-
-    local drawCount = 0
-    --保存每一个玩家的牌列表
-    for _, v in ipairs(deals) do
-        local chairID = v.chairID
-        local player = room:getPlayerByChairID(chairID)
-
-        drawCount = drawCount + #v.cardsHand
-        player.cardsOnHand = {}
-        --填充手牌列表，所有人的手牌列表
-        player:addHandTiles(v.cardsHand)
-
-        --drawCount =  drawCount + #v.tilesFlower
-        --填充花牌列表
-        --player:addFlowerTiles(v.tilesFlower)
-    end
-
-    --TODO: 播放投色子动画
-    --对局开始动画
-    self.coWait = coroutine.running()
-    -- room.roomView:gameStartAnimation()
-    self.coWait = nil
-
-    if self.exit then
-        return
-    end
-
-    --播放发牌动画，并使用coroutine等待动画完成
-    --self.coWait = coroutine.running()
-    --room.roomView:dealAnimation()
-    --self.coWait = nil
-
-    if self.exit then
-        return
-    end
-
-    --显示各个玩家的手牌（对手只显示暗牌）和花牌
-    for _, p in pairs(players) do
-        p:sortHands()
-        p:hand2UI(false, false)
-    end
-
-    --播放发牌动画，并使用coroutine等待动画完成
-    self.coWait = coroutine.running()
-    room.roomView:dealAnimation(mySelf, player1, player2)
-    self.coWait = nil
-
-    --等待庄家出牌
-    local bankerPlayer = room:getPlayerByChairID(room.bankerChairID)
-    room.roomView:setWaitingPlayer(bankerPlayer)
+    -- local room = self.room
+    -- --房间状态改为playing
+    -- room.state = pkproto2.SRoomPlaying
+    -- room.roomView:onUpdateStatus(room.state)
+    -- local deals = self.msgHandRecord.deals
+    -- --保存一些房间属性
+    -- room.bankerChairID = self.msgHandRecord.bankerChairID
+    -- --是否连庄
+    -- room.isContinuousBanker = self.msgHandRecord.isContinuousBanker
+    -- --room.windFlowerID = self.msgHandRecord.windFlowerID
+    -- local player1 = nil
+    -- local player2 = nil
+    -- local mySelf = nil
+    -- --所有玩家状态改为playing
+    -- local players = room.players
+    -- for _, p in pairs(players) do
+    --     p.state = pkproto2.PSPlaying
+    --     local onUpdate = p.playerView.onUpdateStatus[p.state]
+    --     onUpdate(room.state)
+    --     if p:isMe() then
+    --         mySelf = p
+    --     else
+    --         if player1 == nil then
+    --             player1 = p
+    --         else
+    --             player2 = p
+    --         end
+    --     end
+    -- end
+    -- local drawCount = 0
+    -- --保存每一个玩家的牌列表
+    -- for _, v in ipairs(deals) do
+    --     local chairID = v.chairID
+    --     local player = room:getPlayerByChairID(chairID)
+    --     drawCount = drawCount + #v.cardsHand
+    --     player.cardsOnHand = {}
+    --     --填充手牌列表，所有人的手牌列表
+    --     player:addHandTiles(v.cardsHand)
+    --     --drawCount =  drawCount + #v.tilesFlower
+    --     --填充花牌列表
+    --     --player:addFlowerTiles(v.tilesFlower)
+    -- end
+    -- --TODO: 播放投色子动画
+    -- --对局开始动画
+    -- self.coWait = coroutine.running()
+    -- -- room.roomView:gameStartAnimation()
+    -- self.coWait = nil
+    -- if self.exit then
+    --     return
+    -- end
+    -- --播放发牌动画，并使用coroutine等待动画完成
+    -- --self.coWait = coroutine.running()
+    -- --room.roomView:dealAnimation()
+    -- --self.coWait = nil
+    -- if self.exit then
+    --     return
+    -- end
+    -- --显示各个玩家的手牌（对手只显示暗牌）和花牌
+    -- for _, p in pairs(players) do
+    --     p:sortHands()
+    --     p:hand2UI(false, false)
+    -- end
+    -- --播放发牌动画，并使用coroutine等待动画完成
+    -- self.coWait = coroutine.running()
+    -- room.roomView:dealAnimation(mySelf, player1, player2)
+    -- self.coWait = nil
+    -- --等待庄家出牌
+    -- local bankerPlayer = room:getPlayerByChairID(room.bankerChairID)
+    -- room.roomView:setWaitingPlayer(bankerPlayer)
 end
 ---------------------------------
 --执行动作
@@ -380,10 +367,10 @@ function DFReplay:doAction(srAction, actionlist, i)
 
     local h = self.actionHandler[srAction.action]
     if h == nil then
-        logError("DFReplay, no action handler:" .. tostring(srAction.action))
+        logger.error("DFReplay, no action handler:" .. tostring(srAction.action))
         return
     end
-    if srAction.action == pokerfaceRf.enumActionType_DISCARD then
+    if srAction.action == actionType.enumActionType_DISCARD then
         local waitDiscardReAction = false
         if i < #actionlist then
             waitDiscardReAction = true
@@ -399,8 +386,8 @@ end
 function DFReplay:armActionHandler()
     local handers = {}
 
-    handers[pokerfaceRf.enumActionType_SKIP] = self.skipActionHandler
-    handers[pokerfaceRf.enumActionType_DISCARD] = self.discardedActionHandler
+    handers[actionType.enumActionType_SKIP] = self.skipActionHandler
+    handers[actionType.enumActionType_DISCARD] = self.discardedActionHandler
 
     self.actionHandler = handers
 end
@@ -411,12 +398,12 @@ function DFReplay:skipActionHandler(srAction, room)
     logger.debug(" dfreplay, firstReadyHand")
 
     local actionResultMsg = {targetChairID = srAction.chairID}
-    local h = require(dfPath .. "dfMahjong/handlerActionResultSkip")
+    local h = require("scripts/handlers/handlerActionResultSkip")
     h:onMsg(actionResultMsg, room)
 end
 
 --深度复制table
-local function clone(object)
+local function clone(obj)
     local lookup_table = {}
     local function _copy(object)
         if type(object) ~= "table" then
@@ -431,7 +418,7 @@ local function clone(object)
         end
         return setmetatable(newObject, getmetatable(object))
     end
-    return _copy(object)
+    return _copy(obj)
 end
 ---------------------------------
 --出牌
@@ -448,7 +435,7 @@ function DFReplay:discardedActionHandler(srAction, room, waitDiscardReAction)
         waitDiscardReAction = waitDiscardReAction
     }
 
-    local h = require(dfPath .. "dfMahjong/handlerActionResultDiscarded")
+    local h = require("scripts/handlers/handlerActionResultDiscarded")
     h:onMsg(actionResultMsg, room)
 end
 ---------------------------------
@@ -464,7 +451,7 @@ function DFReplay:handOver()
 
     local msgHandOver = {continueAble = false}
     if handScoreBytes == nil or #handScoreBytes < 1 then
-        msgHandOver.endType = pokerfaceProto.enumHandOverType_None
+        msgHandOver.endType = pokerfaceProto.HandOverType.enumHandOverType_None
     else
         local handScore = pokerfaceProto.MsgHandScore()
         handScore:ParseFromString(handScoreBytes)

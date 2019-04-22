@@ -1,10 +1,12 @@
+--luacheck:no self
+
 local CreateRoomView = {}
 
 local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
 
 --记录键值
-local RecordKey = "createRoomView"
+-- local RecordKey = "createRoomView"
 
 local rules = {
     -- ["roomType"] = dfRoomType,
@@ -202,18 +204,18 @@ function CreateRoomView:ResetTextColor(toggles, descriptios)
     end
 end
 
-function CreateRoomView:GetCost(payType, playerNum, handNum)
-    -- logError("payType:"..payType..", playerNum:"..playerNum..", handNum"..handNum)
-    local key = "ownerPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
-    if payType == 1 then
-        key = "aaPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
-    end
+-- function CreateRoomView:GetCost(payType, playerNum, handNum)
+--     -- logError("payType:"..payType..", playerNum:"..playerNum..", handNum"..handNum)
+--     local key = "ownerPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
+--     if payType == 1 then
+--         key = "aaPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
+--     end
 
-    local originalPrice = yuePaiLogic:GetOriginalPrice(dfRoomType, key)
-    return originalPrice
+--     local originalPrice = yuePaiLogic:GetOriginalPrice(dfRoomType, key)
+--     return originalPrice
 
-    -- return payConfig[key]
-end
+--     -- return payConfig[key]
+-- end
 
 --获取房间规则
 function CreateRoomView:GetRules()
@@ -333,33 +335,33 @@ function CreateRoomView:updateCostDiamond()
 end
 
 function CreateRoomView:EnterGame(roomInfo)
-    dump(roomInfo, "------CreateRoomView----enter room roomInfo:")
+    logger.debug("------CreateRoomView----enter room roomInfo:", roomInfo)
 
-    local token = g_dataModule:GetUserData():GetToken()
-    local params = "tk=" .. token .. "&roomID=" .. roomInfo.roomID
-    local url = roomInfo.gameServerURL .. "?" .. params
-    local uid = g_dataModule:GetUserData():GetUID()
-    local myUser = {userID = tostring(uid)}
+    -- local token = g_dataModule:GetUserData():GetToken()
+    -- local params = "tk=" .. token .. "&roomID=" .. roomInfo.roomID
+    -- local url = roomInfo.gameServerURL .. "?" .. params
+    -- local uid = g_dataModule:GetUserData():GetUID()
+    -- local myUser = {userID = tostring(uid)}
 
-    local daFengModule = nil
+    -- local daFengModule = nil
 
-    xpcall(
-        function()
-            daFengModule = require("DaFengMaJiang/Script/dfMahjong/DaFengModule")
-        end,
-        function(msg)
-            daFengModule = nil
-            logError("----------CreateRoomView:EnterGame: 进入游戏失败原因：" .. msg)
-            local error = string.format("游戏不存在!")
-            g_commonModule:ShowTip(error)
-        end
-    )
+    -- xpcall(
+    --     function()
+    --         daFengModule = require("DaFengMaJiang/Script/dfMahjong/DaFengModule")
+    --     end,
+    --     function(msg)
+    --         daFengModule = nil
+    --         logError("----------CreateRoomView:EnterGame: 进入游戏失败原因：" .. msg)
+    --         local error = string.format("游戏不存在!")
+    --         g_commonModule:ShowTip(error)
+    --     end
+    -- )
 
-    if daFengModule then
-        local dispatcher = g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE)
-        g_ModuleMgr:AddModule(daFengModule.moduleName, daFengModule)
-        dispatcher:dispatch("START_DAFENG", url, myUser, roomInfo)
-    end
+    -- if daFengModule then
+    --     local dispatcher = g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE)
+    --     g_ModuleMgr:AddModule(daFengModule.moduleName, daFengModule)
+    --     dispatcher:dispatch("START_DAFENG", url, myUser, roomInfo)
+    -- end
 end
 
 return CreateRoomView

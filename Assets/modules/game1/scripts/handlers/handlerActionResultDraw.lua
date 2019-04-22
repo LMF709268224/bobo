@@ -2,12 +2,12 @@
     处理玩家抽牌结果通知，包含花牌（可能有多张，或没有）和一张非花牌
 ]]
 local Handler = {}
-Handler.VERSION = "1.0"
 
 local proto = require "scripts/proto/proto"
+local logger = require "lobby/lcore/logger"
 
 function Handler.onMsg(actionResultMsg, room)
-    --logger.debug(' Draw result')
+    logger.debug(" Draw result")
     local targetChairID = actionResultMsg.targetChairID
     local player = room:getPlayerByChairID(targetChairID)
     local drawTile = actionResultMsg.actionTile

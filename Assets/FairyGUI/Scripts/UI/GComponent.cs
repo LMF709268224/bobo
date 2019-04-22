@@ -45,6 +45,7 @@ namespace FairyGUI
 		Controller _applyingController;
 
 		EventListener _onDrop;
+        EventListener _onDisposing;
 
 		public GComponent()
 		{
@@ -67,6 +68,12 @@ namespace FairyGUI
 
 		override public void Dispose()
 		{
+            if (_onDisposing != null)
+            {
+                _onDisposing.Call(this);
+                _onDisposing.Clear();
+            }
+
             ClearTimers();
 
             int cnt = _transitions.Count;
@@ -113,7 +120,7 @@ namespace FairyGUI
             public object luaParam;
         }
 
-        public void DelayRun(int interval, TimerCallback callback)
+        public void DelayRun(float interval, TimerCallback callback)
         {
             ComponentTimer ct = new ComponentTimer();
             ct.luaCb = callback;
@@ -131,7 +138,7 @@ namespace FairyGUI
             _timers.Add(timerName, ct);
         }
 
-        public bool StartTimer(string timerName, int interval, int repeat, TimerCallback callback, object callbackParam)
+        public bool StartTimer(string timerName, float interval, int repeat, TimerCallback callback, object callbackParam)
         {
             if (_timers.ContainsKey(timerName))
             {
@@ -190,10 +197,15 @@ namespace FairyGUI
 			get { return _onDrop ?? (_onDrop = new EventListener(this, "onDrop")); }
 		}
 
-		/// <summary>
-		/// Draw call optimization switch.
-		/// </summary>
-		public bool fairyBatching
+        public EventListener onDisposing
+        {
+            get { return _onDisposing ?? (_onDisposing = new EventListener(this, "onDisposing")); }
+        }
+
+        /// <summary>
+        /// Draw call optimization switch.
+        /// </summary>
+        public bool fairyBatching
 		{
 			get { return rootContainer.fairyBatching; }
 			set { rootContainer.fairyBatching = value; }

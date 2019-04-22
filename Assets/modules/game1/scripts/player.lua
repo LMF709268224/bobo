@@ -2,27 +2,27 @@
     Player表示一个玩家，只有进入房间才会新建Player
     每个Player首先有其对应的牌数据（其中手牌是不公开的），然后是其对应的界面节点
 ]]
+--luacheck: no self
 local Player = {}
-Player.VERSION = "1.0"
 
 local logger = require "lobby/lcore/logger"
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
-local prompt = require "lobby/prompt"
+local prompt = require "lobby/lcore/prompt"
 local agariIndex = require("scripts/AgariIndex")
 local pokerfaceRf = proto.prunfast
 local pokerface = proto.pokerface
 
 --音效文件定义
-local SoundDef = {
-    Chow = "chi",
-    Pong = "peng",
-    Kong = "gang",
-    Ting = "ting",
-    WinChuck = "hu", --被点炮
-    WinDraw = "zimo", --自摸
-    Common = "effect_common"
-}
+-- local SoundDef = {
+--     Chow = "chi",
+--     Pong = "peng",
+--     Kong = "gang",
+--     Ting = "ting",
+--     WinChuck = "hu", --被点炮
+--     WinDraw = "zimo", --自摸
+--     Common = "effect_common"
+-- }
 
 function Player.new(userID, chairID, room)
     local player = {userID = userID, chairID = chairID, room = room}
@@ -86,7 +86,7 @@ end
 ---------------------------------------
 --根据规则排序手牌
 ---------------------------------------
-function Player:sortHands(excludeLast)
+function Player:sortHands()
     if self.cardsOnHand ~= nil then
         -- local last
         -- if excludeLast then
@@ -211,38 +211,52 @@ function Player:showCardHandType(cardHandType, discardTileId)
     logger.debug("显示打出去的牌的类型。。。 : ", cardHandType)
     local tip = ""
     local effectName = "" -- 音效
-    if cardHandType == pokerfaceRf.CardHandType.Flush then
-        tip = "Effects_zi_shunzi"
-        --顺子
-        effectName = "sunzi"
-    elseif cardHandType == pokerfaceRf.CardHandType.Bomb then
-        tip = "Effects_zi_zhadan"
-        --炸弹
-        effectName = "zhadan"
-    elseif cardHandType == pokerfaceRf.CardHandType.Single then
-        tip = "" --单张
-        self:playReadTileSound(discardTileId, false)
-    elseif cardHandType == pokerfaceRf.CardHandType.Pair then
-        tip = "" --对子
-        self:playReadTileSound(discardTileId, true)
-    elseif cardHandType == pokerfaceRf.CardHandType.Pair2X then
-        tip = "Effects_liandui"
-        --连对
-        effectName = "liandui"
-    elseif cardHandType == pokerfaceRf.CardHandType.Triplet then
-        --三张
-        self:playSound("sange")
-        tip = "Effects_sandaier"
-    elseif cardHandType == pokerfaceRf.CardHandType.TripletPair then
-        tip = "Effects_sandaier" --三带二
-        effectName = "sandaiyi"
-    elseif cardHandType == pokerfaceRf.CardHandType.Triplet2X then
-        tip = "Effects_zi_FeiJi" -- 飞机
-        effectName = "feiji"
-    elseif cardHandType == pokerfaceRf.CardHandType.Triplet2X2Pair then
-        tip = "Effects_zi_FeiJiDaiChiBang" --夯加飞机
-        effectName = "feijidaicibang"
-    end
+    local handTypeMap = {
+        [pokerfaceRf.CardHandType.Flush] = function()
+            tip = "Effects_zi_shunzi"
+            --顺子
+            effectName = "sunzi"
+        end,
+        [pokerfaceRf.CardHandType.Bomb] = function()
+            tip = "Effects_zi_zhadan"
+            --炸弹
+            effectName = "zhadan"
+        end,
+        [pokerfaceRf.CardHandType.Single] = function()
+            tip = "" --单张
+            self:playReadTileSound(discardTileId, false)
+        end,
+        [pokerfaceRf.CardHandType.Pair] = function()
+            tip = "" --对子
+            self:playReadTileSound(discardTileId, true)
+        end,
+        [pokerfaceRf.CardHandType.Pair2X] = function()
+            tip = "Effects_liandui"
+            --连对
+            effectName = "liandui"
+        end,
+        [pokerfaceRf.CardHandType.Triplet] = function()
+            --三张
+            self:playSound("sange")
+            tip = "Effects_sandaier"
+        end,
+        [pokerfaceRf.CardHandType.TripletPair] = function()
+            tip = "Effects_sandaier" --三带二
+            effectName = "sandaiyi"
+        end,
+        [pokerfaceRf.CardHandType.Triplet2X] = function()
+            tip = "Effects_zi_FeiJi" -- 飞机
+            effectName = "feiji"
+        end,
+        [pokerfaceRf.CardHandType.Triplet2X] = function()
+            tip = "Effects_zi_FeiJiDaiChiBang" --夯加飞机
+            effectName = "feijidaicibang"
+        end
+    }
+
+    local fn = handTypeMap[cardHandType]
+    fn()
+
     logger.debug("tip : ", tip)
     if tip ~= "" then
         self.playerView:playerOperationEffectWhitGZ(tip, effectName)
@@ -267,7 +281,7 @@ end
 ------------------------------------
 --播放音效
 ------------------------------------
-function Player:playSound(effectName)
+function Player:playSound()
     -- if effectName ~= nil and effectName ~= "" then
     --     local gender = "loc_"
     --     local path = "localize/"
@@ -308,7 +322,7 @@ end
 function Player:playOperationSound(effectName)
     self:playSound(effectName)
     --执行音效
-    dfCompatibleAPI:soundPlay("effect/" .. SoundDef.Common)
+    -- dfCompatibleAPI:soundPlay("effect/" .. SoundDef.Common)
 end
 
 ------------------------------------
@@ -355,14 +369,14 @@ function Player:updateByPlayerInfo(playerInfo)
     player.charm = playerInfo.charm
     player.avatarID = playerInfo.avatarID
     player.groupIds = playerInfo.clubIDs
-    -- logger.debug("player.avatarID:" .. tostring(player.avatarID))
+    -- logger.debug("player.avatarID:" , tostring(player.avatarID))
     -- if self:isMe() and not self.room:isReplayMode() then
     --     local singleton = acc
     --     singleton.charm = playerInfo.charm
     --     g_dataModule:GetUserData():SetCharm(playerInfo.charm)
     -- end
     self.state = playerInfo.state
-    -- logger.debug("player id:" .. player.userID .. ", avatarID:" .. player.avatarID)
+    -- logger.debug("player id:", player.userID, ", avatarID:" , player.avatarID)
     self:updateHeadEffectBox()
 end
 
@@ -370,10 +384,10 @@ end
 -- 玩家选择提示
 -- 上下文必然是allowedReActionMsg
 ----------------------------------------
-function Player:onTipBtnClick(isHui, btnObj)
+function Player:onTipBtnClick()
     --if isHui then return end
     self.playerView:restoreHandPositionAndClickCount()
-    local room = self.room
+    -- local room = self.room
     local tipCards = self.tipCards
     local handsClickCtrls = self.playerView.handsClickCtrls
     if tipCards == nil then
@@ -410,7 +424,7 @@ function Player:onTipBtnClick(isHui, btnObj)
     local tipCard = tipCards[self.tipCardsIndex]
     if tipCard then
         local cs = tipCard.cards
-        logger.debug(tostring(self.tipCardsIndex) .. "提示 cs : " .. tostring(cs))
+        logger.debug(self.tipCardsIndex, ", 提示 cs : ", cs)
         if cs then
             for i = 1, 16 do
                 local handsClickCtrl = handsClickCtrls[i]
@@ -429,7 +443,7 @@ end
 ----------------------------------------
 -- 玩家选择出牌
 ----------------------------------------
-function Player:onDiscardBtnClick(isHui, btnObj)
+function Player:onDiscardBtnClick(isHui)
     if isHui then
         --提示。。。无牌可出
         logger.error("ERR_ROOM_NOTDISCARDS")
@@ -455,16 +469,18 @@ end
 -- 当上下文是allowedActionMsg时，表示不起手听牌
 -- 当上下文是allowedReActionMsg时，表示不吃椪杠胡
 ----------------------------------------
-function Player:onSkipBtnClick(isHui, btnObj)
+function Player:onSkipBtnClick(isHui)
     if isHui then
+        local dfConfig = require "scripts/dfConfig"
         --提示 不可以过
         if self.allowedActionMsg ~= nil then
-            dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSKIP_2)
+            prompt.showPrompt(dfConfig.ErrorInRoom.ERR_ROOM_NOTSKIP_2)
             return
         end
-        dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSKIP)
+        prompt.showPrompt(dfConfig.ErrorInRoom.ERR_ROOM_NOTSKIP)
         return
     end
+
     local room = self.room
 
     local discardAble = false
@@ -490,27 +506,26 @@ end
 -----------------------------------------------------------
 function Player:waitSecond(someSecond)
     local waitCo = coroutine.running()
-    StartTimer(
+    self.playerView.viewUnityNode:DelayRun(
         someSecond,
         function()
             local flag, msg = coroutine.resume(waitCo)
             if not flag then
-                logError(msg)
+                logger.error(msg)
                 return
             end
-        end,
-        1,
-        true
+        end
     )
     coroutine.yield()
 end
+
 -----------------------------------------------------------
 --执行自动打牌操作
 -----------------------------------------------------------
 function Player:autoDiscard()
     self:waitSecond(1)
-    if self.allowedActionMsg ~= nil then
-    end
+    -- if self.allowedActionMsg ~= nil then
+    -- end
 
     if self.allowedReActionMsg ~= nil then
         -- local actionMsg = pokerface.MsgPlayerAction()
@@ -525,6 +540,7 @@ function Player:autoDiscard()
         self:onPlayerDiscardCards(disCards)
     end
 end
+
 function Player:onPlayerDiscardCards(disCards)
     logger.debug(" onPlayerDiscardCards tile .")
     --dump(disCards , "----------------- disCards ---------------------------")
@@ -544,7 +560,7 @@ function Player:onPlayerDiscardCards(disCards)
         return
     end
 
-    local cards_ = {}
+    -- local cards_ = {}
     actionMsg.cards = {}
     for i = 1, #disCards do
         local disCard = disCards[i]
@@ -597,7 +613,7 @@ end
 
 function Player:onPlayerDiscardTile(tileID)
     local room = self.room
-    logger.debug(" discard tile:" .. tileID)
+    logger.debug(" discard tile:", tileID)
     if self.allowedActionMsg ~= nil then
         local actionMsg = pokerface.MsgPlayerAction()
         actionMsg.qaIndex = self.allowedActionMsg.qaIndex

@@ -15,6 +15,8 @@ local AnimationMgr = {}
 
 local prefabsCached = {}
 local gameObjectsCached = {}
+local CS = _ENV.CS
+local typeof = _ENV.typeof
 
 local function createGameObject(prefabName)
 	local prefab = prefabsCached[prefabName]
@@ -105,7 +107,7 @@ local function getGocached(ctx)
 	-- 检查是否有可用的game object，如果有则直接使用
 	local goCached = gameObjectsCached[prefabName]
 	if goCached == nil then
-		logger.debug('AnimationMgr.getGocached, goCached nil, create new game Object for:', prefabName)
+		logger.debug("AnimationMgr.getGocached, goCached nil, create new game Object for:", prefabName)
 
 		goCached = createGameObject(prefabName)
 		gameObjectsCached[prefabName] = goCached

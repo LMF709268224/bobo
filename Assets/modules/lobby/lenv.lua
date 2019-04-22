@@ -26,9 +26,4 @@ LEnv.bestHTTP = {
 --强制更新
 LEnv.forceUseUpgrade = true
 
-LEnv.URL = {
-	updateQuery='http://localhost:3001/lobby/upgrade/query',
-	updateDownload = 'http://localhost:3001/lobby/upgrade/download'
-}
-
 return LEnv

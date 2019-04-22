@@ -2,13 +2,12 @@
     处理服务器要求自己动作的请求，例如出牌，暗杠，自摸胡牌，起手听牌等
 ]]
 local Handler = {}
-Handler.VERSION = "1.0"
 
 local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"
 
 function Handler.onMsg(msg, room)
-    --logger.debug(' Action allowed msg')
+    logger.debug("Action allowed msg")
 
     local allowedActionMsg = proto.decodeMessage("pokerface.MsgAllowPlayerAction", msg)
     local targetChairID = allowedActionMsg.actionChairID
@@ -16,8 +15,6 @@ function Handler.onMsg(msg, room)
 
     --隐藏打出的牌
     player.playerView:hideDiscarded()
-    --TODO:开启倒计时
-    --room:startDiscardCountdown(player)
 
     if allowedActionMsg.timeoutInSeconds > 255 then
         player.haveR3H = true --保存有过红桃3的标志 (打出之后为false)
@@ -49,8 +46,6 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
 
     local needShowOperationButtons = true
     player.waitSkip = false
-    -- playerView.skipHuiBtn:SetActive(true)
-    --playerView.tipHuiBtn:SetActive(true)
     playerView.skipBtn.visible = false
     playerView.discardBtn.visible = false
     playerView.tipBtn.visible = false
@@ -58,12 +53,11 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     player.tipCards = nil
     player.tipCardsIndex = 0
 
-    logger.debug(" processMyAllowedActions actions : " .. tostring(actions))
+    logger.debug(" processMyAllowedActions actions : ", actions)
     --如果可以过
     if proto.actionsHasAction(actions, proto.prunfast.ActionType.enumActionType_SKIP) then
         logger.debug(" can skip")
         needShowOperationButtons = true
-        -- playerView.skipHuiBtn:SetActive(false)
         playerView.skipBtn.visible = true
     end
     --出牌
@@ -75,7 +69,6 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     end
 
     if needShowOperationButtons then
-        --playerView.skipBtn:SetActive(true)
         --这个标志用来判断可否出牌，当点击了动作按钮之后flagsAction会设置为true，这时候才可以出牌
         player.waitSkip = true
     end

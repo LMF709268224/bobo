@@ -19,7 +19,15 @@
 					"filters":"*.png,*.bytes"
 				},
 				{
-					"path":"lobby/fui_lobby_poker",
+					"path":"lobby/fui_chat",
+					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"lobby/fui_dialog",
+					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"lobby/fui_login",
 					"filters":"*.png,*.bytes"
 				}
 			]
@@ -36,7 +44,17 @@
 					"path":"game1/scripts",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
-				},				
+				},
+				{
+					"path":"game1/scripts/proto",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"game1/scripts/handlers",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
 				{
 					"path":"game1/bg",
 					"filters":"*.png,*.bytes"
@@ -48,7 +66,11 @@
 				{
 					"path":"game1/setting",
 					"filters":"*.png,*.bytes"
-				}				
+				},
+				{
+					"path":"game1/animations",
+					"filters":"*.prefab"
+				}
 			]
 		}
 	]
