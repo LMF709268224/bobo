@@ -7,12 +7,11 @@ Note:
 
 	类名可以大写开头。
 --]]
-
 local UrlPaths = {
-	updateQuery='/lobby/upgrade/query',
-	updateDownload = 'lobby/upgrade/download',
-	gameWebsocketMonkey = '/game/%s/ws/monkey',
-	gameWebsocketPlay = '/game/%s/ws/play'
+	updateQuery = "/lobby/upgrade/query",
+	updateDownload = "lobby/upgrade/download",
+	gameWebsocketMonkey = "/game/%s/ws/monkey",
+	gameWebsocketPlay = "/game/%s/ws/play"
 }
 
 return UrlPaths
