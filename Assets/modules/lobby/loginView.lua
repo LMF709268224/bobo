@@ -60,11 +60,11 @@ function LoginView:initView()
 end
 
 function LoginView:onQuicklyBtnClick()
-    logger.debug("onLoginBtnClick")
+    logger.debug("onLoginBtnClick", self.loginBtn.select)
 end
 
 function LoginView:onWeixinBtnClick()
-    logger.debug("onWeixinBtnClick")
+    logger.debug("onWeixinBtnClick", self.loginBtn.select)
 end
 
 return LoginView
