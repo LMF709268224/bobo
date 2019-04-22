@@ -12,27 +12,15 @@ function GameOverResultView.new(room)
     -- 提高消息队列的优先级为1
     room.host.mq:blockNormal()
 
-    if GameOverResultView.unityViewNode then
-        logger.debug("GameOverResultView ---------------------")
-    else
-        local viewObj = fairy.UIPackage.CreateObject("runfast", "game_over")
-        GameOverResultView.unityViewNode = viewObj
+    local viewObj = fairy.UIPackage.CreateObject("runfast", "game_over")
+    GameOverResultView.unityViewNode = viewObj
 
-        local win = fairy.Window()
-        win.contentPane = GameOverResultView.unityViewNode
-        GameOverResultView.win = win
+    local win = fairy.Window()
+    win.contentPane = GameOverResultView.unityViewNode
+    GameOverResultView.win = win
 
-        --初始化View
-        GameOverResultView:initAllView()
-
-        -- 由于win隐藏，而不是销毁，隐藏后和GRoot脱离了关系，因此需要
-        -- 特殊销毁
-        _ENV.thisMod:RegisterCleanup(
-            function()
-                win:Dispose()
-            end
-        )
-    end
+    --初始化View
+    GameOverResultView:initAllView()
     GameOverResultView.room = room
     --结算数据
     GameOverResultView.msgGameOver = room.msgGameOver
@@ -297,9 +285,13 @@ end
 --玩家点击返回按钮
 -------------------------------------------
 function GameOverResultView:onCloseButtonClick()
+    logger.debug("GameOverResultView:onCloseButtonClick, quit game")
     -- 降低消息队列的优先级为0
     self.room.host.mq:unblockNormal()
     self.win:Hide()
+    self.win:Dispose()
+    self.unityViewNode = nil
+    self.win = nil
 
     self.room.host.mq:pushQuit()
 end
