@@ -273,7 +273,7 @@ public class ModuleHub
     {
         if (parent == null)
         {
-            throw new Exception($"try to call funcName:{funcName}, but lobby module is null");
+            throw new Exception($"try to call funcName:{funcName}, but parent module is null");
         }
 
         var fn = parent.luaenv.Global.Get<StringLuaFunc>(funcName);

@@ -27,9 +27,6 @@ public class Boot : MonoBehaviour
         System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
         stopWatch.Start();
 
-        // 先订阅一下日志，把日志写到文件
-        SubscribeLogMsg();
-
         // 启动lobby大厅模块
         lobby = new ModuleHub("lobby", null, this);
 
@@ -39,57 +36,6 @@ public class Boot : MonoBehaviour
 
         stopWatch.Stop();
         Debug.Log($"Boot.Start total time:{stopWatch.Elapsed.TotalMilliseconds} milliseconds");
-    }
-
-    /// <summary>
-    /// 订阅unity的日志，输出到文件
-    /// 
-    /// 两个日志文件，loga和logb，轮流使用
-    /// </summary>
-    private void SubscribeLogMsg()
-    {
-        var logPathA = Path.Combine(Application.persistentDataPath, "loga.txt");
-        var logPathB = Path.Combine(Application.persistentDataPath, "logb.txt");
-
-        if (!File.Exists(logPathA))
-        {
-            logPath = logPathA;
-        }
-        else if (!File.Exists(logPathB))
-        {
-            logPath = logPathB;
-        }
-        else
-        {
-            // 比较两个文件的最后修改时间，选择较早那个
-            DateTime modificationA = File.GetLastWriteTime(logPathA);
-            DateTime modificationB = File.GetLastWriteTime(logPathB);
-
-            if (modificationA.CompareTo(modificationB) >= 0)
-            {
-                logPath = logPathB;
-            }
-            else
-            {
-                logPath = logPathA;
-            }
-        }
-
-        if (File.Exists(logPath))
-        {
-            // 先删除旧的
-            File.Delete(logPath);
-        }
-
-        try
-        {
-            logger = new StreamWriter(logPath, false, System.Text.Encoding.UTF8);
-            Application.logMessageReceived += WriteLog2File;
-        }
-        catch(System.Exception ex)
-        {
-            Debug.LogException(ex);
-        }
     }
 
     private string LogTypeString(LogType t)
