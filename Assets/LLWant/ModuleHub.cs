@@ -228,6 +228,8 @@ public class ModuleHub
             // 打包时的文件名对应，注意lua代码中，万万不能require('a.lua')，因为这样的话，路径名是a.lua，
             // 会被上面这行代码替换为：a/lua了，就加载失败
             filepath = patch + ".lua";
+
+            // Debug.Log($"load lua file:{filepath}");
             return loader.LoadTextAsset(filepath);
         });
     }
