@@ -403,6 +403,7 @@ namespace XLua
 #if THREAD_SAFE || HOTFIX_ENABLE
             lock (luaEnvLock)
             {
+                UnityEngine.Debug.Log("LuaEnv thread-safe dispose");
 #endif
                 if (disposed) return;
                 Tick();

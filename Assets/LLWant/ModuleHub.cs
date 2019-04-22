@@ -113,6 +113,7 @@ public class ModuleHub
         }
 
         cleanup.Clear();
+        cleanup = null;
     }
 
     /// <summary>
@@ -145,10 +146,10 @@ public class ModuleHub
             Debug.LogError($"{modName} destroyed, but leak {subModules.Count} sub module");
         }
 
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, blocking: true);
+
         // 执行lua中定义的cleanup函数
         CallCleanup();
-
-        //Object.Destroy(mountNode.gameObject);
 
         // 重设thisMod为null，取消和lua的关系，否则会luaenv dispose时抛异常: dispose with c# callback
         luaenv.Global.Set("thisMod", (object)null);
