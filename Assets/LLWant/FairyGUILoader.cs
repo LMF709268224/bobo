@@ -16,6 +16,7 @@ public class FairyGUILoader
 
         if (lobby.loader is AssetBundleLoader)
         {
+            Debug.Log("lobby.loader is AssetBundleLoader, replace FairyGUI loader with ours");
             // 当且仅当目前的加载器类型是bundle加载器时，才需要替换fairygui的加载过程
             FairyGUI.UIPackage.customiseLoadFunc = myFairyUILoadFunc;
         }

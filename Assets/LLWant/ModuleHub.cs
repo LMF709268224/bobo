@@ -61,6 +61,9 @@ public class ModuleHub
         this.parent = parent;
         luaenv = new XLua.LuaEnv();
         this.monoBehaviour = monoBehaviour;
+
+        // 选择模块的使用的加载器
+        SelectModuleLoader();
     }
 
     /// <summary>
@@ -83,9 +86,6 @@ public class ModuleHub
     {
         // 给lua虚拟机注入一些模块，例如jason模块，protocol buffer模块等等
         LuaEnvInit.AddBasicBuiltin(luaenv);
-
-        // 选择模块的目录，例如可能是只读目录，或者可写目录
-        SelectModuleLoader();
 
         // 设置this到lua虚拟机中，脚本可以通过thisMod访问module hub对象
         luaenv.Global.Set("thisMod", this);
@@ -202,10 +202,11 @@ public class ModuleHub
         }
         else
         {
-            Debug.Log($"{writeModuleDir} not exist, use readonly dir");
 #if UNITY_EDITOR
+            Debug.Log($"{writeModuleDir} not exist, use readonly dir editor Assets directory");
             loader = new AssetsFolderLoader(modName);
 #else
+            Debug.Log($"{writeModuleDir} not exist, use readonly dir streamingAssetsPath directory");
             AssetBundleLoader parentLoader = parent?.loader as AssetBundleLoader;
             // 用的是StreamingAssetsPath，而不用Resources目录，原因参考下面的链接：
             // https://unity3d.com/learn/tutorials/topics/best-practices/resources-folder
