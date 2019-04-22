@@ -54,22 +54,6 @@ public static class ExampleConfig
         "ClusterInput", "Motion",
         "UnityEngine.UI.ReflectionMethodsCache", "NativeLeakDetection",
         "NativeLeakDetectionMode", "WWWAudioExtensions", "UnityEngine.Experimental",
-
-		"ParticleSystemForceField",
-		"MeshRenderer",
-		"Light",
-		"LightProbeGroup",
-		"AnimatorControllerParameter",
-		"UnityEngine.Caching",
-		"UnityEngine.DrivenRectTransformTracker",
-		"UnityEngine.Input",
-		"UnityEngine.AudioSettings",
-		"UnityEngine.CanvasRenderer",
-		"UnityEngine.UI.Text",
-		"UnityEngine.UI.Graphic",
-		"UnityEngine.UI.DefaultControls",
-		"UnityEngine.QualitySettings",
-		"UnityEngine.Texture"
     };
 
     static bool isExcluded(Type type)
@@ -88,7 +72,7 @@ public static class ExampleConfig
 	static List<string> customExlucded = new List<string> {
 		"BestHTTP.Futures",
 		"AssetsFolderLoader",
-		"BestHTTP.PlatformSupport.TcpClient.General.TcpClient",
+		"BestHTTP.PlatformSupport",
 	};
 
 	static bool isCustomExlucded(Type type)
@@ -104,6 +88,63 @@ public static class ExampleConfig
         return false;
 	}
 
+	static List<string> delegateExlucded = new List<string> {
+		"OnRequestRebuild"
+	};
+
+	static bool isDelegateExlucded(Type type)
+	{
+        var fullName = type.FullName;
+        for (int i = 0; i < delegateExlucded.Count; i++)
+        {
+            if (fullName.Contains(delegateExlucded[i]))
+            {
+                return true;
+            }
+        }
+        return false;
+	}
+
+	static List<string> typesIncluded = new List<string> {
+		"UnityEngine.UI.Image",
+		"UnityEngine.Animator",
+		"UnityEngine.AnimatorStateInfo",
+		"UnityEngine.Application",
+		"UnityEngine.Canvas",
+		"UnityEngine.CanvasRenderer",
+		"UnityEngine.Color",
+		"UnityEngine.Color32",
+		"UnityEngine.Camera",
+		"UnityEngine.Debug",
+		"UnityEngine.GameObject",
+		"UnityEngine.Mathf",
+		"UnityEngine.Object",
+		"UnityEngine.RectTransform",
+		"UnityEngine.Resolution",
+		"UnityEngine.Screen",
+		"UnityEngine.SystemInfo",
+		"UnityEngine.TextAsset",
+		"UnityEngine.Texture2D",
+		"UnityEngine.Time",
+		"UnityEngine.Transform",
+		"UnityEngine.Vector2",
+		"UnityEngine.Vector3"
+	};
+
+	static bool isInclude(Type type)
+	{
+        var fullName = type.FullName;
+        for (int i = 0; i < typesIncluded.Count; i++)
+        {
+            if (fullName.Equals(typesIncluded[i]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+	}
+
     [LuaCallCSharp]
     public static IEnumerable<Type> LuaCallCSharp
     {
@@ -111,13 +152,26 @@ public static class ExampleConfig
         {
             List<string> namespaces = new List<string>() // 在这里添加名字空间
             {
-                "UnityEngine",
-                "UnityEngine.UI"
+                // "UnityEngine"
             };
+
             var unityTypes = (from assembly in AppDomain.CurrentDomain.GetAssemblies()
                               where !(assembly.ManifestModule is System.Reflection.Emit.ModuleBuilder)
                               from type in assembly.GetExportedTypes()
                               where type.Namespace != null && namespaces.Contains(type.Namespace) && !isExcluded(type)
+                                      && type.BaseType != typeof(MulticastDelegate) && !type.IsInterface && !type.IsEnum
+                              select type);
+
+            List<string> namespacesUsingInclude = new List<string>() // 在这里添加名字空间
+            {
+				"UnityEngine",
+                "UnityEngine.UI"
+            };
+
+            var unityTypesInclude = (from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                              where !(assembly.ManifestModule is System.Reflection.Emit.ModuleBuilder)
+                              from type in assembly.GetExportedTypes()
+                              where type.Namespace != null && namespacesUsingInclude.Contains(type.Namespace) && isInclude(type)
                                       && type.BaseType != typeof(MulticastDelegate) && !type.IsInterface && !type.IsEnum
                               select type);
 
@@ -129,7 +183,7 @@ public static class ExampleConfig
                                where (type.Namespace == null || !type.Namespace.StartsWith("XLua"))
                                        && type.BaseType != typeof(MulticastDelegate) && !type.IsInterface && !type.IsEnum && !isCustomExlucded(type)
                                select type);
-            return unityTypes.Concat(customTypes);
+            return unityTypes.Concat(unityTypesInclude).Concat(customTypes);
         }
     }
 
@@ -147,7 +201,8 @@ public static class ExampleConfig
             {
                 if (typeof(Delegate).IsAssignableFrom(field.FieldType))
                 {
-                    delegate_types.Add(field.FieldType);
+					if (!isDelegateExlucded(field.FieldType))
+						delegate_types.Add(field.FieldType);
                 }
             }
 
@@ -155,14 +210,16 @@ public static class ExampleConfig
             {
                 if (typeof(Delegate).IsAssignableFrom(method.ReturnType))
                 {
-                    delegate_types.Add(method.ReturnType);
+					if (!isDelegateExlucded(method.ReturnType))
+						delegate_types.Add(method.ReturnType);
                 }
                 foreach (var param in method.GetParameters())
                 {
                     var paramType = param.ParameterType.IsByRef ? param.ParameterType.GetElementType() : param.ParameterType;
                     if (typeof(Delegate).IsAssignableFrom(paramType))
                     {
-                        delegate_types.Add(paramType);
+						if (!isDelegateExlucded(paramType))
+							delegate_types.Add(paramType);
                     }
                 }
             }
