@@ -151,10 +151,17 @@ local function onCreateClick()
 	_ENV.thisMod:LaunchGameModule("game1", jsonString)
 end
 
-local function backToLobby()
-	print("backToLobby")
+-- c# 会调用本函数切换回大厅
+_ENV.backToLobby = function()
+	logger.debug("backToLobby")
 	fairy.GRoot.inst:AddChild(mylobbyView)
 	mylobbyView = nil
+end
+
+-- 子游戏模块会调用本函数（通过跨lua虚拟机调用）
+_ENV.gameServerScheme = function()
+	-- 以后这个host也统一到某个lua文件中，由它结合防DDOS流程来给出
+	return 'ws://localhost:3001'
 end
 
 local function testLobbyUI()
@@ -182,7 +189,7 @@ local function main()
 	logger.warn("lobby/Boot begin, lobby version:", lobbyVer, ",csharp version:", csharpVer)
 
 	_ENV.thisMod:RegisterCleanup(shutdownCleanup)
-	_ENV.backToLobby = backToLobby
+
 
 	-- 启动cortouine
 	-- local co = coroutine.create(mainEntryCoroutine)

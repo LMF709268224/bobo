@@ -43,6 +43,8 @@ public class ModuleHub
     // delegate定义
     [XLua.CSharpCallLua]
     public delegate void VoidLuaFunc();
+    [XLua.CSharpCallLua]
+    public delegate string StringLuaFunc(string param);
 
     // 保存一个MonoBehaviour，用于使用unity的coroutine
     private MonoBehaviour monoBehaviour;
@@ -265,6 +267,22 @@ public class ModuleHub
 #else
         Application.Quit();
 #endif
+    }
+
+    public string CallLobbyStringFunc(string funcName, string param = null)
+    {
+        if (parent == null)
+        {
+            throw new Exception($"try to call funcName:{funcName}, but lobby module is null");
+        }
+
+        var fn = parent.luaenv.Global.Get<StringLuaFunc>(funcName);
+        if (fn != null)
+        {
+            return fn.Invoke(param);
+        }
+
+        return null;
     }
 
     /// <summary>

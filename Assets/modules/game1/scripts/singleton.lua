@@ -13,6 +13,7 @@ local proto = require "scripts/proto/proto"
 local room = require "scripts/room"
 local fairy = require "lobby/lcore/fairygui"
 local dialog = require "lobby/lcore/dialog"
+local urlPaths = require "lobby/lcore/urlpathsCfg"
 
 local singleTon = nil
 
@@ -33,12 +34,19 @@ end
 --websocket彻底销毁
 --@param myUser 用户对象，至少包含userID
 -----------------------------------
-function SG:tryEnterRoom(url, myUser, roomInfo)
+function SG:tryEnterRoom(serverUUID, myUser, roomInfo)
     self.isEnterRoom = true
 
     --logger.debug(" tryEnterRoom, date2: ", os.date(), ", timeStamp:", os.time(), ", clock:", os.clock())
     --测试用
-    url = url or "ws://localhost:3001/prunfast/uuid/ws/monkey?userID=6&roomID=monkey-room"
+    local host = _ENV.thisMod:CallLobbyStringFunc("gameServerScheme")
+    local url
+    if serverUUID ~= nil then
+        -- TODO: 替换为真正的userID和roomID
+        url = host .. string.format(urlPaths.gameWebsocketPlay, serverUUID) .. "?userID=6&roomID=monkey-room"
+    else
+        url = host .. string.format(urlPaths.gameWebsocketMonkey, "uuid") .. "?userID=6&roomID=monkey-room"
+    end
 
     logger.debug(" tryEnterRoom, url:", url)
 
