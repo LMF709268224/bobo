@@ -583,10 +583,10 @@ end
 --发送解散回复给服务器
 ---------------------------------------
 function Room:sendDisbandAgree(agree)
-    local msgDisbandAnswer = proto.pokerface.MsgDisbandAnswer()
+    local msgDisbandAnswer = {}
     msgDisbandAnswer.agree = agree
-
-    self:sendMsg(proto.pokerface.MessageCode.OPDisbandAnswer, msgDisbandAnswer)
+    local buf = proto.encodeMessage("pokerface.MsgDisbandAnswer", msgDisbandAnswer)
+    self:sendMsg(proto.pokerface.MessageCode.OPDisbandAnswer, buf)
 end
 
 function Room:getRoomConfig()
