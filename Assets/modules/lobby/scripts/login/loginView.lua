@@ -1,9 +1,11 @@
 --[[
     LoginView 登录界面
 ]]
+--luacheck: no self
 local LoginView = {}
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
+local progressView = require "lobby/scripts/login/progressView"
 
 function LoginView.showLoginView()
     if LoginView.viewNode then
@@ -41,12 +43,34 @@ function LoginView.showLoginView()
     end
 
     LoginView.win:Show()
+
+    -- local co = coroutine.create(
+    --     function()
+    --         local progress = progressView.new(LoginView.updateProgress, LoginView)
+    --         progress:updateView()
+    --     end
+    -- )
+
+	-- local r, err = coroutine.resume(co)
+	-- if not r then
+	-- logger.error(debug.traceback(co, err))
+	-- end
+
 end
 
 function LoginView:initView()
     -- button
     self.loginBtn = self.viewNode:GetChild("n2")
     self.weixinButton = self.viewNode:GetChild("n3")
+    self.progressBar = self.viewNode:GetChild("n5")
+    self.loginBtn.visible = false
+    self.weixinButton.visible = false
+    self.progressBar.value = 0
+    self.progressBar.visible = false;
+
+    -- self.progressBar = self.updateProgress:GetChild("bar")
+    -- logger.error(self.progressBar)
+    -- self.gprogress.value = 0
     self.loginBtn.onClick:Add(
         function()
             self:onQuicklyBtnClick()
@@ -57,14 +81,29 @@ function LoginView:initView()
             self:onWeixinBtnClick()
         end
     )
+
+    -- local progress = progressView.new(self)
+    progressView:updateView(self)
+
 end
 
 function LoginView:onQuicklyBtnClick()
-    logger.debug("onLoginBtnClick", self.loginBtn.select)
+    logger.debug("onLoginBtnClick")
 end
 
 function LoginView:onWeixinBtnClick()
-    logger.debug("onWeixinBtnClick", self.loginBtn.select)
+    logger.debug("onWeixinBtnClick")
+end
+
+
+function LoginView:msgBox()
+	return false
+end
+
+function LoginView:updateComplete()
+    self.progressBar.visible = false
+    self.weixinButton.visible = true
+    self.loginBtn.visible = true
 end
 
 return LoginView
