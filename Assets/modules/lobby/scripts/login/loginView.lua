@@ -5,7 +5,7 @@
 local LoginView = {}
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
-local updateView = require "./updateView"
+local progressView = require "lobby/scripts/login/progressView"
 
 function LoginView.showLoginView()
     if LoginView.viewNode then
@@ -44,19 +44,17 @@ function LoginView.showLoginView()
 
     LoginView.win:Show()
 
+    -- local co = coroutine.create(
+    --     function()
+    --         local progress = progressView.new(LoginView.updateProgress, LoginView)
+    --         progress:updateView()
+    --     end
+    -- )
 
-
-    local co = coroutine.create(
-        function()
-            local update = updateView.new(LoginView.updateProgress, LoginView)
-            update:updateView()
-        end
-    )
-
-	local r, err = coroutine.resume(co)
-	if not r then
-	logger.error(debug.traceback(co, err))
-	end
+	-- local r, err = coroutine.resume(co)
+	-- if not r then
+	-- logger.error(debug.traceback(co, err))
+	-- end
 
 end
 
@@ -83,6 +81,10 @@ function LoginView:initView()
             self:onWeixinBtnClick()
         end
     )
+
+    -- local progress = progressView.new(self)
+    progressView:updateView(self)
+
 end
 
 function LoginView:onQuicklyBtnClick()

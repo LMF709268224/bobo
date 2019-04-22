@@ -8,13 +8,21 @@ local logger = require "lobby/lcore/logger"
 local lenv = require "lobby/lenv"
 local CS = _ENV.CS
 
-function ProgressView:new(view, loginView)
-	local updateView = {updateView = view, loginView = loginView}
+function ProgressView:new(loginView)
+	local progressView = {loginView = loginView}
 
-	return setmetatable(updateView, mt)
+	if not progressView.loginView then
+		logger.debug("not progressView.loginView")
+	end
+
+	return setmetatable(progressView, mt)
 end
 
 function ProgressView:doUpgrade()
+	if not self.loginView then
+		logger.debug("not progressView.loginView")
+	end
+
     -- 准备检查更新Lobby模块
     local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
     logger.debug("urlpathsCfg.updateQuery:", urlpathsCfg.updateQuery)
@@ -34,17 +42,13 @@ function ProgressView:doUpgrade()
 	-- 如果有更新，执行更新
     if isNeedUpgrade then
 
-        self.updateProgress.visible = true
+        self.loginView.progressBar.visible = true
 
 		err = updater:doUpgrade(
                 function(event, downloaded, total)
                     logger.debug(event, downloaded, total)
                     if downloaded then
-                        self.updateProgress.value = 100 * downloaded / total
-                    end
-
-                    if self.updateProgress.value == 100 then
-                        self.updateProgress.visible = false
+                        self.loginView.progressBar.value = 100 * downloaded / total
                     end
 
                 end
@@ -66,11 +70,7 @@ function ProgressView:isUpgradeEnable()
 	return not isEditor
 end
 
-function ProgressView:msgBox()
-	return false
-end
-
-function ProgressView:updateView()
+function ProgressView:runCoroutine()
 	logger.trace("mainEntryCoroutine()")
 
 	-- 先显示启动背景
@@ -109,5 +109,19 @@ function ProgressView:updateView()
 	end
 end
 
+function ProgressView:updateView(loginView)
+	self.loginView = loginView
+
+	local co = coroutine.create(
+        function()
+            self:runCoroutine()
+        end
+    )
+
+	local r, err = coroutine.resume(co)
+	if not r then
+	logger.error(debug.traceback(co, err))
+	end
+end
 
 return ProgressView
