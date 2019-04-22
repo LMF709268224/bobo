@@ -197,6 +197,10 @@ local function _CsFullTypeName(t)
         return (t.BaseType == objType or t.BaseType == valueType) and t.Name or _CsFullTypeName(t.BaseType) --TODO:应该判断是否类型约束
     end
 
+	if t.FullName == nil then
+		print(t)
+	end
+
     local name = t.FullName:gsub("&", ""):gsub("%+", ".") 
     if not t.IsGenericType then 
         return friendlyNameMap[name] or name

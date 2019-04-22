@@ -13,7 +13,6 @@ public class Boot : MonoBehaviour
     private static ModuleHub lobby;
 
     private string logPath;
-    private StreamWriter logger;
 
     // 用于每间隔一定时间调用一次lua虚拟机做GC
     private static float lastGCTime = 0;
@@ -54,16 +53,6 @@ public class Boot : MonoBehaviour
                 return "Warn";
             default:
                 return "Unknown";
-        }
-    }
-
-    private void WriteLog2File(string condition, string stackTrace, LogType type)
-    {
-        if (logger != null)
-        {
-            var dateStr = DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss");
-            var logMsg = new string[] { $"[{dateStr}][{LogTypeString(type)}]{condition}" };
-            logger.WriteLine(logMsg);
         }
     }
 
