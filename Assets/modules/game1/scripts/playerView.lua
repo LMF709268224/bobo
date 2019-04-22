@@ -1,6 +1,7 @@
 --[[
     playerview对应玩家的视图，牌桌上有4个playerview
 ]]
+--luacheck: no self
 local PlayerView = {}
 
 local mt = {__index = PlayerView}
@@ -112,7 +113,7 @@ function PlayerView:initHands(view)
                 myHandTilesNode:AddChild(card)
                 local btn = card:GetChild("n0")
                 btn.onClick:Set(
-                    function(context)
+                    function()
                         self:onHandTileBtnClick(i)
                     end
                 )
@@ -233,7 +234,7 @@ function PlayerView:initPlayerStatus()
     end
 
     --准备
-    local onReady = function(roomstate)
+    local onReady = function()
         logger.debug("llwant ,test onReady ")
         -- head.root:SetActive(true)
         -- head.stateOffline:SetActive(false)
@@ -244,7 +245,7 @@ function PlayerView:initPlayerStatus()
     end
 
     --离线
-    local onLeave = function(roomstate)
+    local onLeave = function()
         logger.debug("llwant ,test onLeave ")
         self.head.readyIndicator.visible = false
         -- self.infoGroupEmpty:SetActive(false)
@@ -253,7 +254,7 @@ function PlayerView:initPlayerStatus()
     end
 
     --正在玩
-    local onPlaying = function(roomstate)
+    local onPlaying = function()
         logger.debug("llwant ,test onPlaying ")
         self.head.readyIndicator.visible = false
         -- self.infoGroupEmpty:SetActive(false)
@@ -440,7 +441,7 @@ function PlayerView:hideGaoJing()
 end
 
 --显示剩牌警告ui （包括剩牌数量，告警灯）
-function PlayerView:showGaoJing(cardCountOnHand)
+function PlayerView:showGaoJing()
     -- self.head.gaoJingText.text = "剩牌" .. tostring(cardCountOnHand) .. "张"
     -- if self.head.gaoJing.activeSelf then
     --     return
@@ -452,8 +453,8 @@ end
 --为本人显示手牌，也即是1号playerView(prefab中的1号)
 --@param wholeMove 是否整体移动
 ---------------------------------------------
-function PlayerView:showHandsForMe(wholeMove, isShow)
-    --logger.debug(" showHandsForMe ---------------------" .. tostring(self.player.cardsOnHand))
+function PlayerView:showHandsForMe(_, isShow)
+    --logger.debug(" showHandsForMe ---------------------", tostring(self.player.cardsOnHand))
     if isShow == nil then
         isShow = true
     end
@@ -486,9 +487,9 @@ function PlayerView:showHandsForMe(wholeMove, isShow)
         j = j + 1
     end
 
-    if cardCountOnHand < 4 then
+    -- if cardCountOnHand < 4 then
     -- self:showGaoJing(cardCountOnHand)
-    end
+    -- end
 end
 
 -- 发牌动画
@@ -509,23 +510,24 @@ function PlayerView:CenterAlign(ZJHandCards)
     local isSingular = showCardsNum % 2 == 1
     local centerCardIdx = showCardsNum % 2 == 1 and math.ceil(showCardsNum / 2) or showCardsNum / 2
     for i = 1, showCardsNum do
+        local pos = 568
         if isSingular then
             if i == centerCardIdx then
-                pos = Vector3(0, 0, 0)
+                pos = 568
             elseif i < centerCardIdx then
-                pos = Vector3(0 - (centerCardIdx - i) * _cardWidth, 0, 0)
+                pos = 568 - (centerCardIdx - i) * _cardWidth
             elseif i > centerCardIdx then
-                pos = Vector3((i - centerCardIdx) * _cardWidth, 0, 0)
+                pos = 568 + (i - centerCardIdx) * _cardWidth
             end
         else
             if i <= centerCardIdx then
-                pos = Vector3(0 - ((centerCardIdx - i) * _cardWidth + _cardWidth / 2), 0, 0)
+                pos = 568 - ((centerCardIdx - i) * _cardWidth + _cardWidth / 2)
             elseif i > centerCardIdx then
-                pos = Vector3((i - 1 - centerCardIdx) * _cardWidth + _cardWidth / 2, 0, 0)
+                pos = 568 + (i - 1 - centerCardIdx) * _cardWidth + _cardWidth / 2
             end
         end
-        ZJHandCards[i].transform.localPosition = pos
-        ZJHandCards[i]:SetActive(true)
+        ZJHandCards[i].x = pos
+        ZJHandCards[i].visible = true
         --ZJHandCards[i].setResumePos(pos)
         -- if i < showCardsNum and not _isDiPai then
         -- -- if not ZJHandCards[i].IsWang() then
@@ -536,14 +538,29 @@ function PlayerView:CenterAlign(ZJHandCards)
 end
 --发牌动画，另外两位玩家的 手牌数量 递增。。。没有其他动画效果
 function PlayerView:dealOther()
+    self.handsNumber.text = 0
     for i = 1, 16 do
-        self.viewUnityNode:DelayRun(
-            0.06 * i,
+        self.myView:DelayRun(
+            0.1 * i,
             function()
                 self.handsNumber.text = i
             end
         )
     end
+    -- self.dealNumer = 0
+    -- self.viewUnityNode:StartTimer(
+    --     "playerDeal",
+    --     1,
+    --     0,
+    --     function()
+    --         self.dealNumer = self.dealNumer + 1
+    --         self.handsNumber.text = self.dealNumer
+    --         if self.dealNumer >= 16 then
+    --             self.viewUnityNode:StopTimer("playerDeal")
+    --         end
+    --     end,
+    --     self.dealNumer
+    -- )
 end
 --发牌动画。。。玩家1 手牌展现
 function PlayerView:deal()
@@ -554,8 +571,8 @@ function PlayerView:deal()
         for j = 1, i do
             table.insert(cardsInfo, zjHandArr[j])
         end
-        self.viewUnityNode:DelayRun(
-            0.06 * i,
+        self.myView:DelayRun(
+            0.1 * i,
             function()
                 --local zjHandCardList = GenerateCardList(CardContainer.tZJHandCards, cardsInfo, CARD_ITEM_TYPE.ZJ_HAND)
                 self:CenterAlign(cardsInfo)
@@ -567,7 +584,7 @@ end
 --把手牌摊开，包括对手的暗杠牌，用于一手牌结束时
 --显示所有人的暗牌
 ------------------------------------------
-function PlayerView:hand2Exposed(wholeMove)
+function PlayerView:hand2Exposed()
     --playerView.lights
     if self.lights then
         --不需要手牌显示了，全部摊开
@@ -603,12 +620,12 @@ end
 --清除掉由于服务器发下来allowed actions而导致显示出来的view
 --例如吃椪杠操作面板等等
 ------------------------------------------
-function PlayerView:clearAllowedActionsView(discardAble)
+function PlayerView:clearAllowedActionsView()
     self:hideOperationButtons()
 end
 
 --处理玩家拖动牌
-function PlayerView:OnItemDrag(cardObj, data)
+function PlayerView:OnItemDrag(_, data)
     if not data.pointerPressRaycast.gameObject or not data.pointerCurrentRaycast.gameObject then
         return
     end
@@ -618,7 +635,7 @@ function PlayerView:OnItemDrag(cardObj, data)
         return
     end
     if startNum > 0 then
-        local nCurStep = 0
+        local nCurStep
         if nCurSelNum <= startNum then
             nCurStep = -1
         else
@@ -641,16 +658,18 @@ function PlayerView:search(t, value)
         end
     end
 end
+
 --处理玩家结束拖动牌
-function PlayerView:OnItemDragEnd(cardObj, data)
+function PlayerView:OnItemDragEnd()
     if self.dragSelCards then
-        for k, v in pairs(self.dragSelCards) do
+        for _, v in pairs(self.dragSelCards) do
             self:onHandTileBtnClick(v)
         end
     end
 end
+
 --处理玩家开始拖动牌
-function PlayerView:OnItemBeginDrag(cardObj, data)
+function PlayerView:OnItemBeginDrag()
     self.dragSelCards = {}
 end
 
@@ -743,7 +762,7 @@ function PlayerView:showHeadImg()
     -- end
 
     -- if player.headIconURI then
-    --     logger.debug("showHeadImg player.headIconURI = "..player.headIconURI)
+    --     logger.debug("showHeadImg player.headIconURI = ", player.headIconURI)
     --     tool:SetUrlImage(self.head.headImg.transform, player.headIconURI)
     -- else
     --     logger.error("showHeadIcon,  player.headIconURI == nil")
@@ -780,23 +799,16 @@ function PlayerView:getPartnerWeixinIcon(iconUrl, compCallback, failCallback)
             return
         end
         icon.started = true
-        local www =
-            HttpGet(
+        _ENV.CS.NetHelper.HttpGet(
             iconUrl,
             function(www)
                 local tex = www.texture
                 icon.tex = tex
                 compCallback(tex)
-            end,
-            function(error)
-                if failCallback then
-                    failCallback(error)
-                end
+                -- TODO: 晚点对接微信拉头像时，处理拉取失败
+                failCallback()
             end
         )
-        if www and not www.error then
-            icon.started = false
-        end
     end
 end
 
@@ -846,20 +858,7 @@ end
 ----------------------------------------------------------
 --特效播放 关张
 ----------------------------------------------------------
-function PlayerView:playerOperationEffectWhitGZ(effectName, sound)
-    -- local effectObj = Animator.Play(dfConfig.PATH.EFFECTS_GZ .. effectName .. ".prefab", self.viewUnityNode.order + 1)
-
-    -- local effectObj =
-    --     Animator.PlayLoop(
-    --         dfConfig.PATH.EFFECTS_GZ .. effectName .. ".prefab",
-    --     self.viewUnityNode.order
-    -- )
-    -- effectObj:SetParent(self.operationTip)
-    -- effectObj.localPosition = Vector3(0, 0, 0)
-    --table.insert(self.effectObjLists, effectObj)
-    -- if sound ~= nil and sound ~= "" then
-    --     self.player:playSound(sound)
-    -- end
+function PlayerView:playerOperationEffectWhitGZ(effectName)
     --新代码
     -- self.aniPos.visible = true
     animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
@@ -877,13 +876,13 @@ end
 
 function PlayerView:updateHeadEffectBox()
     if self.head == nil then
-        logRed("showHeadImg, self.head == nil")
+        logger.error("showHeadImg, self.head == nil")
         return
     end
 
     local player = self.player
     if player == nil then
-        logRed("showHeadImg, player == nil")
+        logger.error("showHeadImg, player == nil")
         return
     end
 

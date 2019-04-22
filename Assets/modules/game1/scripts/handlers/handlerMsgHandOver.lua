@@ -3,7 +3,6 @@
     一手牌结束后分数结算
 ]]
 local Handler = {}
-Handler.VERSION = "1.0"
 
 local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"
@@ -52,46 +51,21 @@ function Handler.onMsg(msgData, room)
 end
 
 function Handler.onHandOver(msgHandOver, room)
-    local win = false
+    -- local win = false
 
     -- 隐藏游戏内聊天面板
     -- room.roomView:hideChatPanel()
 
     if msgHandOver.endType ~= proto.prunfast.HandOverType.enumHandOverType_None then
-        local myself = room:me()
+        -- local myself = room:me()
         for _, score in ipairs(msgHandOver.scores.playerScores) do
             local player = room:getPlayerByChairID(score.targetChairID)
-            if player == myself then
-                win = score.score >= 0
-            end
+            -- if player == myself then
+            --     win = score.score >= 0
+            -- end
             player.score = score
         end
     end
-
-    -- local soundName
-    -- if msgHandOver.endType == proto.prunfast.HandOverType.enumHandOverType_None then
-    --     soundName = "effect_huangzhuang"
-    -- elseif win then
-    --     soundName = "effect_win"
-    -- else
-    --     soundName = "effect_lost"
-    -- end
-
-    -- room:resumeBackMusicVolume(0)
-
-    -- logger.debug("onHandOver sound name:", soundName)
-    --播放声音
-    --dfCompatibleAPI:soundPlay("effect/" .. soundName)
-
-    -- room.roomView.unityViewNode:DelayRun(
-    --     3,
-    --     function()
-    --         room:resumeBackMusicVolume()
-    --     end
-    -- )
-    --本局结束动画（现在是特效，是一个需要等待的特效）
-    -- room.roomView:handOverAnimation()
-
     --显示手牌输赢结果
     room:loadHandResultView()
 end

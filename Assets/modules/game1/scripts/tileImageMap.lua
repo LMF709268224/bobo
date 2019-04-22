@@ -1,8 +1,6 @@
-
 --麻将底图/花色资源映射表
 
-local tileImageMap = 
-{
+local tileImageMap = {
 	{
 		melds = {bg_show = "skin_wo_chi", bg_hide = "skin_wo_gang"}
 	},

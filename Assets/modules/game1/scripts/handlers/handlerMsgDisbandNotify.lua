@@ -2,7 +2,6 @@
     处理服务器下发的解散房间请求回复，以及房间解散状态通知
 ]]
 local Handler = {}
-Handler.VERSION = "1.0"
 
 local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"
@@ -28,10 +27,6 @@ function Handler.onMsg(msgData, room)
         room.disbandLocked = true
         room:updateDisbandVoteView(msgDisbandNotify)
     elseif ignore[msgDisbandNotify.disbandState] then
-        --elseif msgDisbandNotify.disbandState == disbandStateEnum.ErrorDuplicateAcquire then
-        --dfCompatibleAPI:showTip("另一个玩家已经发起解散请求")
-        --elseif msgDisbandNotify.disbandState == disbandStateEnum.ErrorNeedOwnerWhenGameNotStart then
-        --dfCompatibleAPI:showTip("牌局未开始，只有房主可以解散房间")
         --更新解散视图
         room:updateDisbandVoteView(msgDisbandNotify)
     else

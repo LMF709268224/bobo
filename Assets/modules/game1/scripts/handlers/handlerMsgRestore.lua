@@ -2,7 +2,6 @@
     处理断线恢复，奔溃后恢复
 ]]
 local Handler = {}
-Handler.VERSION = "1.0"
 
 local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"

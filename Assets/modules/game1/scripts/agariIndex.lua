@@ -1,15 +1,5 @@
 local AgariIndex = {}
 
--- require("GuanZhang/Script/Proto/game_pokerface_pb")
--- local pokerface = game_pokerface_pb
-
-AgariIndex.VERSION = "1.0"
--- local scriptPath = "GuanZhang/Script/"
--- local agariTable = require(scriptPath .. "dfMahjong/agariTable")
--- local bit = require(scriptPath .. "dfMahjong/bit")
---local pokerface = require (scriptPath.."Proto/game_pokerface_pb")
--- require(scriptPath .. "Proto/game_pokerface_rf_pb")
--- local pokerfacerf = game_pokerface_rf_pb
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local pokerface = proto.pokerface
@@ -860,7 +850,7 @@ end
 --从手牌上根据rank抽取若干张牌到一个新table中
 ----------------------------------
 function AgariIndex.extractCardsByRank(hands, rank, count)
-    logger.debug("extractCardsByRank, rank:" .. rank .. ",count:" .. count)
+    logger.debug("extractCardsByRank, rank:", rank, ",count:", count)
     local extract = {}
     local ecount = 0
     for _, h in ipairs(hands) do
@@ -880,7 +870,7 @@ end
 --从手牌上根据rank范围抽取若干张牌到一个新table中
 ----------------------------------
 function AgariIndex.extractCardsByRanks(hands, rankStart, rankStop, count)
-    logger.debug("extractCardsByRanks, rankStart:" .. rankStart .. ",rankStop:" .. rankStop .. ",count:" .. count)
+    logger.debug("extractCardsByRanks, rankStart:", rankStart, ",rankStop:", rankStop, ",count:", count)
     local extract = {}
 
     for rank = rankStart, rankStop do

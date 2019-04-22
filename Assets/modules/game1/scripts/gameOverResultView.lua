@@ -1,8 +1,9 @@
 --[[
     显示一手牌结束后的得分结果
 ]]
+-- luacheck: no self
 local GameOverResultView = {}
-GameOverResultView.VERSION = "1.0"
+
 local fairy = require "lobby/lcore/fairygui"
 local animation = require "lobby/lcore/animations"
 local logger = require "lobby/lcore/logger"
@@ -64,13 +65,9 @@ end
 -------------------------------------------
 function GameOverResultView:updateRoomData()
     --牌局结算文字动效
-    -- local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_PAIJVZONGJIESUAN .. ".prefab", self.canvasOrder)
-    -- effobj:SetParent(self.unityViewNode.transform, false)
-    -- effobj.localPosition = Vector3(1.6, 9, 0)
-    -- self.effect = effobj
-    --self:orderAdd(effobj)
-
-    animation.play("animations/Effects_JieMian_ZongJieSuan.prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
+    local x = self.aniPos.x
+    local y = self.aniPos.y
+    animation.play("animations/Effects_JieMian_ZongJieSuan.prefab", self.unityViewNode, x, y, true)
 
     --日期时间
     local date = os.date("%Y-%m-%d %H:%M:%S")
@@ -80,23 +77,6 @@ function GameOverResultView:updateRoomData()
     local roomNumber = self.room.roomNumber
     --self.textRule.text = self.room:getRule()
     self.textRoomNumber.text = "房号:" .. tostring(roomNumber)
-    -- local handStartted = self.room.handStartted
-    -- local handNum = self.room.handNum
-    -- local roomConfig = self.room.roomInfo.config
-    -- if roomConfig ~= nil and roomConfig ~= "" then
-    --     logger.debug("roomConfig : " .. roomConfig)
-    --     local config = Json.decode(roomConfig)
-    --     if config.payType ~= nil then
-    --         self.payType.text = "付费:房主支付"
-    --         if config.payType == 1 then
-    --             self.payType.text = "付费:钻石平摊"
-    --         end
-    --     end
-    -- end
-
-    -- if handNum ~= nil and handStartted ~= nil then
-    --     self.handAmount.text = "局数: " .. tostring(handStartted) .. "/" .. tostring(handNum)
-    -- end
 end
 
 -------------------------------------------
@@ -104,7 +84,7 @@ end
 -------------------------------------------
 function GameOverResultView:updatePlayerInfoData(player, c)
     --名字  id
-    local isMe = player == self.room:me()
+    -- local isMe = player == self.room:me()
     local name = player.nick
     if name == nil or name == "" then
         name = player.userID
@@ -143,7 +123,8 @@ function GameOverResultView:updatePlayerInfoData(player, c)
     -- end
 
     -- if player.avatarID ~= nil and player.avatarID ~= 0 then
-    --     c.headBox.transform:SetImage(string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png", player.avatarID))
+    --     local imagePath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png", player.avatarID)
+    --     c.headBox.transform:SetImage(imagePath)
     --     c.headBox.transform:GetComponent("Image"):SetNativeSize()
     --     c.headBox.transform.localScale = Vector3(0.6, 0.6, 1)
     -- end
@@ -152,13 +133,9 @@ end
 --设置大赢家相关View
 function GameOverResultView:setDYJView(c)
     --local colorSText = "#f8dd26"
+    --大赢家动效
     if c ~= nil then
         animation.play("animations/Effects_jiemian_dayingjia.prefab", c.group, c.aniPos.x, c.aniPos.y, true)
-    --大赢家动效
-    -- local effobj = Animator.PlayLoop(dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_DAYINGJIA .. ".prefab", self.canvasOrder)
-    -- effobj:SetParent(c.group.transform, false)
-    -- effobj.localPosition = c.imageWin.localPosition --Vector3(1.6, 0.8, 0)
-    --self:orderAdd(effobj)
     end
 end
 
@@ -167,7 +144,7 @@ end
 -------------------------------------------
 function GameOverResultView:updatePlayerScoreData(playerStat, c)
     local score = playerStat.score
-    local chucker = playerStat.chuckerCounter
+    -- local chucker = playerStat.chuckerCounter
     local winSelfDrawnCounter = playerStat.winSelfDrawnCounter --赢牌局数
     c.textWin.text = "胜利局数: " .. winSelfDrawnCounter .. "局"
     --local colorSText = "#bbdeef"
@@ -214,7 +191,9 @@ function GameOverResultView:updateAllData()
         table.sort(
             playerStats,
             function(x, y)
-                return room:getPlayerByChairID(x.chairID).playerView.viewChairID < room:getPlayerByChairID(y.chairID).playerView.viewChairID
+                local a = room:getPlayerByChairID(x.chairID).playerView.viewChairID
+                local b = room:getPlayerByChairID(y.chairID).playerView.viewChairID
+                return a < b
             end
         )
 
@@ -300,18 +279,18 @@ function GameOverResultView:onShareButtonClick()
     --TODO: 显示分享UI
     --ViewManager.OpenMessageBoxWithOrder("ShareView", 5, 9)
     --self.room:openMessageBoxFromDaFeng("ShareView", 5, 9)
-    local shareMudule = g_ModuleMgr:GetModule(ModuleName.SHARE_MODULE)
-    shareMudule:ShareGameResult(1, "", 32, 1)
-    local u8sdk = U8SDK.SDKWrapper.Instance
-    local fSuccess = function(data)
-        local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
-        tool:SendShareRecord(2)
-    end
-    if configModule:IsIgnoreShareCb() then
-        fSuccess()
-    else
-        u8sdk.OnShareSuccess = fSuccess
-    end
+    -- local shareMudule = g_ModuleMgr:GetModule(ModuleName.SHARE_MODULE)
+    -- shareMudule:ShareGameResult(1, "", 32, 1)
+    -- local u8sdk = U8SDK.SDKWrapper.Instance
+    -- local fSuccess = function(data)
+    --     local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
+    --     tool:SendShareRecord(2)
+    -- end
+    -- if configModule:IsIgnoreShareCb() then
+    --     fSuccess()
+    -- else
+    --     u8sdk.OnShareSuccess = fSuccess
+    -- end
 end
 
 -------------------------------------------
