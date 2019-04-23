@@ -40,11 +40,16 @@ public class ModuleHub
     // 所有本模块加载的ui包，模块销毁时会卸载
     private HashSet<string> myUIPackage = new HashSet<string>();
 
+    // 消息监听，例如游戏模块lua里面订阅消息，然后大厅发送消息给游戏模块
+    private Dictionary<string, VoidStringLuaFunc> msgListeners = new Dictionary<string, VoidStringLuaFunc>();
+
     // delegate定义
     [XLua.CSharpCallLua]
     public delegate void VoidLuaFunc();
     [XLua.CSharpCallLua]
     public delegate string StringLuaFunc(string param);
+    [XLua.CSharpCallLua]
+    public delegate void VoidStringLuaFunc(string param);
 
     // 保存一个MonoBehaviour，用于使用unity的coroutine
     private MonoBehaviour monoBehaviour;
@@ -146,7 +151,8 @@ public class ModuleHub
             Debug.LogError($"{modName} destroyed, but leak {subModules.Count} sub module");
         }
 
-        GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, blocking: true);
+        // 清空消息订阅，否则由于引用着LUA代码，销毁LUA虚拟机时会报异常
+        msgListeners.Clear();
 
         // 执行lua中定义的cleanup函数
         CallCleanup();
@@ -476,5 +482,65 @@ public class ModuleHub
         }
 
         return Path.Combine(moduleName, assetPath);
+    }
+
+    /// <summary>
+    /// 设置消息订阅
+    /// </summary>
+    /// <param name="msgName">消息名字，例如"lobby_chat"，表示聊天信息</param>
+    /// <param name="listener">虽然参数类型是string，但是也可以传递protobuf的bytes</param>
+    public void SetMsgListener(string msgName, VoidStringLuaFunc listener)
+    {
+        if (msgListeners.ContainsKey(msgName))
+        {
+            Debug.Log("ModuleHub.SetMsgListener, listener exists, remove and add new");
+            msgListeners.Remove(msgName);
+        }
+
+        msgListeners.Add(msgName, listener);
+    }
+
+    /// <summary>
+    /// 大厅模块使用本函数发送消息给游戏模块
+    /// </summary>
+    /// <param name="msgName"></param>
+    /// <param name="msg">虽然类型是string，但是也可以发送protobuf的bytes</param>
+    public void SendMsgToSubModule(string msgName, string msg)
+    {
+        if (subModules.Count < 1)
+        {
+            Debug.LogWarning($"Module hub failed to send msg {msgName} to sub-module when no sub-module exist");
+            return;
+        }
+
+        foreach(var subModule in subModules.Values)
+        {
+            subModule.EmitMsg(msgName, msg);
+        }
+    }
+
+    /// <summary>
+    /// 游戏模块使用本函数发送消息给大厅模块
+    /// </summary>
+    /// <param name="msgName"></param>
+    /// <param name="msg">虽然类型是string，但是也可以发送protobuf的bytes</param>
+    public void SendMsgToParentModule(string msgName, string msg)
+    {
+        if (parent == null)
+        {
+            Debug.LogError($"Module hub failed to send msg {msgName} to parent when parent is null");
+            return;
+        }
+
+        parent.EmitMsg(msgName, msg);
+    }
+
+    private void EmitMsg(string msgName, string msg)
+    {
+        VoidStringLuaFunc fn;
+        if (msgListeners.TryGetValue(msgName, out fn))
+        {
+            fn(msg);
+        }
     }
 }
