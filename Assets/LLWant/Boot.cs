@@ -10,7 +10,7 @@ using UnityEngine;
 public class Boot : MonoBehaviour
 {
     // 大厅模块，之后的其他游戏模块，由大厅模块激活
-    private static ModuleHub lobby;
+    private ModuleHub lobby;
 
     private string logPath;
 
@@ -20,9 +20,14 @@ public class Boot : MonoBehaviour
 
     private FairyGUILoader floader;
 
+    // Boot的静态唯一实例
+    private static Boot instance;
+
     // Start is called before the first frame update
     void Start()
     {
+        instance = this;
+
         DoStart();
     }
 
@@ -61,7 +66,7 @@ public class Boot : MonoBehaviour
         DoDestroy();
     }
 
-    private static void DoDestroy()
+    private void DoDestroy()
     {
         // 销毁UI残余界面，否则可能UI组件引用着LUA中的回调函数
         // 就会导致销毁lua虚拟机时抛异常
@@ -79,10 +84,18 @@ public class Boot : MonoBehaviour
     /// <summary>
     /// LUA脚本调用本函数重新加载大厅
     /// </summary>
-    public void Reboot()
+    public static void Reboot()
     {
-        DoDestroy();
-        DoStart();
+        if (instance != null)
+        {
+            Debug.Log("Boot.Reboot");
+            instance.DoDestroy();
+            instance.DoStart();
+        }
+        else
+        {
+            Debug.LogError("Boot.Reboot failed, instance is null");
+        }
     }
 
     void OnApplicationQuit()
