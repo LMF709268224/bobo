@@ -29,6 +29,20 @@
 				{
 					"path":"lobby/fui_login",
 					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"lobby/fui_lobby_poker",
+					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"lobby/scripts/chat",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"lobby/scripts/login",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
 				}
 			]
 		},

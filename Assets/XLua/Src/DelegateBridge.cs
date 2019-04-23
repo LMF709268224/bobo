@@ -26,7 +26,8 @@ namespace XLua
     {
         private Type firstKey = null;
 
-        private Delegate firstValue = null;
+        // LLWANT, 改为internal，以便泄漏时可以打印delegate的信息
+        internal Delegate firstValue = null;
 
         private Dictionary<Type, Delegate> bindTo = null;
 

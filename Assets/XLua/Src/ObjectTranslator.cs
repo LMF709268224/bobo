@@ -542,6 +542,8 @@ namespace XLua
             {
                 if (kv.Value.IsAlive)
                 {
+                    var dg = kv.Value.Target as XLua.DelegateBridge;
+                    UnityEngine.Debug.Log($"AllDelegateBridgeReleased leak:{dg.firstValue.ToString()}");
                     return false;
                 }
             }
