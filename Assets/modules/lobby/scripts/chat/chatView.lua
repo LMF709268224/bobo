@@ -19,6 +19,12 @@ function ChatView.showChatView()
         ChatView.msgList = {}
         ChatView:initView()
         ChatView:testLists()
+
+        _ENV.thisMod:RegisterCleanup(
+            function()
+                view:Dispose()
+            end
+        )
     end
     fairy.GRoot.inst:ShowPopup(ChatView.viewNode)
     local screenWidth = CS.UnityEngine.Screen.width
