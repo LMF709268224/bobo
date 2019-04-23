@@ -34,6 +34,7 @@ function RoomView.new(room)
     local view = fairy.UIPackage.CreateObject("runfast", "desk")
     fairy.GRoot.inst:AddChild(view)
 
+    -- fairy.GRoot.inst:SetContentScaleFactor(1136, 640, fairy.UIContentScaler.ScreenMatchMode.MatchWidthOrHeight)
     roomView.room = room
     roomView.unityViewNode = view
 
