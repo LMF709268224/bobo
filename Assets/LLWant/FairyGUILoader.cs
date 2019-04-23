@@ -20,6 +20,10 @@ public class FairyGUILoader
             // 当且仅当目前的加载器类型是bundle加载器时，才需要替换fairygui的加载过程
             FairyGUI.UIPackage.customiseLoadFunc = myFairyUILoadFunc;
         }
+        else
+        {
+            FairyGUI.UIPackage.customiseLoadFunc = null;
+        }
     }
 
     private object myFairyUILoadFunc(string name, string extension, System.Type type, out FairyGUI.DestroyMethod destroyMethod)

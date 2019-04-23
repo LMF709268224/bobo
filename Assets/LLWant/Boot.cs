@@ -66,12 +66,17 @@ public class Boot : MonoBehaviour
         DoDestroy();
     }
 
-    private void DoDestroy()
+    private void DoDestroy(bool disposeGRoot = true)
     {
         // 销毁UI残余界面，否则可能UI组件引用着LUA中的回调函数
         // 就会导致销毁lua虚拟机时抛异常
         FairyGUI.Timers.inst.Clear();
-        FairyGUI.GRoot.inst.Dispose();
+        FairyGUI.GRoot.inst.CleanupChildren();
+
+        if (disposeGRoot)
+        {
+            FairyGUI.GRoot.inst.Dispose();
+        }
 
         // 最后销毁大厅模块
         if (lobby != null)
@@ -102,7 +107,7 @@ public class Boot : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
 
-        instance.DoDestroy();
+        instance.DoDestroy(false);
         instance.DoStart();
 
         yield return null;
