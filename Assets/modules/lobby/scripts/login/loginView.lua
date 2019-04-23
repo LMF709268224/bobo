@@ -6,6 +6,11 @@ local LoginView = {}
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
 local progressView = require "lobby/scripts/login/progressView"
+local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
+local httpHelper = require "lobby/lcore/httpHelper"
+local proto = require "lobby/scripts/proto/proto"
+local errHelper = require "lobby/lcore/lobbyErrHelper"
+local CS = _ENV.CS
 
 function LoginView.showLoginView()
     if LoginView.viewNode then
@@ -44,18 +49,6 @@ function LoginView.showLoginView()
 
     LoginView.win:Show()
 
-    -- local co = coroutine.create(
-    --     function()
-    --         local progress = progressView.new(LoginView.updateProgress, LoginView)
-    --         progress:updateView()
-    --     end
-    -- )
-
-	-- local r, err = coroutine.resume(co)
-	-- if not r then
-	-- logger.error(debug.traceback(co, err))
-	-- end
-
 end
 
 function LoginView:initView()
@@ -89,12 +82,12 @@ end
 
 function LoginView:onQuicklyBtnClick()
     logger.debug("onLoginBtnClick")
+    self:quicklyLogin()
 end
 
 function LoginView:onWeixinBtnClick()
     logger.debug("onWeixinBtnClick")
 end
-
 
 function LoginView:msgBox()
 	return false
@@ -104,6 +97,53 @@ function LoginView:updateComplete()
     self.progressBar.visible = false
     self.weixinButton.visible = true
     self.loginBtn.visible = true
+end
+
+function LoginView:quicklyLogin()
+    -- TODO: account 需要从本地加载
+    local account = ""
+    local loginURL = urlpathsCfg.rootURL..'/'..urlpathsCfg.quicklyLogin..'?&account='..account
+
+    httpHelper.get(
+        self.viewNode,
+        loginURL,
+        function (req, resp)
+            if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
+				local httpError = errHelper.dumpHttpRespError(resp)
+				if httpError == nil then
+                    local respBytes = resp.Data
+                    local quicklyLoginReply = proto.decodeMessage("lobby.MsgQuicklyLoginReply", respBytes)
+                    logger.debug("quicklyLoginReply", quicklyLoginReply)
+                    _ENV.CS.UnityEngine.PlayerPrefs.SetString()
+
+				end
+				resp:Dispose()
+			else
+				errHelper.dumpHttpReqError(req)
+			end
+
+			req:Dispose()
+
+        end
+    )
+
+    -- local proto = require "lobby/scripts/proto/proto"
+	-- local accessory = proto.accessory
+
+	local userInfo = {}
+	userInfo.userID = 123456
+	userInfo.openID = "11111"
+
+	local buf = proto.encodeMessage("lobby.UserInfo", userInfo)
+
+	local myUserInfo = proto.decodeMessage("lobby.UserInfo", buf)
+
+	logger.debug("myUserInfo")
+	logger.debug(myUserInfo)
+end
+
+function LoginView:accountLogin()
+
 end
 
 return LoginView

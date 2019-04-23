@@ -102,7 +102,7 @@ function ProgressView:runCoroutine()
 
 	if upgraded then
 		-- 更新完成后，卸载背景，并reboot
-		_ENV.thisMod:Reboot()
+		_ENV.CS.Boot.Reboot()
         return
     else
         self.loginView:updateComplete()
