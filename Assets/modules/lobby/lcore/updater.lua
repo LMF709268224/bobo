@@ -17,15 +17,16 @@ local urlEncoder = require "lobby/lcore/urlEncode"
 local errHelper = require "lobby/lcore/lobbyErrHelper"
 local rapidjson = require("rapidjson")
 local batchDl = require "lobby/lcore/batchDownloader"
-local lenv = require "lobby/lenv"
+local httpHelper = require "lobby/lcore/httpHelper"
+local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
 
 -- 进度节点定义
 Updater.PROGRESS_GET_CFG = 1
 Updater.PROGRESS_DOWNLOAD = 2
 Updater.PROGRESS_INSTALL = 3
 
-function Updater:new(modName, remoteURL)
-	local updater = {modName = modName, remoteURL = remoteURL}
+function Updater:new(modName, remoteURL, component)
+	local updater = {modName = modName, remoteURL = remoteURL, component = component}
 
 	-- version data
 	local lobbyVersion = require "lobby/version"
@@ -37,13 +38,13 @@ function Updater:new(modName, remoteURL)
 	updater.upgradePath = writeAbleDir .. "/" .. modName .. "_Upgrade"
 
 	--确定模块的旧路径
-	local writeAbleOldPath = writeAbleDir .. "/" .. modName
+	local writeAbleOldPath = writeAbleDir .. '/modules/' .. modName
 	if CS.System.IO.Directory.Exists(writeAbleOldPath) then
 		updater.oldPath = writeAbleOldPath
 		updater.oldWriteAble = true
 	else
 		local readonlyOldPath = CS.UnityEngine.Application.streamingAssetsPath
-		updater.oldPath = readonlyOldPath .. "/" .. modName
+		updater.oldPath = readonlyOldPath .. "/modules/" .. modName
 		updater.oldWriteAble = false
 	end
 
@@ -124,7 +125,8 @@ function Updater:checkUpdate()
 
 	local co = coroutine.running()
 	-- 请求服务器获取模块更新信息
-	CS.NetHelper.HttpGet(
+	httpHelper.get(
+		self.component,
 		remoteURL,
 		function(req, resp)
 			if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
@@ -200,7 +202,9 @@ function Updater:checkUpdate()
 		return nil, false
 	end
 
-	local downloadURL = lenv.URL.updateDownload .. "/" .. self.modName .. "/" .. self.modVersion.VER_STR
+	self.totalSize = totalSize
+
+	local downloadURL = urlpathsCfg.rootURL..urlpathsCfg.updateDownload .. "/" .. self.modName .. "/" .. remoteJSON.version
 	for _, ab in ipairs(upgrades) do
 		if ab.url == nil then
 			ab.url = downloadURL .. "/" .. ab.name
@@ -244,10 +248,10 @@ function Updater:doUpgrade(progressHandler, retryConfirmHandler)
 	local loop = true
 	while loop and #remains > 0 do
 		-- Batch下载，3个HTTP一批次
-		local batch = batchDl.new(remains, self.upgradePath, 3)
+		local batch = batchDl.new(remains, self.upgradePath, 3, self.component)
 		batch.progress = function(delta)
 			downloadedSize = downloadedSize + delta
-			progressHandler(downloadedSize, self.totalSize)
+			progressHandler(Updater.PROGRESS_DOWNLOAD, downloadedSize, self.totalSize)
 		end
 
 		batch.completed = function()
@@ -302,6 +306,13 @@ function Updater:doUpgrade(progressHandler, retryConfirmHandler)
 	-- 删除老的模块目录
 	if self.oldWriteAble then
 		CS.System.IO.Directory.Delete(self.oldPath)
+	else
+		local modulesPath = CS.UnityEngine.Application.persistentDataPath .. '/modules'
+		if not CS.System.IO.Directory.Exists(modulesPath) then
+			CS.System.IO.Directory.CreateDirectory(modulesPath)
+		end
+
+		self.oldPath = modulesPath..'/'..self.modName
 	end
 
 	-- 重命名upgrade目录

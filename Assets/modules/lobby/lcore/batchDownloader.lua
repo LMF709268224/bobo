@@ -16,6 +16,7 @@ local mtS = {__index = SingleDownloader}
 
 local logger = require "lobby/Lcore/Logger"
 local errHelper = require "lobby/Lcore/LobbyErrHelper"
+local httpHelper = require "lobby/lcore/httpHelper"
 
 local function removeFromTable(t, e)
 	for i, te in ipairs(t) do
@@ -26,8 +27,8 @@ local function removeFromTable(t, e)
 	end
 end
 
-function SingleDownloader.new(ab, targetPath)
-	local sd = {ab = ab, targetPath = targetPath}
+function SingleDownloader.new(ab, targetPath, component)
+	local sd = {ab = ab, targetPath = targetPath, component = component}
 	return setmetatable(sd, mtS)
 end
 
@@ -37,7 +38,8 @@ function SingleDownloader:fire()
 	self.httpError = nil
 
 	--开始下载
-	CS.NetHelper.HttpGetWithProgress(
+	httpHelper.getWithProgress(
+		self.component,
 		remoteURL,
 		function(req, resp) --finished回调
 			local httpError
@@ -50,7 +52,7 @@ function SingleDownloader:fire()
 					if sd.ab.md5 == CS.NetHelper.MD5(respBytes) then
 						--local targetPath = sd.targetPath
 						--写入到文件
-						local result = CS.NetHelper.WriteBytesToFile(self.targetPath, respBytes)
+						local result = CS.NetHelper.WriteBytesToFile(self.targetPath..'/'..self.ab.name, respBytes)
 						if not result then
 							httpError = {code = errHelper.ERR_FILE_WRITE_FAILED, msg = "保存新的bundle数据包失败"}
 						end
@@ -76,9 +78,9 @@ function SingleDownloader:fire()
 	)
 end
 
-function BatchDownloader.new(remains, targetPath, cntPerBatch)
+function BatchDownloader.new(remains, targetPath, cntPerBatch, component)
 	cntPerBatch = cntPerBatch or 3
-	local bd = {remains = remains, targetPath = targetPath, cntPerBatch = cntPerBatch}
+	local bd = {remains = remains, targetPath = targetPath, cntPerBatch = cntPerBatch, component = component}
 	return setmetatable(bd, mt)
 end
 
@@ -119,7 +121,7 @@ function BatchDownloader:fireSingleDownloaders()
 		end
 
 		local bd = self
-		local sd = SingleDownloader.new(ab, self.targetPath)
+		local sd = SingleDownloader.new(ab, self.targetPath, self.component)
 		sd.completedHandler = function(sd1)
 			bd:onSingleDownloadCompleted(sd1)
 		end
