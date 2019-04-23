@@ -91,6 +91,11 @@ local function testLobbyUI()
 	createBtn.onClick:Add(onCreateClick)
 end
 
+-- local function showLoginView()
+-- 	local loginView = require "lobby/scripts/login/loginView"
+-- 	loginView.showLoginView()
+-- end
+
 local function main()
 	local lobbyVer = lenv.VER_STR
 	local csharpVer = CS.Version.VER_STR
@@ -112,6 +117,9 @@ local function main()
 	-- end
 
 	testLobbyUI()
+
+	-- showLoginView()
+
 end
 
 main()
