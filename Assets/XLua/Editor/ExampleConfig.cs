@@ -119,6 +119,7 @@ public static class ExampleConfig
 		"UnityEngine.GameObject",
 		"UnityEngine.Mathf",
 		"UnityEngine.Object",
+		"UnityEngine.PlayerPrefs",
 		"UnityEngine.RectTransform",
 		"UnityEngine.Resolution",
 		"UnityEngine.Screen",
