@@ -81,7 +81,7 @@ function LoginView:initView()
 end
 
 function LoginView:onQuicklyBtnClick()
-    logger.debug("onLoginBtnClick")
+    logger.debug("onQuicklyBtnClick")
     self:quicklyLogin()
 end
 
@@ -99,22 +99,41 @@ function LoginView:updateComplete()
     self.loginBtn.visible = true
 end
 
+function LoginView:saveQuicklyLoginReply(quicklyLoginReply)
+    CS.UnityEngine.PlayerPrefs.SetString("account", quicklyLoginReply.account)
+    CS.UnityEngine.PlayerPrefs.SetString("token", quicklyLoginReply.token)
+    CS.UnityEngine.PlayerPrefs.SetString("userid", quicklyLoginReply.userInfo.userID)
+end
+
+function LoginView:showLobbyView()
+    _ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
+	local view = fairy.UIPackage.CreateObject("lobby_main", "Main")
+    fairy.GRoot.inst:AddChild(view)
+
+    self.viewNode.visible = false;
+end
+
 function LoginView:quicklyLogin()
     -- TODO: account 需要从本地加载
-    local account = ""
-    local loginURL = urlpathsCfg.rootURL..'/'..urlpathsCfg.quicklyLogin..'?&account='..account
-
+    local account = CS.UnityEngine.PlayerPrefs.GetString("account", "")
+    local quicklyLoginURL = urlpathsCfg.rootURL..urlpathsCfg.quicklyLogin..'?&account='..account
     httpHelper.get(
         self.viewNode,
-        loginURL,
+        quicklyLoginURL,
         function (req, resp)
             if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
 				local httpError = errHelper.dumpHttpRespError(resp)
 				if httpError == nil then
                     local respBytes = resp.Data
                     local quicklyLoginReply = proto.decodeMessage("lobby.MsgQuicklyLoginReply", respBytes)
+                    if quicklyLoginReply.result == 0 then
+                        self:saveQuicklyLoginReply(quicklyLoginReply)
+                        self:showLobbyView()
+                    else
+                        -- TODO: show error msg
+                        logger.debug("quickly login error, errCode:", quicklyLoginReply.result)
+                    end
                     logger.debug("quicklyLoginReply", quicklyLoginReply)
-                    _ENV.CS.UnityEngine.PlayerPrefs.SetString()
 
 				end
 				resp:Dispose()
@@ -127,19 +146,6 @@ function LoginView:quicklyLogin()
         end
     )
 
-    -- local proto = require "lobby/scripts/proto/proto"
-	-- local accessory = proto.accessory
-
-	local userInfo = {}
-	userInfo.userID = 123456
-	userInfo.openID = "11111"
-
-	local buf = proto.encodeMessage("lobby.UserInfo", userInfo)
-
-	local myUserInfo = proto.decodeMessage("lobby.UserInfo", buf)
-
-	logger.debug("myUserInfo")
-	logger.debug(myUserInfo)
 end
 
 function LoginView:accountLogin()
