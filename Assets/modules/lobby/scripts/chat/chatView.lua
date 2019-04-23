@@ -32,19 +32,19 @@ function ChatView:initView()
     self.phraseBtn = self.viewNode:GetChild("phraseBtn")
     self.expressionBtn = self.viewNode:GetChild("expressionBtn")
     self.historyBtn = self.viewNode:GetChild("historyBtn")
-    self.phraseBtn.onClick:Add(
+    self.phraseBtn.onClick:Set(
         function()
             self:changeList(0)
             self.phraseBtn.selected = true
         end
     )
-    self.expressionBtn.onClick:Add(
+    self.expressionBtn.onClick:Set(
         function()
             self:changeList(1)
             self.expressionBtn.selected = true
         end
     )
-    self.historyBtn.onClick:Add(
+    self.historyBtn.onClick:Set(
         function()
             self:changeList(2)
             self.historyBtn.selected = true
@@ -63,7 +63,7 @@ function ChatView:initView()
     self.historyList:SetVirtual()
 
     local sendBtn = self.viewNode:GetChild("sendBtn")
-    sendBtn.onClick:Add(
+    sendBtn.onClick:Set(
         function()
             -- ChatView.win:Hide()
         end

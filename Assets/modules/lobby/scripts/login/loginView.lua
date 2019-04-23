@@ -40,7 +40,7 @@ function LoginView.showLoginView()
             end
         )
 
-        view.onClick:Add(
+        view.onClick:Set(
             function()
                 -- win:Hide()
             end
@@ -48,7 +48,6 @@ function LoginView.showLoginView()
     end
 
     LoginView.win:Show()
-
 end
 
 function LoginView:initView()
@@ -59,17 +58,17 @@ function LoginView:initView()
     self.loginBtn.visible = false
     self.weixinButton.visible = false
     self.progressBar.value = 0
-    self.progressBar.visible = false;
+    self.progressBar.visible = false
 
     -- self.progressBar = self.updateProgress:GetChild("bar")
     -- logger.error(self.progressBar)
     -- self.gprogress.value = 0
-    self.loginBtn.onClick:Add(
+    self.loginBtn.onClick:Set(
         function()
             self:onQuicklyBtnClick()
         end
     )
-    self.weixinButton.onClick:Add(
+    self.weixinButton.onClick:Set(
         function()
             self:onWeixinBtnClick()
         end
@@ -77,7 +76,6 @@ function LoginView:initView()
 
     -- local progress = progressView.new(self)
     progressView:updateView(self)
-
 end
 
 function LoginView:onQuicklyBtnClick()
@@ -90,7 +88,7 @@ function LoginView:onWeixinBtnClick()
 end
 
 function LoginView:msgBox()
-	return false
+    return false
 end
 
 function LoginView:updateComplete()
@@ -107,23 +105,23 @@ end
 
 function LoginView:showLobbyView()
     _ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
-	local view = fairy.UIPackage.CreateObject("lobby_main", "Main")
+    local view = fairy.UIPackage.CreateObject("lobby_main", "Main")
     fairy.GRoot.inst:AddChild(view)
 
-    self.viewNode.visible = false;
+    self.viewNode.visible = false
 end
 
 function LoginView:quicklyLogin()
     -- TODO: account 需要从本地加载
     local account = CS.UnityEngine.PlayerPrefs.GetString("account", "")
-    local quicklyLoginURL = urlpathsCfg.rootURL..urlpathsCfg.quicklyLogin..'?&account='..account
+    local quicklyLoginURL = urlpathsCfg.rootURL .. urlpathsCfg.quicklyLogin .. "?&account=" .. account
     httpHelper.get(
         self.viewNode,
         quicklyLoginURL,
-        function (req, resp)
+        function(req, resp)
             if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
-				local httpError = errHelper.dumpHttpRespError(resp)
-				if httpError == nil then
+                local httpError = errHelper.dumpHttpRespError(resp)
+                if httpError == nil then
                     local respBytes = resp.Data
                     local quicklyLoginReply = proto.decodeMessage("lobby.MsgQuicklyLoginReply", respBytes)
                     if quicklyLoginReply.result == 0 then
@@ -134,22 +132,18 @@ function LoginView:quicklyLogin()
                         logger.debug("quickly login error, errCode:", quicklyLoginReply.result)
                     end
                     logger.debug("quicklyLoginReply", quicklyLoginReply)
+                end
+                resp:Dispose()
+            else
+                errHelper.dumpHttpReqError(req)
+            end
 
-				end
-				resp:Dispose()
-			else
-				errHelper.dumpHttpReqError(req)
-			end
-
-			req:Dispose()
-
+            req:Dispose()
         end
     )
-
 end
 
 function LoginView:accountLogin()
-
 end
 
 return LoginView
