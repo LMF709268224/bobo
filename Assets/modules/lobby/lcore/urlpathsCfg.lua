@@ -8,10 +8,12 @@ Note:
 	类名可以大写开头。
 --]]
 local UrlPaths = {
-	updateQuery = "/lobby/upgrade/query",
-	updateDownload = "lobby/upgrade/download",
+	-- updateQuery = "/lobby/upgrade/query",
+	updateQuery = "/lobby/uuid/trust/upgradeQuery",
+	updateDownload = "/lobby/upgrade/download",
 	gameWebsocketMonkey = "/game/%s/ws/monkey",
-	gameWebsocketPlay = "/game/%s/ws/play"
+	gameWebsocketPlay = "/game/%s/ws/play",
+	rootURL = "http://localhost:3002"
 }
 
 return UrlPaths
