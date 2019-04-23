@@ -62,7 +62,7 @@ function LoginView:initView()
     -- button
     self.loginBtn = self.viewNode:GetChild("n2")
     self.weixinButton = self.viewNode:GetChild("n3")
-    self.progressBar = self.viewNode:GetChild("n5")
+    self.progressBar = self.viewNode:GetChild("n4")
     self.loginBtn.visible = false
     self.weixinButton.visible = false
     self.progressBar.value = 0

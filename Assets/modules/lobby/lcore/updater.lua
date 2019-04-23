@@ -44,7 +44,7 @@ function Updater:new(modName, remoteURL, component)
 		updater.oldWriteAble = true
 	else
 		local readonlyOldPath = CS.UnityEngine.Application.streamingAssetsPath
-		updater.oldPath = readonlyOldPath .. "/" .. modName
+		updater.oldPath = readonlyOldPath .. "/modules/" .. modName
 		updater.oldWriteAble = false
 	end
 
