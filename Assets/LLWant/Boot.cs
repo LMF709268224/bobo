@@ -89,13 +89,23 @@ public class Boot : MonoBehaviour
         if (instance != null)
         {
             Debug.Log("Boot.Reboot");
-            instance.DoDestroy();
-            instance.DoStart();
+
+            instance.StartCoroutine(DoReboot());
         }
         else
         {
             Debug.LogError("Boot.Reboot failed, instance is null");
         }
+    }
+
+    static System.Collections.IEnumerator DoReboot()
+    {
+        yield return new WaitForEndOfFrame();
+
+        instance.DoDestroy();
+        instance.DoStart();
+
+        yield return null;
     }
 
     void OnApplicationQuit()
