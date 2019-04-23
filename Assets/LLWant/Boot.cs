@@ -23,6 +23,11 @@ public class Boot : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        DoStart();
+    }
+
+    private void DoStart()
+    {
         System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
         stopWatch.Start();
 
@@ -35,25 +40,6 @@ public class Boot : MonoBehaviour
 
         stopWatch.Stop();
         Debug.Log($"Boot.Start total time:{stopWatch.Elapsed.TotalMilliseconds} milliseconds");
-    }
-
-    private string LogTypeString(LogType t)
-    {
-        switch (t)
-        {
-            case LogType.Assert:
-                return "Assert";
-            case LogType.Error:
-                return "Error";
-            case LogType.Exception:
-                return "Exception";
-            case LogType.Log:
-                return "Log";
-            case LogType.Warning:
-                return "Warn";
-            default:
-                return "Unknown";
-        }
     }
 
     // Update is called once per frame
@@ -72,6 +58,11 @@ public class Boot : MonoBehaviour
     void OnDestroy()
     {
         Debug.Log("Boot.OnDestroy");
+        DoDestroy();
+    }
+
+    private static void DoDestroy()
+    {
         // 销毁UI残余界面，否则可能UI组件引用着LUA中的回调函数
         // 就会导致销毁lua虚拟机时抛异常
         FairyGUI.Timers.inst.Clear();
@@ -83,6 +74,15 @@ public class Boot : MonoBehaviour
             lobby.OnDestroy();
             lobby = null;
         }
+    }
+
+    /// <summary>
+    /// LUA脚本调用本函数重新加载大厅
+    /// </summary>
+    public void Reboot()
+    {
+        DoDestroy();
+        DoStart();
     }
 
     void OnApplicationQuit()
