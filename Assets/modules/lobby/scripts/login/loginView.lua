@@ -64,12 +64,12 @@ function LoginView:initView()
     -- self.progressBar = self.updateProgress:GetChild("bar")
     -- logger.error(self.progressBar)
     -- self.gprogress.value = 0
-    self.loginBtn.onClick:Add(
+    self.loginBtn.onClick:Set(
         function()
             self:onQuicklyBtnClick()
         end
     )
-    self.weixinButton.onClick:Add(
+    self.weixinButton.onClick:Set(
         function()
             self:onWeixinBtnClick()
         end
@@ -101,8 +101,11 @@ end
 
 function LoginView:saveQuicklyLoginReply(quicklyLoginReply)
     CS.UnityEngine.PlayerPrefs.SetString("account", quicklyLoginReply.account)
-    CS.UnityEngine.PlayerPrefs.SetString("token", quicklyLoginReply.token)
-    CS.UnityEngine.PlayerPrefs.SetString("userid", quicklyLoginReply.userInfo.userID)
+
+    local rapidjson = require("rapidjson")
+    local jsonString = rapidjson.encode(quicklyLoginReply.userInfo)
+
+    CS.UnityEngine.PlayerPrefs.SetString("userInfo", jsonString)
 end
 
 function LoginView:showLobbyView()
@@ -110,13 +113,18 @@ function LoginView:showLobbyView()
 	local view = fairy.UIPackage.CreateObject("lobby_main", "Main")
     fairy.GRoot.inst:AddChild(view)
 
-    self.viewNode.visible = false;
+    self.win:Hide()
+    self.win:Dispose()
+    self.unityViewNode = nil
+    self.win = nil
 end
 
 function LoginView:quicklyLogin()
-    -- TODO: account 需要从本地加载
     local account = CS.UnityEngine.PlayerPrefs.GetString("account", "")
     local quicklyLoginURL = urlpathsCfg.rootURL..urlpathsCfg.quicklyLogin..'?&account='..account
+
+    logger.trace("quicklyLogin, quicklyLoginURL:", quicklyLoginURL)
+
     httpHelper.get(
         self.viewNode,
         quicklyLoginURL,
@@ -133,7 +141,7 @@ function LoginView:quicklyLogin()
                         -- TODO: show error msg
                         logger.debug("quickly login error, errCode:", quicklyLoginReply.result)
                     end
-                    logger.debug("quicklyLoginReply", quicklyLoginReply)
+                    -- logger.debug("quicklyLoginReply", quicklyLoginReply)
 
 				end
 				resp:Dispose()
