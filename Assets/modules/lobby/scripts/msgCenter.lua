@@ -10,7 +10,7 @@ local mt = {__index = MsgCenter}
 local websocket = require "scripts/websocket"
 local msgQueue = require "scripts/msgQueue"
 local logger = require "lobby/lcore/logger"
--- local proto = require "scripts/proto/proto"
+local proto = require "scripts/proto/proto"
 local dialog = require "lobby/lcore/dialog"
 
 function MsgCenter:new(url, component)
@@ -65,7 +65,7 @@ function MsgCenter:connectServer()
         return
     end
 
-    logger.debug("connect success")
+    logger.trace("connect success")
 
     self:pumpMsg()
 end
@@ -100,7 +100,7 @@ end
 --以避免等待过于长久
 ------------------------------------------
 function MsgCenter:waitConnect()
-    logger.debug("MsgCenter:waitConnect")
+    logger.trace("MsgCenter:waitConnect")
 
     local msg = self.mq:getMsg()
 
@@ -132,8 +132,43 @@ function MsgCenter:showRetryMsgBox(msg)
 end
 
 function MsgCenter:dispatchWeboscketMessage(lobbyMessage)
-    logger.debug("msgCenter.dispatchWeboscketMessage Ops:", lobbyMessage.Ops)
-    -- TODO: 分发到对应的handle去
+    logger.trace("msgCenter.dispatchWeboscketMessage Ops:", lobbyMessage.Ops)
+
+    local msgCodeEnum = proto.lobby.MessageCode
+    local op = lobbyMessage.Ops
+    if op == msgCodeEnum.OPConnectReply then
+        local connectReply = proto.decodeMessage("lobby.MsgWebsocketConnectReply", lobbyMessage.Data)
+        logger.debug("MsgCenter websocket connect result:", connectReply.result)
+        return
+    end
+
+    local handler = self.Handlers[op]
+    if handler == nil then
+        logger.debug("MsgCenter:dispatchWeboscketMessage, no handler for:", op)
+        return
+    end
+
+    local msgData = lobbyMessage.Data
+    logger.debug("MsgCenter:dispatchWeboscketMessage, op:", lobbyMessage.Ops, ",data size:", #msgData)
+    -- 调用handler的onMsg
+    handler.onMsg(msgData, self)
 end
+
+-----------------------------------------------------------
+--初始化大厅消息响应handlers
+-----------------------------------------------------------
+local function initMsgHandler()
+    local msgHandlers = {}
+    -- local msgCodeEnum = proto.lobby.MessageCode
+
+    -- local h = require("scripts/chat/chatView")
+    -- msgHandlers[msgCodeEnum.OPActionAllowed] = h
+    -- 添加消息相应
+
+    return msgHandlers
+end
+
+--handlers属于整个Room
+MsgCenter.Handlers = initMsgHandler()
 
 return MsgCenter
