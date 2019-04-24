@@ -4,6 +4,7 @@
 local ChatView = {}
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
+local CS = _ENV.CS
 
 function ChatView.showChatView()
     if ChatView.viewNode then
@@ -13,34 +14,23 @@ function ChatView.showChatView()
         _ENV.thisMod:AddUIPackage("lobby/fui_chat/lobby_chat")
         local view = fairy.UIPackage.CreateObject("lobby_chat", "chat")
 
-        local win = fairy.Window()
-        win.contentPane = view
-        win.modal = true
-        -- local screenWidth = CS.UnityEngine.Screen.width
-        -- local screenHeight = CS.UnityEngine.Screen.height
-        -- win:SetXY(screenWidth / 2, screenHeight / 2)
-
         ChatView.viewNode = view
-        ChatView.win = win
-
+        --TODO:这里需要初始化列表
+        ChatView.msgList = {}
         ChatView:initView()
         ChatView:testLists()
-        -- 由于win隐藏，而不是销毁，隐藏后和GRoot脱离了关系，因此需要
-        -- 特殊销毁
+
         _ENV.thisMod:RegisterCleanup(
             function()
-                win:Dispose()
-            end
-        )
-
-        view.onClick:Add(
-            function()
-                -- win:Hide()
+                view:Dispose()
             end
         )
     end
-
-    ChatView.win:Show()
+    fairy.GRoot.inst:ShowPopup(ChatView.viewNode)
+    local screenWidth = CS.UnityEngine.Screen.width
+    -- local screenHeight = CS.UnityEngine.Screen.height
+    ChatView.viewNode.x = screenWidth - 500
+    ChatView.viewNode.y = 0
 end
 
 function ChatView:initView()
@@ -48,19 +38,19 @@ function ChatView:initView()
     self.phraseBtn = self.viewNode:GetChild("phraseBtn")
     self.expressionBtn = self.viewNode:GetChild("expressionBtn")
     self.historyBtn = self.viewNode:GetChild("historyBtn")
-    self.phraseBtn.onClick:Add(
+    self.phraseBtn.onClick:Set(
         function()
             self:changeList(0)
             self.phraseBtn.selected = true
         end
     )
-    self.expressionBtn.onClick:Add(
+    self.expressionBtn.onClick:Set(
         function()
             self:changeList(1)
             self.expressionBtn.selected = true
         end
     )
-    self.historyBtn.onClick:Add(
+    self.historyBtn.onClick:Set(
         function()
             self:changeList(2)
             self.historyBtn.selected = true
@@ -70,22 +60,18 @@ function ChatView:initView()
     self.phraseList = self.viewNode:GetChild("phraseList").asList
     self.expressionList = self.viewNode:GetChild("expressionList").asList
     self.historyList = self.viewNode:GetChild("historyList").asList
-    -- item
-    -- self.expressionItem = fairy.UIPackage.CreateObject("lobby_chat", "chat_expression_item")
-    -- self.historyMeItem = fairy.UIPackage.CreateObject("lobby_chat", "chat_history_me_item")
-    -- self.historyOtherItem = fairy.UIPackage.CreateObject("lobby_chat", "chat_history_other_item")
-    -- self.phraseItem = fairy.UIPackage.CreateObject("lobby_chat", "chat_phrase_item")
+    self.historyList.itemRenderer = function(index, obj)
+        self:renderListItem(index, obj)
+    end
+    self.historyList.itemProvider = function(index)
+        return self:getListItemResource(index)
+    end
+    self.historyList:SetVirtual()
 
     local sendBtn = self.viewNode:GetChild("sendBtn")
-    sendBtn.onClick:Add(
+    sendBtn.onClick:Set(
         function()
-            ChatView.win:Hide()
-        end
-    )
-    local closeBtn = self.viewNode:GetChild("close")
-    closeBtn.onClick:Add(
-        function()
-            ChatView.win:Hide()
+            -- ChatView.win:Hide()
         end
     )
 end
@@ -115,7 +101,7 @@ function ChatView:testLists()
     -- self.phraseItem = fairy.UIPackage.CreateObject("lobby_chat", "chat_phrase_item")
     self:updatePhraseList()
     self:updateExpressionList()
-    self:updateHistoryList()
+    -- self:updateHistoryList()
 end
 
 -- 更新表情列表
@@ -128,79 +114,74 @@ end
 
 -- 更新短语列表
 function ChatView:updatePhraseList()
-    -- local RenderListItem = function(index, obj)
-    --     local t = obj:GetChild("n0")
-    --     t.text = "呵呵呵呵 ：" .. index
-    -- end
-    -- self.phraseList.itemRenderer = RenderListItem
-    -- self.phraseList.numItems = 12
+    local phraseMap = {
+        [0] = "你这牌打得也太好了吧。。。",
+        [1] = "快点啊，都等到我花都谢了。。。",
+        [2] = "真怕猪一样的队友。。。",
+        [3] = "一走一停真有型，一秒一卡好潇洒。。。",
+        [4] = "我炸你个桃花朵朵开。。。",
+        [5] = "姑娘，你真是条汉子。。。",
+        [6] = "风吹鸡蛋壳，牌去人安乐。。。",
+        [7] = "搏一搏，单车变摩托。。。",
+        [8] = "我就剩一张牌了。。。",
+        [9] = "炸得好。。。"
+    }
     self.phraseList.onClickItem:Add(
         function(onClickItem)
-            logger.debug("点击短语item : ", onClickItem.data.name)
-            logger.debug("点击短语item : ", onClickItem.data:GetChild("n0").text)
+            self:addMsg(onClickItem.data.name == "2", onClickItem.data:GetChild("n0").text)
         end
     )
     self.phraseList:RemoveChildrenToPool()
-    for i = 1, 16 do
+    for i = 0, #phraseMap do
         local obj = self.phraseList:AddItemFromPool()
-        obj.name = "o:" .. i
-        -- local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_phrase_item")
+        obj.name = i
         local t = obj:GetChild("n0")
-        t.text = "哈哈哈哈哈 ：" .. i
-        -- self.phraseList:AddChild(obj)
+        t.text = phraseMap[i]
     end
 end
 
 -- 更新历史列表
-function ChatView:updateHistoryList()
-    for i = 1, 16 do
-        if i % 2 == 0 then
-            -- self.phraseList:AddItemFromPool()
-            -- self.phraseList.itemRenderer = RenderListItem
-            local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_history_me_item")
-            local t = obj:GetChild("text")
-            t.text = "我说是多少打打 ad大神 阿萨德ad撒 啊大声地啊 阿萨德 ：" .. i
-            self.historyList:AddChild(obj)
-        else
-            local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_history_other_item")
-            local t = obj:GetChild("text")
-            t.text = "ni说是ds  啊大声地啊 阿萨德 ：" .. i
-            local n = obj:GetChild("name")
-            n.text = "我是 " .. i
-            self.historyList:AddChild(obj)
-        end
-    end
-end
--- function ChatView.coShowDialog(msg, callBackOK, callBackCancel)
---     local waitCoroutine = coroutine.running()
-
---     local yes
---     local no
-
---     local resume = function()
---         local r, err = coroutine.resume(waitCoroutine)
---         if not r then
---             logger.error(debug.traceback(waitCoroutine, err))
---         end
+-- function ChatView:updateHistoryList()
+-- for i = 1, 16 do
+--     if i % 2 == 0 then
+--         -- self.phraseList:AddItemFromPool()
+--         -- self.phraseList.itemRenderer = RenderListItem
+--         local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_history_me_item")
+--         local t = obj:GetChild("text")
+--         t.text = "我说是多少打打 ad大神 阿萨德ad撒 啊大声地啊 阿萨德 ：" .. i
+--         self.historyList:AddChild(obj)
+--     else
+--         local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_history_other_item")
+--         local t = obj:GetChild("text")
+--         t.text = "ni说是ds  啊大声地啊 阿萨德 ：" .. i
+--         local n = obj:GetChild("name")
+--         n.text = "我是 " .. i
+--         self.historyList:AddChild(obj)
 --     end
-
---     if callBackOK then
---         yes = function()
---             callBackOK()
---             resume()
---         end
---     end
-
---     if callBackCancel then
---         no = function()
---             callBackCancel()
---             resume()
---         end
---     end
-
---     ChatView.showDialog(msg, yes, no)
-
---     coroutine.yield()
+-- end
 -- end
 
+function ChatView:addMsg(isMe, str)
+    -- logger.debug("addMsg : ", isMe)
+    local s = #self.msgList + 1
+    self.msgList[s] = {fromMe = isMe, msg = str}
+    self.historyList.numItems = s
+    self.historyList.scrollPane:ScrollBottom()
+end
+
+function ChatView:getListItemResource(index)
+    local msg = self.msgList[index + 1]
+    -- logger.debug("msg : ", msg)
+    if msg.fromMe then
+        return "ui://lobby_chat/chat_history_me_item"
+    else
+        return "ui://lobby_chat/chat_history_other_item"
+    end
+end
+
+function ChatView:renderListItem(index, obj)
+    local msg = self.msgList[index + 1]
+    local t = obj:GetChild("text")
+    t.text = msg.msg
+end
 return ChatView

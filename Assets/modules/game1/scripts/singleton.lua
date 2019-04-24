@@ -206,7 +206,7 @@ function SG:pumpMsg()
             -- 网络连接断开，重新登入
             self:showRetryMsgBox("与游戏服务器连接断开，是否重连？")
             -- 网络连接断开时关闭申请解散框
-            self.room:destroyVoteView()
+            --self.room:destroyVoteView()
             self.retry = true
             if self.connectErrorCount > 2 then
                 self:showRetryMsgBox()

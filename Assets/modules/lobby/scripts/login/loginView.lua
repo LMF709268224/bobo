@@ -40,10 +40,15 @@ function LoginView.showLoginView()
             end
         )
 
+
+        view.onClick:Set(
+            function()
+                -- win:Hide()
+            end
+        )
     end
 
     LoginView.win:Show()
-
 end
 
 function LoginView:initView()
@@ -54,7 +59,7 @@ function LoginView:initView()
     self.loginBtn.visible = false
     self.weixinButton.visible = false
     self.progressBar.value = 0
-    self.progressBar.visible = false;
+    self.progressBar.visible = false
 
     -- self.progressBar = self.updateProgress:GetChild("bar")
     -- logger.error(self.progressBar)
@@ -72,7 +77,6 @@ function LoginView:initView()
 
     -- local progress = progressView.new(self)
     progressView:updateView(self)
-
 end
 
 function LoginView:onQuicklyBtnClick()
@@ -85,7 +89,7 @@ function LoginView:onWeixinBtnClick()
 end
 
 function LoginView:msgBox()
-	return false
+    return false
 end
 
 function LoginView:updateComplete()
@@ -110,27 +114,26 @@ function LoginView:showLobbyView()
     -- fairy.GRoot.inst:AddChild(view)
 
     local lobbyView = require "lobby/scripts/lobbyView"
-	lobbyView.show()
+	   lobbyView.show()
 
     self.win:Hide()
     self.win:Dispose()
     self.unityViewNode = nil
     self.win = nil
+
 end
 
 function LoginView:quicklyLogin()
     local account = CS.UnityEngine.PlayerPrefs.GetString("account", "")
-    local quicklyLoginURL = urlpathsCfg.rootURL..urlpathsCfg.quicklyLogin..'?&account='..account
-
-    logger.trace("quicklyLogin, quicklyLoginURL:", quicklyLoginURL)
-
+    local quicklyLoginURL = urlpathsCfg.rootURL .. urlpathsCfg.quicklyLogin .. "?&account=" .. account
+     -- logger.trace("quicklyLogin, quicklyLoginURL:", quicklyLoginURL)
     httpHelper.get(
         self.viewNode,
         quicklyLoginURL,
-        function (req, resp)
+        function(req, resp)
             if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
-				local httpError = errHelper.dumpHttpRespError(resp)
-				if httpError == nil then
+                local httpError = errHelper.dumpHttpRespError(resp)
+                if httpError == nil then
                     local respBytes = resp.Data
                     local quicklyLoginReply = proto.decodeMessage("lobby.MsgQuicklyLoginReply", respBytes)
                     if quicklyLoginReply.result == 0 then
@@ -141,22 +144,18 @@ function LoginView:quicklyLogin()
                         logger.debug("quickly login error, errCode:", quicklyLoginReply.result)
                     end
                     logger.debug("quicklyLoginReply", quicklyLoginReply)
+                end
+                resp:Dispose()
+            else
+                errHelper.dumpHttpReqError(req)
+            end
 
-				end
-				resp:Dispose()
-			else
-				errHelper.dumpHttpReqError(req)
-			end
-
-			req:Dispose()
-
+            req:Dispose()
         end
     )
-
 end
 
 function LoginView:accountLogin()
-
 end
 
 return LoginView

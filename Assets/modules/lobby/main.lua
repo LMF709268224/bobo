@@ -74,7 +74,7 @@ end
 -- 子游戏模块会调用本函数（通过跨lua虚拟机调用）
 _ENV.gameServerScheme = function()
 	-- 以后这个host也统一到某个lua文件中，由它结合防DDOS流程来给出
-	return 'ws://localhost:3001'
+	return "ws://localhost:3001"
 end
 
 local function testLobbyUI()
@@ -83,12 +83,12 @@ local function testLobbyUI()
 	fairy.GRoot.inst:AddChild(view)
 
 	local friendBtn = view:GetChild("n1")
-	friendBtn.onClick:Add(onFriendClick)
+	friendBtn.onClick:Set(onFriendClick)
 
 	-- gooo = view
 
 	local createBtn = view:GetChild("n4")
-	createBtn.onClick:Add(onCreateClick)
+	createBtn.onClick:Set(onCreateClick)
 end
 
 -- local function showLoginView()
@@ -108,7 +108,6 @@ local function main()
 
 	_ENV.thisMod:RegisterCleanup(shutdownCleanup)
 
-
 	-- 启动cortouine
 	-- local co = coroutine.create(mainEntryCoroutine)
 	-- local r, err = coroutine.resume(co)
@@ -119,7 +118,6 @@ local function main()
 	testLobbyUI()
 
 	-- showLoginView()
-
 end
 
 main()
