@@ -50,7 +50,7 @@ local function onGameEnter()
 	local env = {}
 	local origin = _ENV
 	local newenv = setmetatable({}, {
-		__index = function (t, k)
+		__index = function (_, k)
 			local v = env[k]
 			if v == nil then return origin[k] end
 			return v
