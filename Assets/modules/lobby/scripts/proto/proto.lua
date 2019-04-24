@@ -48,25 +48,6 @@ function PROTO.encodeMessage(t, msgObj)
     return protobuf.encode(t, msgObj)
 end
 
-function PROTO.decodeGameMessage(msgData)
-    return protobuf.decode("pokerface.GameMessage", msgData)
-end
-
--- function PROTO.actionsHasAction(actions, action)
---     return (actions & action) ~= 0
--- end
-
--- function PROTO.selectMeldFromMeldsForAction(meldsForAction, ty)
---     local r = {}
---     for _, m in ipairs(meldsForAction) do
---         if m.meldType == ty then
---             table.insert(r, m)
---         end
---     end
-
---     return r
--- end
-
 loadProtofile()
 
 return PROTO

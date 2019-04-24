@@ -21,7 +21,9 @@ local UrlPaths = {
 	wxLogin = "/lobby/uuid/trust/wxLogin",
 	register = "/lobby/uuid/trust/register",
 
-	chat = "/lobby/uuid/untrust/chat"
+	chat = "/lobby/uuid/untrust/chat",
+
+	lobbyWebsocket = "ws://localhost:3002/lobby/uuid/ws/"
 
 }
 

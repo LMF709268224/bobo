@@ -40,11 +40,6 @@ function LoginView.showLoginView()
             end
         )
 
-        view.onClick:Add(
-            function()
-                -- win:Hide()
-            end
-        )
     end
 
     LoginView.win:Show()
@@ -101,6 +96,7 @@ end
 
 function LoginView:saveQuicklyLoginReply(quicklyLoginReply)
     CS.UnityEngine.PlayerPrefs.SetString("account", quicklyLoginReply.account)
+    CS.UnityEngine.PlayerPrefs.SetString("token", quicklyLoginReply.token)
 
     local rapidjson = require("rapidjson")
     local jsonString = rapidjson.encode(quicklyLoginReply.userInfo)
@@ -109,9 +105,12 @@ function LoginView:saveQuicklyLoginReply(quicklyLoginReply)
 end
 
 function LoginView:showLobbyView()
-    _ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
-	local view = fairy.UIPackage.CreateObject("lobby_main", "Main")
-    fairy.GRoot.inst:AddChild(view)
+    -- _ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
+	-- local view = fairy.UIPackage.CreateObject("lobby_main", "Main")
+    -- fairy.GRoot.inst:AddChild(view)
+
+    local lobbyView = require "lobby/scripts/lobbyView"
+	lobbyView.show()
 
     self.win:Hide()
     self.win:Dispose()
@@ -141,7 +140,7 @@ function LoginView:quicklyLogin()
                         -- TODO: show error msg
                         logger.debug("quickly login error, errCode:", quicklyLoginReply.result)
                     end
-                    -- logger.debug("quicklyLoginReply", quicklyLoginReply)
+                    logger.debug("quicklyLoginReply", quicklyLoginReply)
 
 				end
 				resp:Dispose()
