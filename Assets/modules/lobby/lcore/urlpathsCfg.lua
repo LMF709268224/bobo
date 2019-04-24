@@ -13,11 +13,16 @@ local UrlPaths = {
 	updateDownload = "/lobby/upgrade/download",
 	gameWebsocketMonkey = "/game/%s/ws/monkey",
 	gameWebsocketPlay = "/game/%s/ws/play",
+
 	rootURL = "http://localhost:3002",
+
 	quicklyLogin = "/lobby/uuid/trust/quicklyLogin",
 	accountLogin = "/lobby/uuid/trust/accountLogin",
 	wxLogin = "/lobby/uuid/trust/wxLogin",
-	register = "/lobby/uuid/trust/register"
+	register = "/lobby/uuid/trust/register",
+
+	chat = "/lobby/uuid/untrust/chat"
+
 }
 
 return UrlPaths
