@@ -49,7 +49,12 @@ public static class NetHelper
         var bs = UnityWebRequestLocalGet(src);
         System.IO.File.WriteAllBytes(dst, bs);
     }
-
+    /// <summary>
+    /// 把字节数组写入到文件，如果已经存在同名文件则覆盖
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="bytes"></param>
+    /// <returns></returns>
     public static bool WriteBytesToFile(string path, byte[] bytes)
     {
         bool result = false;
@@ -65,7 +70,11 @@ public static class NetHelper
         
         return result;
     }
-
+    /// <summary>
+    /// 计算MD5
+    /// </summary>
+    /// <param name="bytes"></param>
+    /// <returns></returns>
     public static string MD5(byte[] bytes)
     {
         if (bytes == null || bytes.Length < 1)
@@ -94,7 +103,10 @@ public static class NetHelper
             return sBuilder.ToString();
         }
     }
-
+    /// <summary>
+    /// 获得当前的网络连接状态
+    /// </summary>
+    /// <returns></returns>
     public static string NetworkTypeString()
     {
 
