@@ -14,7 +14,7 @@ local RoomView = require("scripts/roomView")
 local Player = require("scripts/player")
 local HandResultView = require("scripts/handResultView")
 local GameOverResultView = require("scripts/gameOverResultView")
-local fairy = require "lobby/lcore/fairygui"
+--local fairy = require "lobby/lcore/fairygui"
 
 -----------------------------------------------------------
 --初始化顶层消息响应handlers，有些消息例如ActionResultNotify
@@ -566,7 +566,7 @@ function Room:updateDisbandVoteView(msgDisbandNotify)
     if self.disbandVoteView then
         self.disbandVoteView:updateView(msgDisbandNotify)
     else
-        local viewObj = fairy.UIPackage.CreateObject("runfast", "disband_room")
+        local viewObj = _ENV.thisMod:CreateUIObject("runfast", "disband_room")
         local disbandVoteView = require("scripts/disbandVoteView")
         self.disbandVoteView = disbandVoteView.new(self, viewObj)
         self.disbandVoteView:updateView(msgDisbandNotify)

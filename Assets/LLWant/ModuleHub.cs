@@ -43,6 +43,8 @@ public class ModuleHub
     // 消息监听，例如游戏模块lua里面订阅消息，然后大厅发送消息给游戏模块
     private Dictionary<string, VoidStringLuaFunc> msgListeners = new Dictionary<string, VoidStringLuaFunc>();
 
+    private HashSet<FairyGUI.GObject> fuObjects = new HashSet<FairyGUI.GObject>();
+
     // delegate定义
     [XLua.CSharpCallLua]
     public delegate void VoidLuaFunc();
@@ -165,6 +167,17 @@ public class ModuleHub
  
         // 重设thisMod为null，取消和lua的关系，否则会luaenv dispose时抛异常: dispose with c# callback
         luaenv.Global.Set("thisMod", (object)null);
+
+        // 检查有没有泄漏UI组件，也即是不在GRoot中的组件
+        if (fuObjects.Count > 0)
+        {
+            foreach (var fuo in fuObjects)
+            {
+                Debug.LogError($"Game module {modName} leak component:{fuo.displayObject.gameObject.name}");
+            }
+
+            throw new System.Exception($"Game module {modName} leak component count:{fuObjects.Count}");
+        }
 
         // 卸载bundle包
         loader.Unload();
@@ -375,7 +388,6 @@ public class ModuleHub
     /// </summary>
     private void DoBackToLobby()
     {
-
         // 界面必须清空后才能进入子游戏
         var guiChildrenCount = FairyGUI.GRoot.inst._children.Count;
         if (guiChildrenCount > 0)
@@ -422,6 +434,20 @@ public class ModuleHub
             Debug.Log($"ModuleHub.AddUIPackage, path:{path}, package name:{p.name}");
             myUIPackage.Add(p.name);
         }
+    }
+
+    public FairyGUI.GObject CreateUIObject(string pkgName, string resName)
+    {
+        var gof = FairyGUI.UIPackage.CreateObject(pkgName, resName);
+        if (gof != null && gof.displayObject != null)
+        {
+            fuObjects.Add(gof);
+            gof.onDisposing.Add((c) => {
+                var go = (FairyGUI.GObject)c.data;
+                fuObjects.Remove(go);
+            });
+        }
+        return gof;
     }
 
     /// <summary>

@@ -79,7 +79,7 @@ end
 
 local function testLobbyUI()
 	_ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
-	local view = fairy.UIPackage.CreateObject("lobby_main", "Main")
+	local view = _ENV.thisMod:CreateUIObject("lobby_main", "Main")
 	fairy.GRoot.inst:AddChild(view)
 
 	local friendBtn = view:GetChild("n1")

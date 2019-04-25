@@ -12,7 +12,7 @@ function Dialog.showDialog(msg, callBackOK, callBackCancel)
     else
         logger.debug("showDialog viewNode is nil.")
         _ENV.thisMod:AddUIPackage("lobby/fui_dialog/lobby_dialog")
-        local view = fairy.UIPackage.CreateObject("lobby_dialog", "dialog")
+        local view = _ENV.thisMod:CreateUIObject("lobby_dialog", "dialog")
 
         local win = fairy.Window()
         win.contentPane = view

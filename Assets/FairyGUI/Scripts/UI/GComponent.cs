@@ -45,7 +45,6 @@ namespace FairyGUI
 		Controller _applyingController;
 
 		EventListener _onDrop;
-        EventListener _onDisposing;
 
 		public GComponent()
 		{
@@ -68,12 +67,6 @@ namespace FairyGUI
 
 		override public void Dispose()
 		{
-            if (_onDisposing != null)
-            {
-                _onDisposing.Call(this);
-                _onDisposing.Clear();
-            }
-
             ClearTimers();
 
             int cnt = _transitions.Count;
@@ -196,11 +189,6 @@ namespace FairyGUI
 		{
 			get { return _onDrop ?? (_onDrop = new EventListener(this, "onDrop")); }
 		}
-
-        public EventListener onDisposing
-        {
-            get { return _onDisposing ?? (_onDisposing = new EventListener(this, "onDisposing")); }
-        }
 
         /// <summary>
         /// Draw call optimization switch.

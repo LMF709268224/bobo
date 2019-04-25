@@ -18,7 +18,7 @@ function LoginView.showLoginView()
     else
         logger.debug("showLoginView viewNode is nil.")
         _ENV.thisMod:AddUIPackage("lobby/fui_login/lobby_login")
-        local view = fairy.UIPackage.CreateObject("lobby_login", "login")
+        local view = _ENV.thisMod:CreateUIObject("lobby_login", "login")
 
         local win = fairy.Window()
         win.contentPane = view
@@ -39,7 +39,6 @@ function LoginView.showLoginView()
                 win:Dispose()
             end
         )
-
 
         view.onClick:Set(
             function()
@@ -110,23 +109,22 @@ end
 
 function LoginView:showLobbyView()
     -- _ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
-	-- local view = fairy.UIPackage.CreateObject("lobby_main", "Main")
+    -- local view = _ENV.thisMod:CreateUIObject("lobby_main", "Main")
     -- fairy.GRoot.inst:AddChild(view)
 
     local lobbyView = require "lobby/scripts/lobbyView"
-	   lobbyView.show()
+    lobbyView.show()
 
     self.win:Hide()
     self.win:Dispose()
     self.unityViewNode = nil
     self.win = nil
-
 end
 
 function LoginView:quicklyLogin()
     local account = CS.UnityEngine.PlayerPrefs.GetString("account", "")
     local quicklyLoginURL = urlpathsCfg.rootURL .. urlpathsCfg.quicklyLogin .. "?&account=" .. account
-     -- logger.trace("quicklyLogin, quicklyLoginURL:", quicklyLoginURL)
+    -- logger.trace("quicklyLogin, quicklyLoginURL:", quicklyLoginURL)
     httpHelper.get(
         self.viewNode,
         quicklyLoginURL,
