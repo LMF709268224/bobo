@@ -81,7 +81,7 @@ public class ModuleHub
     /// </summary>
     public void Tick()
     {
-        //luaenv.Tick();
+        luaenv.Tick();
 
         foreach(var s in subModules.Values)
         {

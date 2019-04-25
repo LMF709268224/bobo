@@ -95,6 +95,13 @@ end
 -- 	local loginView = require "lobby/scripts/login/loginView"
 -- 	loginView.showLoginView()
 -- end
+
+-- 下面这段字符串代码主要是给c#里面执行
+-- 每次新建一个子游戏的时候都会执行一下这段代码
+-- 目的是清理一下加载的文件，以及重设一下_ENV，确保
+-- 两个子游戏之间复用同样一个lua虚拟机而不会干扰彼此
+-- 当然任意时刻只能有一个子游戏正在运行着，不能同时运行
+-- 两个子游戏。大厅和子游戏则不同，他们是两个不同的lua虚拟机
 local launchSubModuleLuaCode = [[
 local logger = require 'lobby/lcore/logger'
 
