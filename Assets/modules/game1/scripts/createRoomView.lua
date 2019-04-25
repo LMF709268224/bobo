@@ -47,7 +47,7 @@ function CreateRoomView.new()
         logger.debug("CreateRoomView ---------------------")
     else
         _ENV.thisMod:AddUIPackage("fgui/runfast")
-        local viewObj = fairy.UIPackage.CreateObject("runfast", "room_create")
+        local viewObj = _ENV.thisMod:CreateUIObject("runfast", "room_create")
         CreateRoomView.unityViewNode = viewObj
 
         local win = fairy.Window()

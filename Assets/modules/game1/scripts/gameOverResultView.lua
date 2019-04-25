@@ -12,7 +12,7 @@ function GameOverResultView.new(room)
     -- 提高消息队列的优先级为1
     room.host.mq:blockNormal()
 
-    local viewObj = fairy.UIPackage.CreateObject("runfast", "game_over")
+    local viewObj = _ENV.thisMod:CreateUIObject("runfast", "game_over")
     GameOverResultView.unityViewNode = viewObj
 
     local win = fairy.Window()

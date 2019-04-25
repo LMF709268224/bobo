@@ -12,7 +12,7 @@ function ChatView.showChatView()
     else
         logger.debug("showChatView viewNode is nil.")
         _ENV.thisMod:AddUIPackage("lobby/fui_chat/lobby_chat")
-        local view = fairy.UIPackage.CreateObject("lobby_chat", "chat")
+        local view = _ENV.thisMod:CreateUIObject("lobby_chat", "chat")
 
         ChatView.viewNode = view
         --TODO:这里需要初始化列表
@@ -95,10 +95,10 @@ function ChatView:changeList(type)
 end
 
 function ChatView:testLists()
-    -- self.expressionItem = fairy.UIPackage.CreateObject("lobby_chat", "chat_expression_item")
-    -- self.historyMeItem = fairy.UIPackage.CreateObject("lobby_chat", "chat_history_me_item")
-    -- self.historyOtherItem = fairy.UIPackage.CreateObject("lobby_chat", "chat_history_other_item")
-    -- self.phraseItem = fairy.UIPackage.CreateObject("lobby_chat", "chat_phrase_item")
+    -- self.expressionItem = _ENV.thisMod:CreateUIObject("lobby_chat", "chat_expression_item")
+    -- self.historyMeItem = _ENV.thisMod:CreateUIObject("lobby_chat", "chat_history_me_item")
+    -- self.historyOtherItem = _ENV.thisMod:CreateUIObject("lobby_chat", "chat_history_other_item")
+    -- self.phraseItem = _ENV.thisMod:CreateUIObject("lobby_chat", "chat_phrase_item")
     self:updatePhraseList()
     self:updateExpressionList()
     -- self:updateHistoryList()
@@ -107,7 +107,7 @@ end
 -- 更新表情列表
 function ChatView:updateExpressionList()
     for _ = 1, 16 do
-        local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_expression_item")
+        local obj = _ENV.thisMod:CreateUIObject("lobby_chat", "chat_expression_item")
         self.expressionList:AddChild(obj)
     end
 end
@@ -146,12 +146,12 @@ end
 --     if i % 2 == 0 then
 --         -- self.phraseList:AddItemFromPool()
 --         -- self.phraseList.itemRenderer = RenderListItem
---         local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_history_me_item")
+--         local obj = _ENV.thisMod:CreateUIObject("lobby_chat", "chat_history_me_item")
 --         local t = obj:GetChild("text")
 --         t.text = "我说是多少打打 ad大神 阿萨德ad撒 啊大声地啊 阿萨德 ：" .. i
 --         self.historyList:AddChild(obj)
 --     else
---         local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_history_other_item")
+--         local obj = _ENV.thisMod:CreateUIObject("lobby_chat", "chat_history_other_item")
 --         local t = obj:GetChild("text")
 --         t.text = "ni说是ds  啊大声地啊 阿萨德 ：" .. i
 --         local n = obj:GetChild("name")

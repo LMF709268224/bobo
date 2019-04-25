@@ -8,7 +8,7 @@ local fairy = require "lobby/lcore/fairygui"
 _ENV.thisMod:AddUIPackage("lobby/fui_dialog/lobby_dialog")
 
 function Prompt.showPrompt(msg)
-	local view = fairy.UIPackage.CreateObject("lobby_dialog", "prompt")
+	local view = _ENV.thisMod:CreateUIObject("lobby_dialog", "prompt")
 	local label = view:GetChild("text")
 	label.text = msg
 

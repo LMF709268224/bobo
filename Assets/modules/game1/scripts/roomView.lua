@@ -31,7 +31,7 @@ function RoomView.new(room)
     _ENV.thisMod:AddUIPackage("bg/runfast_bg_2d")
     _ENV.thisMod:AddUIPackage("fgui/runfast")
     _ENV.thisMod:AddUIPackage("setting/runfast_setting")
-    local view = fairy.UIPackage.CreateObject("runfast", "desk")
+    local view = _ENV.thisMod:CreateUIObject("runfast", "desk")
     fairy.GRoot.inst:AddChild(view)
 
     -- fairy.GRoot.inst:SetContentScaleFactor(1136, 640, fairy.UIContentScaler.ScreenMatchMode.MatchWidthOrHeight)

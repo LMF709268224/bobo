@@ -21,7 +21,11 @@ public class Boot : MonoBehaviour
     private FairyGUILoader floader;
 
     // Boot的静态唯一实例
-    private static Boot instance;
+    internal static Boot instance;
+    // 游戏模块专用的lua虚拟机
+    internal XLua.LuaEnv gameLuaEnv;
+    // 大厅专用的lua虚拟机
+    internal XLua.LuaEnv lobbyLuaEnv;
 
     // Start is called before the first frame update
     void Start()
@@ -36,8 +40,13 @@ public class Boot : MonoBehaviour
         System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
         stopWatch.Start();
 
+        lobbyLuaEnv = new XLua.LuaEnv();
+        gameLuaEnv = new XLua.LuaEnv();
+        LuaEnvInit.AddBasicBuiltin(lobbyLuaEnv);
+        LuaEnvInit.AddBasicBuiltin(gameLuaEnv);
+
         // 启动lobby大厅模块
-        lobby = new ModuleHub("lobby", null, this);
+        lobby = new ModuleHub("lobby", null, this, lobbyLuaEnv);
 
         floader = new FairyGUILoader(lobby);
 
@@ -83,6 +92,16 @@ public class Boot : MonoBehaviour
         {
             lobby.OnDestroy();
             lobby = null;
+        }
+
+        if (gameLuaEnv != null)
+        {
+            gameLuaEnv.Dispose();
+        }
+
+        if (lobbyLuaEnv != null)
+        {
+            lobbyLuaEnv.Dispose();
         }
     }
 

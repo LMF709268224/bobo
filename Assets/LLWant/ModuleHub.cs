@@ -43,6 +43,8 @@ public class ModuleHub
     // 消息监听，例如游戏模块lua里面订阅消息，然后大厅发送消息给游戏模块
     private Dictionary<string, VoidStringLuaFunc> msgListeners = new Dictionary<string, VoidStringLuaFunc>();
 
+    private HashSet<FairyGUI.GObject> fuObjects = new HashSet<FairyGUI.GObject>();
+
     // delegate定义
     [XLua.CSharpCallLua]
     public delegate void VoidLuaFunc();
@@ -60,11 +62,11 @@ public class ModuleHub
     /// <param name="modName">模块的名字</param>
     /// <param name="parent">父模块，例如游戏模块的父模块是大厅模块</param>
     /// <param name="mountNode">视图节点，模块所有的view都挂在这个节点上</param>
-    public ModuleHub(string modName, ModuleHub parent, MonoBehaviour monoBehaviour)
+    public ModuleHub(string modName, ModuleHub parent, MonoBehaviour monoBehaviour, XLua.LuaEnv luaenv)
     {
         this.modName = modName;
         this.parent = parent;
-        luaenv = new XLua.LuaEnv();
+        this.luaenv = luaenv;
         this.monoBehaviour = monoBehaviour;
 
         // 选择模块的使用的加载器
@@ -76,7 +78,7 @@ public class ModuleHub
     /// </summary>
     public void Tick()
     {
-        luaenv.Tick();
+        //luaenv.Tick();
 
         foreach(var s in subModules.Values)
         {
@@ -89,8 +91,11 @@ public class ModuleHub
     /// </summary>
     public void Launch(string jsonString = null)
     {
+        System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+        stopWatch.Start();
+
         // 给lua虚拟机注入一些模块，例如jason模块，protocol buffer模块等等
-        LuaEnvInit.AddBasicBuiltin(luaenv);
+        //LuaEnvInit.AddBasicBuiltin(luaenv);
 
         // 设置this到lua虚拟机中，脚本可以通过thisMod访问module hub对象
         luaenv.Global.Set("thisMod", this);
@@ -105,6 +110,9 @@ public class ModuleHub
         // 约定每一个模块都必须有一个main.lua文件，从这个文件开始执行
         var entryLuaFile = $"{modName}/main";
         luaenv.DoString($"require '{entryLuaFile}'", entryLuaFile);
+
+        stopWatch.Stop();
+        Debug.Log($"module {modName} launch total time:{stopWatch.Elapsed.TotalMilliseconds} milliseconds");
     }
 
     /// <summary>
@@ -156,11 +164,20 @@ public class ModuleHub
 
         // 执行lua中定义的cleanup函数
         CallCleanup();
-
+ 
         // 重设thisMod为null，取消和lua的关系，否则会luaenv dispose时抛异常: dispose with c# callback
         luaenv.Global.Set("thisMod", (object)null);
-        // 销毁lua虚拟机
-        luaenv.Dispose();
+
+        // 检查有没有泄漏UI组件，也即是不在GRoot中的组件
+        if (fuObjects.Count > 0)
+        {
+            foreach (var fuo in fuObjects)
+            {
+                Debug.LogError($"Game module {modName} leak component:{fuo.displayObject.gameObject.name}");
+            }
+
+            throw new System.Exception($"Game module {modName} leak component count:{fuObjects.Count}");
+        }
 
         // 卸载bundle包
         loader.Unload();
@@ -223,6 +240,7 @@ public class ModuleHub
         }
 
         // 把加载器增加到lua虚拟机中
+        luaenv.customLoaders.Clear();
         luaenv.AddLoader((ref string filepath) =>
         {
             var patch = filepath;
@@ -328,7 +346,7 @@ public class ModuleHub
         }
 
         // 新建子模块，并添加到子模块列表
-        var m = new ModuleHub(gameModName, this, monoBehaviour);
+        var m = new ModuleHub(gameModName, this, monoBehaviour, Boot.instance.gameLuaEnv);
         subModules.Add(gameModName, m);
 
         // 执行模块目录下的mian.lua文件
@@ -370,7 +388,6 @@ public class ModuleHub
     /// </summary>
     private void DoBackToLobby()
     {
-
         // 界面必须清空后才能进入子游戏
         var guiChildrenCount = FairyGUI.GRoot.inst._children.Count;
         if (guiChildrenCount > 0)
@@ -401,7 +418,7 @@ public class ModuleHub
     /// <param name="f"></param>
     public void RegisterCleanup(VoidLuaFunc f)
     {
-        cleanup.Add(f);
+        cleanup.Insert(0, f);
     }
 
     /// <summary>
@@ -417,6 +434,20 @@ public class ModuleHub
             Debug.Log($"ModuleHub.AddUIPackage, path:{path}, package name:{p.name}");
             myUIPackage.Add(p.name);
         }
+    }
+
+    public FairyGUI.GObject CreateUIObject(string pkgName, string resName)
+    {
+        var gof = FairyGUI.UIPackage.CreateObject(pkgName, resName);
+        if (gof != null && gof.displayObject != null)
+        {
+            fuObjects.Add(gof);
+            gof.onDisposing.Add((c) => {
+                var go = (FairyGUI.GObject)c.data;
+                fuObjects.Remove(go);
+            });
+        }
+        return gof;
     }
 
     /// <summary>
