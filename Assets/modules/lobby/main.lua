@@ -95,6 +95,35 @@ end
 -- 	local loginView = require "lobby/scripts/login/loginView"
 -- 	loginView.showLoginView()
 -- end
+local launchSubModuleLuaCode = [[
+local logger = require 'lobby/lcore/logger'
+
+local function onGameExit()
+	logger.trace('onGameExit:', _ENV.thisMod.modName)
+	for k,_ in pairs(package.loaded) do
+		package.loaded[k] = nil
+	end
+end
+
+local function onGameEnter()
+	logger.trace('onGameEnter:', _ENV.thisMod.modName)
+	local env = {}
+	local origin = _ENV
+	local newenv = setmetatable({}, {
+		__index = function (_, k)
+			local v = env[k]
+			if v == nil then return origin[k] end
+			return v
+		end,
+		__newindex = env,
+	})
+
+	_ENV = newenv
+	_ENV.thisMod:RegisterCleanup(onGameExit)
+end
+
+onGameEnter()
+]]
 
 local function main()
 	local lobbyVer = lenv.VER_STR
@@ -107,6 +136,7 @@ local function main()
 	logger.warn("lobby/Boot begin, lobby version:", lobbyVer, ",csharp version:", csharpVer)
 
 	_ENV.thisMod:RegisterCleanup(shutdownCleanup)
+	_ENV.thisMod.launchSubModuleLuaCode = launchSubModuleLuaCode
 
 	-- 启动cortouine
 	-- local co = coroutine.create(mainEntryCoroutine)
