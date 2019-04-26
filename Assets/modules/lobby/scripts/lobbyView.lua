@@ -38,6 +38,13 @@ function LobbyView:show()
         -- LobbyView.win = win
 
         LobbyView:initView()
+
+		logger.debug("_ENV.thisMod.backToLobby")
+		-- c# 会调用本函数切换回大厅
+		_ENV.backToLobby = function()
+			logger.debug("backToLobby")
+			fairy.GRoot.inst:AddChild(view)
+		end
     end
 
     local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
@@ -74,7 +81,7 @@ function LobbyView:initView()
     )
 
     local createBtn = self.viewNode:GetChild("n4")
-    createBtn.onClick:Add(
+    createBtn.onClick:Set(
         function()
             self:onCreateClick()
         end

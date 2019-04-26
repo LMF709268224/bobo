@@ -1,9 +1,6 @@
 local logger = require "lobby/lcore/logger"
 local lenv = require "lobby/lenv"
---local errHelper = require 'lobby/LobbyErrHelper'
 local fairy = require "lobby/lcore/fairygui"
--- local msgCenter = require "lobby/scripts/msgCenter"
--- local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
 local CS = _ENV.CS
 
 logger.warn("lobby main startup")
@@ -19,99 +16,47 @@ local function print_func_ref_by_csharp()
 	end
 end
 
-local mylobbyView = nil
-
--- local myMsgCenter = nil
-
 -- 由C#调用
 local function shutdownCleanup()
-	if mylobbyView ~= nil then
-		mylobbyView:Dispose()
-	end
-
 	logger.warn("lobby main cleanup")
 	print_func_ref_by_csharp()
 end
 
--- local gooo = nil
--- local animation = require "lobby/lcore/animations"
--- local function onFriendClick()
--- 	-- local anchor = gooo:GetChild('n32')
--- 	-- animation.play('animations/Effects_huojian.prefab', gooo, anchor.x, anchor.y)
+local launchSubModuleLuaCode = [[
+local logger = require 'lobby/lcore/logger'
 
--- 	--testGame1UI()
--- 	mylobbyView = fairy.GRoot.inst:GetChildAt(0)
--- 	fairy.GRoot.inst:RemoveChild(mylobbyView)
--- 	fairy.GRoot.inst:CleanupChildren()
-
--- 	local parameters = {
--- 		gameType = "1"
--- 	}
-
--- 	local rapidjson = require("rapidjson")
--- 	local jsonString = rapidjson.encode(parameters)
--- 	_ENV.thisMod:LaunchGameModule("game1", jsonString)
--- end
-
--- local function onCreateClick()
--- 	--testGame1UI()
--- 	mylobbyView = fairy.GRoot.inst:GetChildAt(0)
--- 	fairy.GRoot.inst:RemoveChild(mylobbyView)
--- 	fairy.GRoot.inst:CleanupChildren()
-
--- 	local parameters = {
--- 		gameType = "2"
--- 	}
-
--- 	local rapidjson = require("rapidjson")
--- 	local jsonString = rapidjson.encode(parameters)
--- 	_ENV.thisMod:LaunchGameModule("game1", jsonString)
--- end
-
--- c# 会调用本函数切换回大厅
-_ENV.backToLobby = function()
-	logger.debug("backToLobby")
-	fairy.GRoot.inst:AddChild(mylobbyView)
-	mylobbyView = nil
+local function onGameExit()
+    logger.trace('onGameExit:', _ENV.thisMod.modName)
+    for k,_ in pairs(package.loaded) do
+        package.loaded[k] = nil
+    end
 end
+
+local function onGameEnter()
+    logger.trace('onGameEnter:', _ENV.thisMod.modName)
+    local env = {}
+    local origin = _ENV
+    local newenv = setmetatable({}, {
+        __index = function (_, k)
+            local v = env[k]
+            if v == nil then return origin[k] end
+            return v
+        end,
+        __newindex = env,
+    })
+
+    _ENV = newenv
+    _ENV.thisMod:RegisterCleanup(onGameExit)
+end
+
+onGameEnter()
+]]
 
 -- 子游戏模块会调用本函数（通过跨lua虚拟机调用）
 _ENV.gameServerScheme = function()
 	-- 以后这个host也统一到某个lua文件中，由它结合防DDOS流程来给出
 	return "ws://172.18.3.126:3001"
 end
-
--- local function testLobbyUI()
--- 	_ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
--- 	local view = _ENV.thisMod:CreateUIObject("lobby_main", "Main")
--- 	fairy.GRoot.inst:AddChild(view)
-
--- 	local friendBtn = view:GetChild("n1")
--- 	friendBtn.onClick:Set(onFriendClick)
-
--- 	-- gooo = view
-
--- 	local createBtn = view:GetChild("n4")
--- 	createBtn.onClick:Set(onCreateClick)
-
--- 	-- local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
--- 	-- local lobbyMsgCenter = msgCenter:new(urlpathsCfg.lobbyWebsocket .. "?tk=" .. tk, view)
--- 	-- myMsgCenter = lobbyMsgCenter
-
--- 	-- logger.debug("msgCenter errCount:", lobbyMsgCenter.connectErrorCount)
-
--- 	-- local co =
--- 	-- 	coroutine.create(
--- 	-- 	function()
--- 	-- 		lobbyMsgCenter:start()
--- 	-- 	end
--- 	-- )
-
--- 	-- local r, err = coroutine.resume(co)
--- 	-- if not r then
--- 	-- 	logger.error(debug.traceback(co, err))
--- 	-- end
--- end
 
 local function showLoginView()
 	local loginView = require "lobby/scripts/login/loginView"
@@ -130,15 +75,7 @@ local function main()
 	fairy.GRoot.inst:SetContentScaleFactor(1136, 640)
 
 	_ENV.thisMod:RegisterCleanup(shutdownCleanup)
-
-	-- 启动cortouine
-	-- local co = coroutine.create(mainEntryCoroutine)
-	-- local r, err = coroutine.resume(co)
-	-- if not r then
-	-- logger.error(debug.traceback(co, err))
-	-- end
-
-	-- testLobbyUI()
+	_ENV.thisMod.launchSubModuleLuaCode = launchSubModuleLuaCode
 
 	showLoginView()
 end
