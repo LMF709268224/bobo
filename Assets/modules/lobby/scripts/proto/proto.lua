@@ -7,7 +7,7 @@ local logger = require "lobby/lcore/logger"
 local PROTO = {}
 
 local function loadProtofile()
-    local pbfile = "scripts/proto/lobby.pb"
+    local pbfile = "lobby/scripts/proto/lobby.pb"
     logger.debug("begin to load protocolbuf descriptor file:", pbfile)
 
     local buffer = _ENV.thisMod.loader:LoadTextAsset(pbfile)

@@ -7,6 +7,7 @@ local fairy = require "lobby/lcore/fairygui"
 local httpHelper = require "lobby/lcore/httpHelper"
 local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
 local proto = require "lobby/scripts/proto/proto"
+local rapidjson = require("rapidjson")
 local CS = _ENV.CS
 
 function ChatView.showChatView()
@@ -30,7 +31,7 @@ function ChatView.showChatView()
             "lobby_chat",
             function(str)
                 logger.debug("SetMsgListener : ", str)
-                -- ChatView:addMsg()
+                ChatView:addMsg(str)
             end
         )
     end
@@ -39,6 +40,9 @@ function ChatView.showChatView()
     -- local screenHeight = CS.UnityEngine.Screen.height
     ChatView.viewNode.x = screenWidth - 500
     ChatView.viewNode.y = 0
+    --自己的信息
+    local uu = CS.UnityEngine.PlayerPrefs.GetString("userInfo", "")
+    ChatView.userInfo = rapidjson.decode(uu)
 end
 
 function ChatView:initView()
@@ -160,10 +164,11 @@ function ChatView:sendMsg(str)
     -- local co = coroutine.running()
     -- 请求服务器获取模块更新信息
     local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
+    local info = self.userInfo
     local url = urlpathsCfg.rootURL .. urlpathsCfg.chat .. "?tk=" .. tk
-    local rapidjson = require("rapidjson")
-    local jsonString = rapidjson.encode({msg = str})
+    local jsonString = rapidjson.encode({msg = str, url = "", nickname = info.nickName, sex = "", index = 0})
     local chat = {
+        from = info.userID,
         scope = proto.lobby.ChatScopeType.InRoom,
         dataType = proto.lobby.ChatDataType.Text,
         data = jsonString
@@ -175,27 +180,31 @@ function ChatView:sendMsg(str)
         body,
         function(req, resp)
             if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
-                logger.debug("send msg ok")
-                logger.debug("---------------------: ", resp.Data)
+                logger.debug("send msg ok--------: ", resp.Data)
             else
                 logger.debug("send msg error : ", req.State)
             end
         end
     )
     -- coroutine.yield()
-    self:addMsg(true, str)
+    -- self:addMsg(true, str)
 end
 
-function ChatView:addMsg(isMe, str)
+function ChatView:addMsg(str)
+    local connectReply = proto.decodeMessage("lobby.MsgChat", str)
+    -- logger.debug("MsgCenter websocket ------ result:", connectReply)
+
     local s = #self.msgList + 1
-    self.msgList[s] = {fromMe = isMe, msg = str}
+    self.msgList[s] = connectReply
     self.historyList.numItems = s
     self.historyList.scrollPane:ScrollBottom()
 end
 
 function ChatView:getHistoryListItemResource(index)
-    local msg = self.msgList[index + 1]
-    if msg.fromMe then
+    local msgChat = self.msgList[index + 1]
+    -- logger.debug("self.userInfo.userID : ", self.userInfo.userID)
+    -- logger.debug("msgChat.from : ", msgChat.from)
+    if tostring(msgChat.from) == tostring(self.userInfo.userID) then
         return "ui://lobby_chat/chat_history_me_item"
     else
         return "ui://lobby_chat/chat_history_other_item"
@@ -203,8 +212,9 @@ function ChatView:getHistoryListItemResource(index)
 end
 
 function ChatView:renderHistoryListItem(index, obj)
-    local msg = self.msgList[index + 1]
+    local msgChat = self.msgList[index + 1]
     local t = obj:GetChild("text")
+    local msg = rapidjson.decode(msgChat.data)
     t.text = msg.msg
 end
 

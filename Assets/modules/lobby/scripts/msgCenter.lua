@@ -1,4 +1,3 @@
-
 --[[
 外面调用getSingleton获得唯一实例单件
 ]]
@@ -23,7 +22,6 @@ end
 
 function MsgCenter:start()
     while true do
-
         self:connectServer()
 
         logger.debug("MsgCenter, retry:", self.retry)
@@ -113,7 +111,6 @@ function MsgCenter:waitConnect()
     return -1
 end
 
-
 ---------------------------------------
 --显示重连对话框，如果用户选择重试
 --则return true，否则返回false
@@ -141,7 +138,10 @@ function MsgCenter:dispatchWeboscketMessage(lobbyMessage)
         logger.debug("MsgCenter websocket connect result:", connectReply.result)
         return
     end
-
+    if op == msgCodeEnum.OPChat then
+        _ENV.thisMod:SendMsgToSubModule("lobby_chat", tostring(lobbyMessage.Data))
+        return
+    end
     local handler = self.Handlers[op]
     if handler == nil then
         logger.debug("MsgCenter:dispatchWeboscketMessage, no handler for:", op)
