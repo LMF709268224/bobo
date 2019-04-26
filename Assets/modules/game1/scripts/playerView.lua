@@ -45,12 +45,6 @@ function PlayerView.new(viewUnityNode, viewChairID)
     -- local operationPanel = view:GetChild("n31")
     -- 头像相关
     playerView:initHeadView(view)
-    -- 手牌
-    playerView:initHands(view)
-    -- 出牌列表
-    playerView:initDiscards(view)
-    -- 明牌列表
-    playerView:initLights(view)
     -- 玩家状态
     playerView:initPlayerStatus()
     -- -- 滑动拖牌
@@ -75,7 +69,21 @@ function PlayerView.new(viewUnityNode, viewChairID)
 
     return playerView
 end
-function PlayerView:initLights(view)
+
+function PlayerView:initCardLists()
+    -- 手牌
+    self:initHands()
+    -- 出牌列表
+    self:initDiscards()
+    -- 明牌列表
+    self:initLights()
+end
+
+function PlayerView:initLights()
+    if self.lights then
+        return
+    end
+    local view = self.myView
     -- 手牌列表
     local lights = {}
     if (self.viewChairID ~= 1) then
@@ -97,7 +105,12 @@ function PlayerView:initLights(view)
         self.lights = lights
     end
 end
-function PlayerView:initHands(view)
+
+function PlayerView:initHands()
+    if self.hands then
+        return
+    end
+    local view = self.myView
     -- 手牌列表
     local hands = {}
     local handsOriginPos = {}
@@ -137,7 +150,11 @@ function PlayerView:initHands(view)
     self.handsOriginPos = handsOriginPos --记忆原始的手牌位置，以便点击手牌时可以往上弹起以及恢复
     self.handsClickCtrls = handsClickCtrls -- 手牌点击时控制数据结构
 end
-function PlayerView:initDiscards(view)
+function PlayerView:initDiscards()
+    if self.discards then
+        return
+    end
+    local view = self.myView
     -- 打出的牌列表
     local discards = {}
     local myHandTilesNode = view:GetChild("discards")
@@ -315,7 +332,7 @@ function PlayerView:hideAll()
     for _, v in ipairs(self.head) do
         v.visible = false
     end
-    if self.viewChairID ~= 1 then
+    if self.handsNumber then
         self.handsNumber.text = ""
     end
     self:hideHands()
@@ -347,9 +364,10 @@ end
 --隐藏打出去的牌列表
 ------------------------------------
 function PlayerView:hideDiscarded()
-    local discards = self.discards
-    for _, d in ipairs(discards) do
-        d.visible = false
+    if self.discards then
+        for _, d in ipairs(self.discards) do
+            d.visible = false
+        end
     end
 end
 
@@ -369,8 +387,10 @@ end
 --其实是把整行都隐藏了
 -------------------------------------
 function PlayerView:hideHands()
-    for _, h in ipairs(self.hands) do
-        h.visible = false
+    if self.hands then
+        for _, h in ipairs(self.hands) do
+            h.visible = false
+        end
     end
     if self.handsNumber then
         self.handsNumber.visible = false

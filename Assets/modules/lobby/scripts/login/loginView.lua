@@ -101,10 +101,20 @@ function LoginView:saveQuicklyLoginReply(quicklyLoginReply)
     CS.UnityEngine.PlayerPrefs.SetString("account", quicklyLoginReply.account)
     CS.UnityEngine.PlayerPrefs.SetString("token", quicklyLoginReply.token)
 
-    local rapidjson = require("rapidjson")
-    local jsonString = rapidjson.encode(quicklyLoginReply.userInfo)
+    local userInfo = {}
+    userInfo.userID = quicklyLoginReply.userInfo.userID
+    userInfo.nickName = quicklyLoginReply.userInfo.userID
+    userInfo.sex = quicklyLoginReply.userInfo.sex
+    userInfo.province = quicklyLoginReply.userInfo.province
+    userInfo.city = quicklyLoginReply.userInfo.city
+    userInfo.country = quicklyLoginReply.userInfo.country
+    userInfo.headImgUrl = quicklyLoginReply.userInfo.headImgUrl
+    userInfo.phone = quicklyLoginReply.userInfo.phone
 
+    local rapidjson = require("rapidjson")
+    local jsonString = rapidjson.encode(userInfo)
     CS.UnityEngine.PlayerPrefs.SetString("userInfo", jsonString)
+
 end
 
 function LoginView:showLobbyView()

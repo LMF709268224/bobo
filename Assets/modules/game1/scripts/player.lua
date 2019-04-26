@@ -177,6 +177,7 @@ end
 function Player:hand2UI(wholeMove, isShow)
     --先取消所有手牌显示
     local playerView = self.playerView
+    playerView:initCardLists()
     playerView:hideHands()
 
     if self:isMe() then

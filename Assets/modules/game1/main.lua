@@ -46,12 +46,12 @@ local function main()
 	if jsonString ~= nil then
 		local rapidjson = require("rapidjson")
 		local json = rapidjson.decode(jsonString)
-		logger.debug("launchArgs:",json)
-		if json.abc == "1" then
-			logger.debug("abc == 1")
+		logger.debug("launchArgs:", json)
+		if json.gameType == "1" then
+			-- logger.debug("abc == 1")
 			goTestGame()
-		elseif json.abc == "2" then
-			logger.debug("abc == 2")
+		elseif json.gameType == "2" then
+			-- logger.debug("abc == 2")
 			testCreateUI()
 		end
 	end
