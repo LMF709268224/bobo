@@ -15,7 +15,7 @@ function ChatView.showChatView()
     else
         logger.debug("showChatView viewNode is nil.")
         _ENV.thisMod:AddUIPackage("lobby/fui_chat/lobby_chat")
-        local view = fairy.UIPackage.CreateObject("lobby_chat", "chat")
+        local view = _ENV.thisMod:CreateUIObject("lobby_chat", "chat")
 
         ChatView.viewNode = view
         ChatView:initView()
@@ -119,7 +119,7 @@ end
 -- 更新表情列表
 function ChatView:updateExpressionList()
     for _ = 1, 16 do
-        local obj = fairy.UIPackage.CreateObject("lobby_chat", "chat_expression_item")
+        local obj = _ENV.thisMod:CreateUIObject("lobby_chat", "chat_expression_item")
         self.expressionList:AddChild(obj)
     end
 end

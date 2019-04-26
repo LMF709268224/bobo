@@ -135,8 +135,9 @@ namespace FairyGUI
 		EventListener _onDragMove;
 		EventListener _onDragEnd;
 		EventListener _onGearStop;
+        EventListener _onDisposing;
 
-		internal protected bool underConstruct;
+        internal protected bool underConstruct;
 		internal float _width;
 		internal float _height;
 		internal float _rawWidth;
@@ -293,11 +294,15 @@ namespace FairyGUI
 		{
 			get { return _onDragEnd ?? (_onDragEnd = new EventListener(this, "onDragEnd")); }
 		}
+        public EventListener onDisposing
+        {
+            get { return _onDisposing ?? (_onDisposing = new EventListener(this, "onDisposing")); }
+        }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		public EventListener onGearStop
+        /// <summary>
+        /// 
+        /// </summary>
+        public EventListener onGearStop
 		{
 			get { return _onGearStop ?? (_onGearStop = new EventListener(this, "onGearStop")); }
 		}
@@ -1601,6 +1606,12 @@ namespace FairyGUI
 				return;
 
 			_disposed = true;
+
+            if (_onDisposing != null)
+            {
+                _onDisposing.Call(this);
+                _onDisposing.Clear();
+            }
 
             RemoveFromParent();
 			RemoveEventListeners();

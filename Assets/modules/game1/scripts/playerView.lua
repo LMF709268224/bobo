@@ -5,7 +5,7 @@
 local PlayerView = {}
 
 local mt = {__index = PlayerView}
-local fairy = require "lobby/lcore/fairygui"
+--local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local animation = require "lobby/lcore/animations"
@@ -84,7 +84,7 @@ function PlayerView:initLights(view)
             local cname = "n" .. i
             local go = tilesNode:GetChild(cname)
             if go ~= nil then
-                local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
+                local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number_lo")
                 card.scale = go.scale
                 card.position = go.position
                 tilesNode:AddChild(card)
@@ -108,7 +108,7 @@ function PlayerView:initHands(view)
             local cname = "n" .. i
             local go = myHandTilesNode:GetChild(cname)
             if go ~= nil then
-                local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
+                local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number_lo")
                 card.position = go.position
                 myHandTilesNode:AddChild(card)
                 local btn = card:GetChild("n0")
@@ -145,7 +145,7 @@ function PlayerView:initDiscards(view)
         local cname = "n" .. i
         local go = myHandTilesNode:GetChild(cname)
         if go ~= nil then
-            local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
+            local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number_lo")
             card.scale = go.scale
             card.position = go.position
             myHandTilesNode:AddChild(card)

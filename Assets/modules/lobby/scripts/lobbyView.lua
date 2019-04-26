@@ -22,7 +22,7 @@ function LobbyView:show()
     else
         logger.debug("LobbyView viewNode is nil.")
         _ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
-        local view = fairy.UIPackage.CreateObject("lobby_main", "Main")
+        local view = _ENV.thisMod:CreateUIObject("lobby_main", "Main")
         fairy.GRoot.inst:AddChild(view)
 
         local win = fairy.Window()
@@ -36,24 +36,25 @@ function LobbyView:show()
     end
 
     local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
-    local url = urlpathsCfg.lobbyWebsocket..'?tk='..tk
+    local url = urlpathsCfg.lobbyWebsocket .. "?tk=" .. tk
 
     logger.debug("lobby websocket url:", url)
 
-    local lobbyMsgCenter = msgCenter:new(urlpathsCfg.lobbyWebsocket..'?tk='..tk, LobbyView.viewNode)
+    local lobbyMsgCenter = msgCenter:new(urlpathsCfg.lobbyWebsocket .. "?tk=" .. tk, LobbyView.viewNode)
     LobbyView.msgCenter = lobbyMsgCenter
 
     logger.debug("msgCenter errCount:", lobbyMsgCenter.connectErrorCount)
 
-    local co = coroutine.create(
+    local co =
+        coroutine.create(
         function()
             lobbyMsgCenter:start()
         end
     )
 
-	local r, err = coroutine.resume(co)
-	if not r then
-	logger.error(debug.traceback(co, err))
+    local r, err = coroutine.resume(co)
+    if not r then
+        logger.error(debug.traceback(co, err))
     end
 
     LobbyView.win:Show()
@@ -61,27 +62,24 @@ end
 
 function LobbyView:initView()
     local friendBtn = self.viewNode:GetChild("n1")
-	friendBtn.onClick:Set(
+    friendBtn.onClick:Set(
         function()
             self:onFriendClick()
         end
     )
 
-	local createBtn = self.viewNode:GetChild("n4")
-	createBtn.onClick:Add(
+    local createBtn = self.viewNode:GetChild("n4")
+    createBtn.onClick:Add(
         function()
             self:onCreateClick()
         end
     )
 end
 
-
 function LobbyView:onFriendClick()
-
 end
 
 function LobbyView:onCreateClick()
-
 end
 
 return LobbyView

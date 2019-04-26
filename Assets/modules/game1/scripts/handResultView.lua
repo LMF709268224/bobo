@@ -19,7 +19,7 @@ function HandResultView.new(room)
     if HandResultView.unityViewNode then
         logger.debug("HandResultView ---------------------")
     else
-        local viewObj = fairy.UIPackage.CreateObject("runfast", "hand_result")
+        local viewObj = _ENV.thisMod:CreateUIObject("runfast", "hand_result")
         HandResultView.unityViewNode = viewObj
 
         local win = fairy.Window()
@@ -270,7 +270,7 @@ function HandResultView:initHands(view)
         local cname = "n" .. i
         local go = myHandTilesNode:GetChild(cname)
         if go ~= nil then
-            local card = fairy.UIPackage.CreateObject("runfast", "desk_poker_number_lo")
+            local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number_lo")
             card.position = go.position
             card.scale = go.scale
             myHandTilesNode:AddChild(card)
