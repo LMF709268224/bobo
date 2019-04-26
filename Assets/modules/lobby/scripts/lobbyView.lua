@@ -24,13 +24,18 @@ function LobbyView:show()
         _ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
         local view = _ENV.thisMod:CreateUIObject("lobby_main", "Main")
         fairy.GRoot.inst:AddChild(view)
-
-        local win = fairy.Window()
-        win.contentPane = view
-        win.modal = true
-
         LobbyView.viewNode = view
-        LobbyView.win = win
+
+        -- gooo = view
+
+        -- local createBtn = view:GetChild("n4")
+        -- createBtn.onClick:Set(LobbyView.onCreateClick)
+        -- local win = fairy.Window()
+        -- win.contentPane = view
+        -- win.modal = true
+
+        -- LobbyView.viewNode = view
+        -- LobbyView.win = win
 
         LobbyView:initView()
     end
@@ -57,7 +62,7 @@ function LobbyView:show()
         logger.error(debug.traceback(co, err))
     end
 
-    LobbyView.win:Show()
+    -- LobbyView.win:Show()
 end
 
 function LobbyView:initView()
@@ -77,6 +82,17 @@ function LobbyView:initView()
 end
 
 function LobbyView:onFriendClick()
+    local mylobbyView = fairy.GRoot.inst:GetChildAt(0)
+	fairy.GRoot.inst:RemoveChild(mylobbyView)
+	fairy.GRoot.inst:CleanupChildren()
+
+	local parameters = {
+		abc = "1"
+	}
+
+	local rapidjson = require("rapidjson")
+	local jsonString = rapidjson.encode(parameters)
+	_ENV.thisMod:LaunchGameModule("game1", jsonString)
 end
 
 function LobbyView:onCreateClick()
