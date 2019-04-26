@@ -24,6 +24,6 @@ LEnv.bestHTTP = {
 }
 
 --强制更新
-LEnv.forceUseUpgrade = true
+LEnv.forceUseUpgrade = false
 
 return LEnv

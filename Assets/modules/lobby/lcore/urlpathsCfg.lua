@@ -14,7 +14,7 @@ local UrlPaths = {
 	gameWebsocketMonkey = "/game/%s/ws/monkey",
 	gameWebsocketPlay = "/game/%s/ws/play",
 
-	rootURL = "http://localhost:3002",
+	rootURL = "http://172.18.3.126:3002",
 
 	quicklyLogin = "/lobby/uuid/trust/quicklyLogin",
 	accountLogin = "/lobby/uuid/trust/accountLogin",
@@ -23,7 +23,7 @@ local UrlPaths = {
 
 	chat = "/lobby/uuid/untrust/chat",
 
-	lobbyWebsocket = "ws://localhost:3002/lobby/uuid/ws/"
+	lobbyWebsocket = "ws://172.18.3.126:3002/lobby/uuid/ws/"
 
 }
 
