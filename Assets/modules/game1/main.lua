@@ -38,34 +38,7 @@ local function goTestGame()
 	end
 end
 
-local function onGameExit()
-	logger.trace('onGameExit:', version.MODULE_NAME)
-	for k,_ in pairs(package.loaded) do
-		package.loaded[k] = nil
-	end
-end
-
-local function onGameEnter()
-	logger.trace('onGameEnter:', version.MODULE_NAME)
-	local env = {}
-	local origin = _ENV
-	local newenv = setmetatable({}, {
-		__index = function (_, k)
-			local v = env[k]
-			if v == nil then return origin[k] end
-			return v
-		end,
-		__newindex = env,
-	})
-
-	_ENV = newenv
-
-	_ENV.thisMod:RegisterCleanup(onGameExit)
-end
-
 local function main()
-	onGameEnter()
-
 	logger.info("game ", version.MODULE_NAME, " startup, version:", version.VER_STR)
 	_ENV.MODULE_NAME = version.MODULE_NAME
 

@@ -43,7 +43,10 @@ public class ModuleHub
     // 消息监听，例如游戏模块lua里面订阅消息，然后大厅发送消息给游戏模块
     private Dictionary<string, VoidStringLuaFunc> msgListeners = new Dictionary<string, VoidStringLuaFunc>();
 
+    // 用来记录本模块创建的所有UI组件，用于跟踪UI组件是否泄漏
     private HashSet<FairyGUI.GObject> fuObjects = new HashSet<FairyGUI.GObject>();
+    // 如果不为空，则启动子模块时，先执行本字符串lua代码
+    public string launchSubModuleLuaCode;
 
     // delegate定义
     [XLua.CSharpCallLua]
@@ -78,7 +81,7 @@ public class ModuleHub
     /// </summary>
     public void Tick()
     {
-        //luaenv.Tick();
+        luaenv.Tick();
 
         foreach(var s in subModules.Values)
         {
@@ -89,13 +92,10 @@ public class ModuleHub
     /// <summary>
     /// 执行main.lua
     /// </summary>
-    public void Launch(string jsonString = null)
+    public void Launch(string luaCleanupCode = null, string jsonString = null)
     {
         System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
         stopWatch.Start();
-
-        // 给lua虚拟机注入一些模块，例如jason模块，protocol buffer模块等等
-        //LuaEnvInit.AddBasicBuiltin(luaenv);
 
         // 设置this到lua虚拟机中，脚本可以通过thisMod访问module hub对象
         luaenv.Global.Set("thisMod", this);
@@ -105,6 +105,18 @@ public class ModuleHub
         {
             // lua脚本中通过launchArgs访问该json字符串
             luaenv.Global.Set("launchArgs", jsonString);
+        }
+
+        // 如果有lua代码需要首先执行，则先执行
+        if (luaCleanupCode != null)
+        {
+            // 目前只有大厅模块启动子游戏模块时，该参数才不为null
+            // 指向大厅模块lua脚本中提供的一段代码，这段代码的作用是
+            // 重设一下游戏模块的lua虚拟机的_ENV和清理已经加载的脚本文件
+            // 这是需要的，因为所有的游戏模块反复使用同一个lua虚拟机，
+            // 例如如果不清理已经加载的lua文件，那么第二次进入同样的游戏模块
+            // 它的代码将不会被重新执行，因为同样的文件已经require进来了
+            luaenv.DoString(luaCleanupCode);
         }
 
         // 约定每一个模块都必须有一个main.lua文件，从这个文件开始执行
@@ -164,7 +176,9 @@ public class ModuleHub
 
         // 执行lua中定义的cleanup函数
         CallCleanup();
- 
+
+        launchSubModuleLuaCode = null;
+
         // 重设thisMod为null，取消和lua的关系，否则会luaenv dispose时抛异常: dispose with c# callback
         luaenv.Global.Set("thisMod", (object)null);
 
@@ -296,7 +310,13 @@ public class ModuleHub
         Application.Quit();
 #endif
     }
-
+    /// <summary>
+    /// 游戏模块lua脚本调用本函数来请求大厅模块的lua虚拟机执行一些函数，并得到返回值
+    /// 例如目前游戏模块需要请求大厅的lua虚拟机执行一个getServerHost之类的函数，获得服务器地址
+    /// </summary>
+    /// <param name="funcName"></param>
+    /// <param name="param"></param>
+    /// <returns></returns>
     public string CallLobbyStringFunc(string funcName, string param = null)
     {
         if (parent == null)
@@ -308,6 +328,10 @@ public class ModuleHub
         if (fn != null)
         {
             return fn.Invoke(param);
+        }
+        else
+        {
+            Debug.LogError($"CallLobbyStringFunc failed, can't found:${funcName}");
         }
 
         return null;
@@ -349,8 +373,8 @@ public class ModuleHub
         var m = new ModuleHub(gameModName, this, monoBehaviour, Boot.instance.gameLuaEnv);
         subModules.Add(gameModName, m);
 
-        // 执行模块目录下的mian.lua文件
-        m.Launch(jsonString);
+        var envString = launchSubModuleLuaCode;
+        m.Launch(envString, jsonString);
     }
 
     /// <summary>
@@ -418,6 +442,7 @@ public class ModuleHub
     /// <param name="f"></param>
     public void RegisterCleanup(VoidLuaFunc f)
     {
+        // 后来者先执行，因此把后来者插到第一位置
         cleanup.Insert(0, f);
     }
 
@@ -435,7 +460,12 @@ public class ModuleHub
             myUIPackage.Add(p.name);
         }
     }
-
+    /// <summary>
+    /// LUA script中调用本函数来创建UI组件
+    /// </summary>
+    /// <param name="pkgName"></param>
+    /// <param name="resName"></param>
+    /// <returns></returns>
     public FairyGUI.GObject CreateUIObject(string pkgName, string resName)
     {
         var gof = FairyGUI.UIPackage.CreateObject(pkgName, resName);

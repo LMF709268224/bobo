@@ -96,6 +96,42 @@ end
 -- 	loginView.showLoginView()
 -- end
 
+-- 下面这段字符串代码主要是给c#里面执行
+-- 每次新建一个子游戏的时候都会执行一下这段代码
+-- 目的是清理一下加载的文件，以及重设一下_ENV，确保
+-- 两个子游戏之间复用同样一个lua虚拟机而不会干扰彼此
+-- 当然任意时刻只能有一个子游戏正在运行着，不能同时运行
+-- 两个子游戏。大厅和子游戏则不同，他们是两个不同的lua虚拟机
+local launchSubModuleLuaCode = [[
+local logger = require 'lobby/lcore/logger'
+
+local function onGameExit()
+	logger.trace('onGameExit:', _ENV.thisMod.modName)
+	for k,_ in pairs(package.loaded) do
+		package.loaded[k] = nil
+	end
+end
+
+local function onGameEnter()
+	logger.trace('onGameEnter:', _ENV.thisMod.modName)
+	local env = {}
+	local origin = _ENV
+	local newenv = setmetatable({}, {
+		__index = function (_, k)
+			local v = env[k]
+			if v == nil then return origin[k] end
+			return v
+		end,
+		__newindex = env,
+	})
+
+	_ENV = newenv
+	_ENV.thisMod:RegisterCleanup(onGameExit)
+end
+
+onGameEnter()
+]]
+
 local function main()
 	local lobbyVer = lenv.VER_STR
 	local csharpVer = CS.Version.VER_STR
@@ -107,6 +143,7 @@ local function main()
 	logger.warn("lobby/Boot begin, lobby version:", lobbyVer, ",csharp version:", csharpVer)
 
 	_ENV.thisMod:RegisterCleanup(shutdownCleanup)
+	_ENV.thisMod.launchSubModuleLuaCode = launchSubModuleLuaCode
 
 	-- 启动cortouine
 	-- local co = coroutine.create(mainEntryCoroutine)
