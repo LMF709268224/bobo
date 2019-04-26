@@ -17,35 +17,26 @@ local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
 local CS = _ENV.CS
 
 function LobbyView:show()
-    if LobbyView.viewNode then
-        logger.debug("LobbyView:show")
-    else
-        logger.debug("LobbyView viewNode is nil.")
-        _ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
-        local view = _ENV.thisMod:CreateUIObject("lobby_main", "Main")
+    _ENV.thisMod:AddUIPackage("lobby/fui/lobby_main")
+    local view = _ENV.thisMod:CreateUIObject("lobby_main", "Main")
+    fairy.GRoot.inst:AddChild(view)
+    LobbyView.viewNode = view
+
+    LobbyView:initView()
+
+    logger.debug("_ENV.thisMod.backToLobby")
+    -- c# 会调用本函数切换回大厅
+    _ENV.backToLobby = function()
+        logger.debug("backToLobby")
         fairy.GRoot.inst:AddChild(view)
-        LobbyView.viewNode = view
-
-        -- gooo = view
-
-        -- local createBtn = view:GetChild("n4")
-        -- createBtn.onClick:Set(LobbyView.onCreateClick)
-        -- local win = fairy.Window()
-        -- win.contentPane = view
-        -- win.modal = true
-
-        -- LobbyView.viewNode = view
-        -- LobbyView.win = win
-
-        LobbyView:initView()
-
-		logger.debug("_ENV.thisMod.backToLobby")
-		-- c# 会调用本函数切换回大厅
-		_ENV.backToLobby = function()
-			logger.debug("backToLobby")
-			fairy.GRoot.inst:AddChild(view)
-		end
     end
+    --由于view可能处于Groot之外，例如如果当前正在游戏模块中，
+    --那么view就是隐藏的，在GRoot之外，因此需要额外销毁
+    _ENV.thisMod:RegisterCleanup(
+        function()
+            view:Dispose()
+        end
+    )
 
     local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
     local url = urlpathsCfg.lobbyWebsocket .. "?tk=" .. tk
