@@ -4,12 +4,17 @@ local CreateRoomView = {}
 
 local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
+local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
+local httpHelper = require "lobby/lcore/httpHelper"
+local proto = require "lobby/scripts/proto/proto"
+local rapidjson = require("rapidjson")
+local CS = _ENV.CS
 
 --记录键值
 -- local RecordKey = "createRoomView"
-
+local dfRoomType = 8
 local rules = {
-    -- ["roomType"] = dfRoomType,
+    ["roomType"] = dfRoomType,
     ["playerNumAcquired"] = 3,
     ["payNum"] = 4,
     ["payType"] = 0,
@@ -69,7 +74,7 @@ function CreateRoomView.new()
     local createBtn = CreateRoomView.unityViewNode:GetChild("createBtn")
     createBtn.onClick:Set(
         function()
-            -- CreateRoomView:onCloseButtonClick()
+            CreateRoomView:createRoom()
         end
     )
 
@@ -219,37 +224,16 @@ end
 
 --获取房间规则
 function CreateRoomView:GetRules()
-    local fengDingIndex = self:GetToggleIndex(self.toggleFengDing)
-    rules["fengDingType"] = configTable["fengDingType"][fengDingIndex]
-
-    local playerNumIndex = self:GetToggleIndex(self.togglePlayerNum)
-    rules["playerNumAcquired"] = configTable["playerNumAcquired"][playerNumIndex]
-
     local playCountIndex = self:GetToggleIndex(self.toggleCount)
     rules["handNum"] = configTable["handNum"][playCountIndex]
-
-    local dunZiIndex = self:GetToggleIndex(self.toggleDunZi)
-
-    -- logError("GetRules : fengDingIndex = "..fengDingIndex)
-    -- logError("GetRules : dunZiIndex = "..dunZiIndex)
-
-    -- 不同的封顶选择,墩子的数据也不一样
-    if fengDingIndex < 3 then
-        rules["dunziPointType"] = configTable["dunziPointType"][dunZiIndex]
-    else
-        rules["dunziPointType"] = configTable["dunziPointTypeBig"][dunZiIndex]
-    end
 
     local payIndex = self:GetToggleIndex(self.togglePay)
     rules["payType"] = configTable["payType"][payIndex]
 
     -- 暂时不知道什么配置
+    -- rules["doubleScoreWhenSelfDrawn"] = self.toggleKX[1].isOn
 
-    rules["doubleScoreWhenSelfDrawn"] = self.toggleKX[1].isOn
-    rules["doubleScoreWhenContinuousBanker"] = self.toggleKX[2].isOn
-    rules["doubleScoreWhenZuoYuanZi"] = self.toggleKX[3].isOn
-
-    rules["payNum"] = self:GetCost(rules["payType"], rules["playerNumAcquired"], rules["handNum"])
+    -- rules["payNum"] = self:GetCost(rules["payType"], rules["playerNumAcquired"], rules["handNum"])
     -- 暂时不知道什么配置
     return rules
 end
@@ -334,9 +318,45 @@ function CreateRoomView:updateCostDiamond()
     -- print("CreateRoomView:updateCostDiamond()----------------discountPrice = " .. tostring(discountPrice))
 end
 
-function CreateRoomView:EnterGame(roomInfo)
+function CreateRoomView:enterGame()
+    --testGame1UI()
+    local mylobbyView = fairy.GRoot.inst:GetChildAt(0)
+    fairy.GRoot.inst:RemoveChild(mylobbyView)
+    fairy.GRoot.inst:CleanupChildren()
+
+    local parameters = {
+        gameType = "1",
+        serverUUID = "",
+        myUser = "",
+        roomInfo = ""
+    }
+
+    local jsonString = rapidjson.encode(parameters)
+    _ENV.thisMod:LaunchGameModule("game1", jsonString)
+end
+
+function CreateRoomView:createRoom(roomInfo)
     logger.debug("------CreateRoomView----enter room roomInfo:", roomInfo)
 
+    local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
+    local url = urlpathsCfg.rootURL .. urlpathsCfg.createRoom .. "?tk=" .. tk
+    local jsonString = rapidjson.encode(self:GetRules())
+    local createRoomReq = {
+        config = jsonString
+    }
+    local body = proto.encodeMessage("lobby.MsgCreateRoomReq", createRoomReq)
+    httpHelper.post(
+        self.unityViewNode,
+        url,
+        body,
+        function(req, resp)
+            if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
+                logger.debug("create room ok--------: ", resp.Data)
+            else
+                logger.debug("create room error : ", req.State)
+            end
+        end
+    )
     -- local token = g_dataModule:GetUserData():GetToken()
     -- local params = "tk=" .. token .. "&roomID=" .. roomInfo.roomID
     -- local url = roomInfo.gameServerURL .. "?" .. params

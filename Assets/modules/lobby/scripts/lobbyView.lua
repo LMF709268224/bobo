@@ -83,19 +83,30 @@ end
 
 function LobbyView:onFriendClick()
     local mylobbyView = fairy.GRoot.inst:GetChildAt(0)
-	fairy.GRoot.inst:RemoveChild(mylobbyView)
-	fairy.GRoot.inst:CleanupChildren()
+    fairy.GRoot.inst:RemoveChild(mylobbyView)
+    fairy.GRoot.inst:CleanupChildren()
 
-	local parameters = {
-		abc = "1"
-	}
+    local parameters = {
+        gameType = "1"
+    }
 
-	local rapidjson = require("rapidjson")
-	local jsonString = rapidjson.encode(parameters)
-	_ENV.thisMod:LaunchGameModule("game1", jsonString)
+    local rapidjson = require("rapidjson")
+    local jsonString = rapidjson.encode(parameters)
+    _ENV.thisMod:LaunchGameModule("game1", jsonString)
 end
 
 function LobbyView:onCreateClick()
+    local mylobbyView = fairy.GRoot.inst:GetChildAt(0)
+    fairy.GRoot.inst:RemoveChild(mylobbyView)
+    fairy.GRoot.inst:CleanupChildren()
+
+    local parameters = {
+        gameType = "2"
+    }
+
+    local rapidjson = require("rapidjson")
+    local jsonString = rapidjson.encode(parameters)
+    _ENV.thisMod:LaunchGameModule("game1", jsonString)
 end
 
 return LobbyView
