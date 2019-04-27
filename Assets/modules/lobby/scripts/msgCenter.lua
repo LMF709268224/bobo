@@ -11,6 +11,7 @@ local msgQueue = require "scripts/msgQueue"
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local dialog = require "lobby/lcore/dialog"
+local coroutingExt = require "lobby/lcore/coroutineExt"
 
 function MsgCenter:new(url, component)
     local msgCenter = {url = url, component = component}
@@ -37,15 +38,11 @@ function MsgCenter:start()
         if not self.retry then
             break
         else
+            logger.trace("Wait 3 seconds to retry, connectErrorCount:"..self.connectErrorCount)
           --等待重连
-          self:waitSecond(3)
+          coroutingExt.waitSecond(self.component, 3)
         end
     end
-end
-
-function MsgCenter:waitSecond(seconds)
-    logger.trace("wait "..seconds.." seconde retry, connectErrorCount:", self.connectErrorCount)
-    -- TODO: 定时器
 end
 
 function MsgCenter:connectServer()
