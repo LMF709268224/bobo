@@ -185,12 +185,14 @@ public class ModuleHub
         // 检查有没有泄漏UI组件，也即是不在GRoot中的组件
         if (fuObjects.Count > 0)
         {
-            foreach (var fuo in fuObjects)
+            var copy = fuObjects.ToArray();
+            foreach (var fuo in copy)
             {
                 Debug.LogError($"Game module {modName} leak component:{fuo.displayObject.gameObject.name}");
+                fuo.Dispose();
             }
 
-            throw new System.Exception($"Game module {modName} leak component count:{fuObjects.Count}");
+            // throw new System.Exception($"Game module {modName} leak component count:{fuObjects.Count}");
         }
 
         // 卸载bundle包

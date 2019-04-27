@@ -13,39 +13,20 @@ local errHelper = require "lobby/lcore/lobbyErrHelper"
 local CS = _ENV.CS
 
 function LoginView.showLoginView()
-    if LoginView.viewNode then
-        logger.debug("showLoginView -----------")
-    else
-        logger.debug("showLoginView viewNode is nil.")
-        _ENV.thisMod:AddUIPackage("lobby/fui_login/lobby_login")
-        local view = _ENV.thisMod:CreateUIObject("lobby_login", "login")
+    _ENV.thisMod:AddUIPackage("lobby/fui_login/lobby_login")
+    local view = _ENV.thisMod:CreateUIObject("lobby_login", "login")
 
-        local win = fairy.Window()
-        win.contentPane = view
-        win.modal = true
-        -- local screenWidth = CS.UnityEngine.Screen.width
-        -- local screenHeight = CS.UnityEngine.Screen.height
-        -- win:SetXY(screenWidth / 2, screenHeight / 2)
+    local win = fairy.Window()
+    win.contentPane = view
+    win.modal = true
+    -- local screenWidth = CS.UnityEngine.Screen.width
+    -- local screenHeight = CS.UnityEngine.Screen.height
+    -- win:SetXY(screenWidth / 2, screenHeight / 2)
 
-        LoginView.viewNode = view
-        LoginView.win = win
+    LoginView.viewNode = view
+    LoginView.win = win
 
-        LoginView:initView()
-        -- LoginView:testLists()
-        -- 由于win隐藏，而不是销毁，隐藏后和GRoot脱离了关系，因此需要
-        -- 特殊销毁
-        _ENV.thisMod:RegisterCleanup(
-            function()
-                win:Dispose()
-            end
-        )
-
-        view.onClick:Set(
-            function()
-                -- win:Hide()
-            end
-        )
-    end
+    LoginView:initView()
 
     LoginView.win:Show()
 end
@@ -87,10 +68,6 @@ function LoginView:onWeixinBtnClick()
     logger.debug("onWeixinBtnClick")
 end
 
-function LoginView:msgBox()
-    return false
-end
-
 function LoginView:updateComplete()
     self.progressBar.visible = false
     self.weixinButton.visible = true
@@ -114,7 +91,6 @@ function LoginView:saveQuicklyLoginReply(quicklyLoginReply)
     local rapidjson = require("rapidjson")
     local jsonString = rapidjson.encode(userInfo)
     CS.UnityEngine.PlayerPrefs.SetString("userInfo", jsonString)
-
 end
 
 function LoginView:showLobbyView()
@@ -125,6 +101,10 @@ function LoginView:showLobbyView()
     local lobbyView = require "lobby/scripts/lobbyView"
     lobbyView.show()
 
+    self:destroy()
+end
+
+function LoginView:destroy()
     self.win:Hide()
     self.win:Dispose()
     self.unityViewNode = nil
