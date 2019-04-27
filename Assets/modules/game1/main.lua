@@ -28,7 +28,12 @@ local function goTestGame()
 	local co =
 		coroutine.create(
 		function()
-			singleton:tryEnterRoom()
+			local pp = _ENV.CS.UnityEngine.PlayerPrefs
+			local serverUUID = "uuid"
+			local userID = pp.GetString("userID", "")
+			local myUser = {userID = userID}
+			local roomInfo = {roomID = "monkey-room"}
+			singleton:tryEnterRoom(serverUUID, myUser, roomInfo)
 		end
 	)
 

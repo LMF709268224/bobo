@@ -38,24 +38,21 @@ end
 function SG:tryEnterRoom(serverUUID, myUser, roomInfo)
     self.isEnterRoom = true
 
-    --logger.debug(" tryEnterRoom, date2: ", os.date(), ", timeStamp:", os.time(), ", clock:", os.clock())
+    assert(serverUUID, "SG:tryEnterRoom, serverUUID must not be null")
+    assert(serverUUID, "SG:tryEnterRoom, myUser must not be null")
+    assert(serverUUID, "SG:tryEnterRoom, roomInfo must not be null")
+
     --测试用
     local host = _ENV.thisMod:CallLobbyStringFunc("gameServerScheme")
-    local url
-    local rID = "monkey-room" --
-    local uID = "10000021"
-    local sUUID = "uuid"
-    if serverUUID ~= nil then
-        rID = roomInfo.roomID
-        uID = myUser.userID
-        sUUID = serverUUID
-    end
-    url = host .. string.format(urlPaths.gameWebsocketPlay, sUUID) .. "?userID=" .. uID .. "&roomID=" .. rID
     local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
-    url = url .. "&tk=" .. tk
-    logger.debug(" tryEnterRoom, url:", url)
+    local url
+    local rID = roomInfo.roomID
+    local uID = myUser.userID
 
-    myUser = myUser or {userID = "10000021"}
+    url = host .. string.format(urlPaths.gameWebsocketPlay, serverUUID) .. "?userID=" .. uID .. "&roomID=" .. rID
+    url = url .. "&tk=" .. tk
+
+    logger.debug(" tryEnterRoom, url:", url)
 
     --保存一下，以便重连时使用
     self.url = url
