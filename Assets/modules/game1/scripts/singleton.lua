@@ -39,8 +39,8 @@ function SG:tryEnterRoom(serverUUID, myUser, roomInfo)
     self.isEnterRoom = true
 
     assert(serverUUID, "SG:tryEnterRoom, serverUUID must not be null")
-    assert(serverUUID, "SG:tryEnterRoom, myUser must not be null")
-    assert(serverUUID, "SG:tryEnterRoom, roomInfo must not be null")
+    assert(myUser, "SG:tryEnterRoom, myUser must not be null")
+    assert(roomInfo, "SG:tryEnterRoom, roomInfo must not be null")
 
     --测试用
     local host = _ENV.thisMod:CallLobbyStringFunc("gameServerScheme")
