@@ -75,22 +75,19 @@ function LoginView:updateComplete()
 end
 
 function LoginView:saveQuicklyLoginReply(quicklyLoginReply)
-    CS.UnityEngine.PlayerPrefs.SetString("account", quicklyLoginReply.account)
-    CS.UnityEngine.PlayerPrefs.SetString("token", quicklyLoginReply.token)
+    local pp = CS.UnityEngine.PlayerPrefs
+    pp.SetString("account", quicklyLoginReply.account)
+    pp.SetString("token", quicklyLoginReply.token)
 
-    local userInfo = {}
-    userInfo.userID = quicklyLoginReply.userInfo.userID
-    userInfo.nickName = quicklyLoginReply.userInfo.userID
-    userInfo.sex = quicklyLoginReply.userInfo.sex
-    userInfo.province = quicklyLoginReply.userInfo.province
-    userInfo.city = quicklyLoginReply.userInfo.city
-    userInfo.country = quicklyLoginReply.userInfo.country
-    userInfo.headImgUrl = quicklyLoginReply.userInfo.headImgUrl
-    userInfo.phone = quicklyLoginReply.userInfo.phone
-
-    local rapidjson = require("rapidjson")
-    local jsonString = rapidjson.encode(userInfo)
-    CS.UnityEngine.PlayerPrefs.SetString("userInfo", jsonString)
+    local userInfo = quicklyLoginReply.userInfo
+    pp.SetString("userID", userInfo.userID)
+    pp.SetString("nickName", userInfo.nickName)
+    pp.SetString("sex", userInfo.sex)
+    pp.SetString("province", userInfo.province)
+    pp.SetString("city", userInfo.city)
+    pp.SetString("country", userInfo.country)
+    pp.SetString("headImgUrl", userInfo.headImgUrl)
+    pp.SetString("phone", userInfo.phone)
 end
 
 function LoginView:showLobbyView()
