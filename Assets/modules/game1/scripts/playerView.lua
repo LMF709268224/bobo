@@ -96,6 +96,7 @@ function PlayerView:initLights()
                 card.scale = go.scale
                 card.position = go.position
                 tilesNode:AddChild(card)
+                card.visible = false
                 lights[i] = card
             else
                 logger.error("can not found child:", cname)
@@ -131,6 +132,7 @@ function PlayerView:initHands()
                     end
                 )
                 card.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
+                card.visible = false
                 hands[i] = card
                 local pos = {}
                 pos.x = card.x
@@ -166,7 +168,7 @@ function PlayerView:initDiscards()
             card.scale = go.scale
             card.position = go.position
             myHandTilesNode:AddChild(card)
-            card.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
+            card.visible = false
             discards[i] = card
         else
             logger.error("can not found child:", cname)
