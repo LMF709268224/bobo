@@ -14,6 +14,7 @@ local room = require "scripts/room"
 local fairy = require "lobby/lcore/fairygui"
 local dialog = require "lobby/lcore/dialog"
 local urlPaths = require "lobby/lcore/urlpathsCfg"
+local CS = _ENV.CS
 
 local singleTon = nil
 
@@ -41,16 +42,20 @@ function SG:tryEnterRoom(serverUUID, myUser, roomInfo)
     --测试用
     local host = _ENV.thisMod:CallLobbyStringFunc("gameServerScheme")
     local url
+    local rID = "monkey-room" --
+    local uID = "10000021"
+    local sUUID = "uuid"
     if serverUUID ~= nil then
-        -- TODO: 替换为真正的userID和roomID
-        url = host .. string.format(urlPaths.gameWebsocketPlay, serverUUID) .. "?userID=6&roomID=monkey-room"
-    else
-        url = host .. string.format(urlPaths.gameWebsocketMonkey, "uuid") .. "?userID=6&roomID=monkey-room"
+        rID = roomInfo.roomID
+        uID = myUser.userID
+        sUUID = serverUUID
     end
-
+    url = host .. string.format(urlPaths.gameWebsocketPlay, sUUID) .. "?userID=" .. uID .. "&roomID=" .. rID
+    local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
+    url = url .. "&tk=" .. tk
     logger.debug(" tryEnterRoom, url:", url)
 
-    myUser = myUser or {userID = "6"}
+    myUser = myUser or {userID = "10000021"}
 
     --保存一下，以便重连时使用
     self.url = url

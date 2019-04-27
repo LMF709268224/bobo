@@ -57,12 +57,11 @@ function Handler.onMsg(msgData, room)
         --有人出去
         updatePlayer = -1
     end
-
     -- 如果自己还没有创建，创建自己
     for _, msgPlayer in ipairs(msgPlayers) do
         local player = room:getPlayerByUserId(msgPlayer.userID)
-        --logger.debug(" room.userID:"..room.user.userID .. ",msgPlayer userID:" .. msgPlayer.userID)
-        if room.user.userID == msgPlayer.userID then
+        -- logger.debug(" room.userID:" .. room.user.userID .. ",msgPlayer userID:" .. msgPlayer.userID)
+        if tostring(room.user.userID) == tostring(msgPlayer.userID) then
             if player == nil then
                 room:createMyPlayer(msgPlayer)
                 break

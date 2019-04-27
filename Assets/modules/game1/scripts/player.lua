@@ -37,7 +37,7 @@ function Player.new(userID, chairID, room)
 end
 
 function Player:isMyUserId(userID)
-    return self.userID == userID
+    return tostring(self.userID) == tostring(userID)
 end
 
 function Player:resetForNewHand()

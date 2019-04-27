@@ -318,25 +318,30 @@ function CreateRoomView:updateCostDiamond()
     -- print("CreateRoomView:updateCostDiamond()----------------discountPrice = " .. tostring(discountPrice))
 end
 
-function CreateRoomView:enterGame()
-    --testGame1UI()
-    local mylobbyView = fairy.GRoot.inst:GetChildAt(0)
-    fairy.GRoot.inst:RemoveChild(mylobbyView)
-    fairy.GRoot.inst:CleanupChildren()
+function CreateRoomView:enterGame(serverUUID, roomInfo)
+    local uu = CS.UnityEngine.PlayerPrefs.GetString("userInfo", "")
+    local userInfo = rapidjson.decode(uu)
+    -- serverUUID = "",
+    -- myUser = "",
+    -- roomInfo = ""
+    local singletonMod = require("scripts/singleton")
+    local singleton = singletonMod.getSingleton()
+    -- 启动cortouine
+    local co =
+        coroutine.create(
+        function()
+            singleton:tryEnterRoom(serverUUID, {userID = userInfo.userID}, roomInfo)
+        end
+    )
 
-    local parameters = {
-        gameType = "1",
-        serverUUID = "",
-        myUser = "",
-        roomInfo = ""
-    }
-
-    local jsonString = rapidjson.encode(parameters)
-    _ENV.thisMod:LaunchGameModule("game1", jsonString)
+    local r, err = coroutine.resume(co)
+    if not r then
+        logger.error(debug.traceback(co, err))
+    end
 end
 
-function CreateRoomView:createRoom(roomInfo)
-    logger.debug("------CreateRoomView----enter room roomInfo:", roomInfo)
+function CreateRoomView:createRoom()
+    -- logger.debug("------CreateRoomView----enter room roomInfo:", roomInfo)
 
     local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
     local url = urlpathsCfg.rootURL .. urlpathsCfg.createRoom .. "?tk=" .. tk
@@ -352,6 +357,8 @@ function CreateRoomView:createRoom(roomInfo)
         function(req, resp)
             if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
                 logger.debug("create room ok--------: ", resp.Data)
+                local createRoomRsp = proto.decodeMessage("lobby.MsgCreateRoomRsp", resp.Data)
+                self:enterGame(createRoomRsp.roomInfo.gameServerID, createRoomRsp.roomInfo)
             else
                 logger.debug("create room error : ", req.State)
             end

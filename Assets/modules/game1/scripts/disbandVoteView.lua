@@ -103,7 +103,7 @@ end
 
 function DisbandVoteView:updateTexts(msgDisbandNotify)
     local nick = self:getPlayerNick(msgDisbandNotify.applicant)
-    local title = "玩家 <color=#527983>" .. nick .. "</color> 申请解散房间"
+    local title = nick --"玩家 <color=#527983>" .. nick .. "</color> 申请解散房间"
     -- if msgDisbandNotify.disbandState == pkproto2.Waiting then
     --     title = title..":正等待回复"
     -- elseif msgDisbandNotify.disbandState == pkproto2.DoneWithWaitReplyTimeout then
