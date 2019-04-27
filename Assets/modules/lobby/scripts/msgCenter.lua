@@ -27,8 +27,6 @@ function MsgCenter:start()
         logger.debug("MsgCenter, retry:", self.retry)
 
         self.connectErrorCount = self.connectErrorCount + 1
-        -- 等3秒重连
-        -- self:waitSecond(3)
         -- 确保websocket消息队列销毁，以及websocket彻底销毁
         if self.ws ~= nil then
             local ws = self.ws
@@ -38,8 +36,16 @@ function MsgCenter:start()
 
         if not self.retry then
             break
+        else
+          --等待重连
+          self:waitSecond(3)
         end
     end
+end
+
+function MsgCenter:waitSecond(seconds)
+    logger.trace("wait "..seconds.." seconde retry, connectErrorCount:", self.connectErrorCount)
+    -- TODO: 定时器
 end
 
 function MsgCenter:connectServer()
@@ -55,11 +61,8 @@ function MsgCenter:connectServer()
     -- 连接，并等待连接完成
     local rt = self:waitConnect()
     if rt ~= 0 then
-        -- 连接超时提示和处理（用户选择是否重连，重连的话下一帧重新执行tryEnterRoom
+        -- 连接超时, 重连
         self.retry = true
-        if self.connectErrorCount > 0 then
-            self:showRetryMsgBox()
-        end
         return
     end
 
@@ -84,9 +87,6 @@ function MsgCenter:pumpMsg()
             logger.debug(" websocket connection has broken")
 
             self.retry = true
-            if self.connectErrorCount > 2 then
-                self:showRetryMsgBox("与游戏服务器连接断开，是否重连？")
-            end
             break
         end
     end
