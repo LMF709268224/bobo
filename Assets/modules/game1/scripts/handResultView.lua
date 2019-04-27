@@ -12,7 +12,9 @@ local tileMounter = require("scripts/tileImageMounter")
 
 function HandResultView.new(room)
     -- 提高消息队列的优先级为1
-    room.host.mq:blockNormal()
+    if not room:isReplayMode() then
+        room.host.mq:blockNormal()
+    end
 
     -- local handResultView = {}
     -- setmetatable(handResultView, mt)
@@ -107,7 +109,7 @@ function HandResultView:updateRoomData()
     if not self.room:isReplayMode() then
         date = os.date("%Y-%m-%d %H:%M")
     else
-        local startTime = self.room.dfReplay.msgHandRecord.endTime
+        local startTime = self.room.replay.msgHandRecord.endTime
         date = os.date("%Y-%m-%d %H:%M", startTime * 60)
     end
 
@@ -341,16 +343,14 @@ end
 -------------------------------------------
 function HandResultView:onAgainButtonClick()
     -- 降低消息队列的优先级为0
-    logger.debug("onAgainButtonClick --------------------------------")
-    self.room.host.mq:unblockNormal()
+    local room = self.room
+    if not room:isReplayMode() then
+        room.host.mq:unblockNormal()
+    end
 
     self.win:Hide()
     if self.msgHandOver.continueAble then
         self.room.host:sendPlayerReadyMsg()
-    else
-        --显示大结算
-        --self.room:loadGameOverResultView()
-        logger.debug("onAgainButtonClick --------------------------------2")
     end
 end
 

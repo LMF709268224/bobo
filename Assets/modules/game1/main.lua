@@ -43,6 +43,69 @@ local function goTestGame()
 	end
 end
 
+local function testReplay(replayData)
+	local singletonMod = require("scripts/singleton")
+	local singleton = singletonMod.getSingleton()
+	-- 启动cortouine
+	local co =
+		coroutine.create(
+		function()
+			local pp = _ENV.CS.UnityEngine.PlayerPrefs
+			local userID = pp.GetString("userID", "")
+			local loadReply = {replayRecordBytes = replayData}
+			local chairID = 0
+			singleton:tryEnterReplayRoom(userID, loadReply, chairID)
+		end
+	)
+
+	local r, err = coroutine.resume(co)
+	if not r then
+		logger.error(debug.traceback(co, err))
+	end
+end
+
+local function goTestReplay()
+	local hh = require "lobby/lcore/httpHelper"
+	local errHelper = require "lobby/lcore/lobbyErrHelper"
+	local dialog = require "lobby/lcore/dialog"
+	dialog.showDialog("downloading ...")
+	local win = dialog.win
+
+	local recordID = "536c779e-0f5c-4b6a-9364-42da53817c1c"
+	local url = "http://localhost:3001/game/uuid/support/exportRR?account=linguohua&password=jFPwopNA&recordID="
+	url = url .. recordID
+
+	local CS = _ENV.CS
+	hh.get(
+		win,
+		url,
+		function(req, resp)
+			local httpError
+			local respBytes
+			if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
+				httpError = errHelper.dumpHttpRespError(resp)
+				--没有HTTP错误则对比MD5，并保存文件
+				if httpError == nil then
+					respBytes = resp.Data
+					resp:Dispose()
+				end
+			else
+				httpError = errHelper.dumpHttpReqError(req)
+			end
+
+			req:Dispose()
+
+			win:Hide()
+
+			if httpError ~= nil then
+				logger.error("download replay record failed:", httpError)
+			else
+				testReplay(respBytes)
+			end
+		end
+	)
+end
+
 local function main()
 	logger.info("game ", version.MODULE_NAME, " startup, version:", version.VER_STR)
 	_ENV.MODULE_NAME = version.MODULE_NAME
@@ -58,6 +121,8 @@ local function main()
 		elseif json.gameType == "2" then
 			-- logger.debug("abc == 2")
 			testCreateUI()
+		elseif json.gameType == "3" then
+			goTestReplay()
 		end
 	end
 

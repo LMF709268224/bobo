@@ -10,7 +10,7 @@ local mt = {__index = MQ}
 local proto = require "scripts/proto/proto"
 local logger = require "lobby/lcore/logger"
 
-local MsgType = {wsOpen = 1, wsClosed = 2, wsError = 3, wsData = 4, quit = 5}
+local MsgType = {wsOpen = 1, wsClosed = 2, wsError = 3, wsData = 4, quit = 5, replay = 6}
 local mc = proto.pokerface.MessageCode
 local priorityMap = {[mc.OPDisbandRequest] = 1, [mc.OPDisbandNotify] = 1, [mc.OPDisbandAnswer] = 1}
 

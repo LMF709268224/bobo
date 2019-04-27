@@ -99,8 +99,8 @@ Room.Handlers = initMsgHandler()
 --create a room object
 --@param user user 对象，房间拥有者，通过user对象访问用户各种数据
 -----------------------------------------------------------
-function Room.new(user, dfReplay)
-    local room = {user = user, dfReplay = dfReplay}
+function Room.new(user, replay)
+    local room = {user = user, replay = replay}
     --players初始化位空表，player使用chairId来索引
     room.players = {}
     --庄家座位id
@@ -114,7 +114,7 @@ end
 -- 在此模式下，需要隐藏一些按钮，以及所有玩家都是明牌显示
 -------------------------------------------
 function Room:isReplayMode()
-    return self.dfReplay ~= nil
+    return self.replay ~= nil
 end
 
 -----------------------------------------------------------

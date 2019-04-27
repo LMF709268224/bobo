@@ -342,28 +342,17 @@ function SG:doLeaveRoom()
 end
 
 function SG:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
-    -- if self.locked then
-    --     logger.debug(" df is locked")
-    --     return
-    -- end
-    if self:isRoomViewExit() then
-        logger.debug(" tryEnterReplayRoom error: dafeng room view is exit")
-        return
-    end
-
     --local pkproto2 = game_mahjong_s2s_pb
-    local msgHandRecorder = proto.decodeMessage("pokerface.SRMsgHandRecorder", msgAccLoadReplayRecord.replayRecordBytes)
+    local msgHandRecord = proto.decodeMessage("pokerface.SRMsgHandRecorder", msgAccLoadReplayRecord.replayRecordBytes)
 
     --把配置内容替换配置ID，兼容老代码
-    msgHandRecorder.roomConfigID = msgAccLoadReplayRecord.roomJSONConfig
+    msgHandRecord.roomConfigID = msgAccLoadReplayRecord.roomJSONConfig
 
-    logger.debug(" sr-actions count:", #msgHandRecorder.actions)
-    local isShare = false
+    logger.debug(" sr-actions count:", #msgHandRecord.actions)
     --如果不提供userID,则必须提供chairID，然后根据chairID获得userID
     if not userID then
-        isShare = true
         logger.debug(" userID is nil, use chairID to find userID")
-        for _, player in ipairs(msgHandRecorder.players) do
+        for _, player in ipairs(msgHandRecord.players) do
             if player.chairID == chairID then
                 userID = player.userID
                 break
@@ -379,23 +368,31 @@ function SG:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
     else
         logger.debug(" tryEnterReplayRoom userID ", userID)
     end
-    -- self.locked = true
 
-    -- GuanZhang/Script/
+    self.user = {userID = userID}
+    local replay = require "scripts/replay"
+    local rp = replay.new(self, msgHandRecord)
 
-    local path = "GuanZhang.Script."
+    --新建room和绑定roomView
+    self.room = room.new(self.user, rp)
+    self.room.host = self
 
-    local Replay = require(path .. "dfMahjong.dfReplay")
+    -- local roomInfo = accessory_pb.RoomInfo {}
+    -- roomInfo.roomID = ""
+    -- roomInfo.roomNumber = msgHandRecord.roomNumber
+    -- roomInfo.gameServerURL = ""
+    -- roomInfo.state = 1
+    -- roomInfo.config = msgHandRecord.roomConfigID
+    -- roomInfo.timeStamp = ""
+    -- roomInfo.handStartted = msgHandRecord.handNum
+    -- roomInfo.lastActiveTime = 0
+    -- self.room.roomInfo = roomInfo
 
-    if Replay == nil then
-        logger.error("Replay == nil")
-    end
+    self.room.handStartted = msgHandRecord.handNum
+    self.room.roomNumber = msgHandRecord.roomNumber
+    self.room:loadRoomView()
 
-    local rp = Replay:new(self, userID, msgHandRecorder)
-
-    rp:gogogo(isShare)
-
-    self.locked = false
+    rp:gogogo()
 end
 
 -- 退出到登录界面
