@@ -237,6 +237,8 @@ function PlayerView:initHeadView(view)
     head.scoreText = view:GetChild("scoreText")
     head.countDownImage = view:GetChild("count")
     head.countDownText = view:GetChild("countDown")
+    head.roomOwner = view:GetChild("roomOwner")
+
     head.headImg = headImg
 
     self.head = head
@@ -844,24 +846,9 @@ end
 --显示桌主
 ----------------------------------------------------------
 function PlayerView:showOwner()
-    if self.head == nil then
-        logger.error("showOwner, self.head == nil")
-        return
-    end
-
-    if self.head.roomOwnerFlag == nil then
-        logger.error("showOwner, self.head.owner == nil")
-        return
-    end
-
     local player = self.player
-    local room = player.room
 
-    if player.userID == room.ownerID then
-        self.head.roomOwnerFlag:SetActive(true)
-    else
-        self.head.roomOwnerFlag:SetActive(false)
-    end
+    self.head.roomOwner.visible = player:isMe()
 end
 
 --不要动画并等待

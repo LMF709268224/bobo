@@ -88,7 +88,7 @@ function GameOverResultView:updatePlayerInfoData(player, c)
     c.textName.text = name
     c.textUserID.text = player.userID
     --房主
-    if player.userID == self.room.ownerID then
+    if player:isMe() then
         c.imageRoom.visible = true
     end
     --头像

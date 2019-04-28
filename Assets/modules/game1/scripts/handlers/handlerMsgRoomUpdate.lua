@@ -61,7 +61,7 @@ function Handler.onMsg(msgData, room)
     for _, msgPlayer in ipairs(msgPlayers) do
         local player = room:getPlayerByUserId(msgPlayer.userID)
         -- logger.debug(" room.userID:" .. room.user.userID .. ",msgPlayer userID:" .. msgPlayer.userID)
-        if tostring(room.user.userID) == tostring(msgPlayer.userID) then
+        if room:isMe(msgPlayer) then
             if player == nil then
                 room:createMyPlayer(msgPlayer)
                 break
@@ -136,15 +136,16 @@ function Handler.onMsg(msgData, room)
                     local userID = playerRecord.userID
                     local player = room:getPlayerByUserId(userID)
                     totalScores[j] = totalScores[j] + scoreNumber
-                    player.totalScores = totalScores[j] or "0"
+                    player.totalScores = totalScores[j]
                 end
             end
         end
     end
     for _, player in pairs(room.players) do
-        if player ~= nil and player.totalScores ~= nil then
-            player.playerView:setCurScore()
-        end
+        --显示分数
+        player.playerView:setCurScore()
+        --显示房主
+        player.playerView:showOwner()
     end
 end
 return Handler

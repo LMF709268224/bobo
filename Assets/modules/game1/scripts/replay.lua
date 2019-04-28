@@ -44,9 +44,8 @@ function Replay:gogogo()
     local players = self.msgHandRecord.players
     logger.debug("replay msgHandRecord:", self.msgHandRecord)
     for _, p in ipairs(players) do
-        --if p.userID == acc.userID then
         logger.debug(" p.userID ", p.userID)
-        if p.userID == self.user.userID then
+        if p:isMe() then
             room:createMyPlayer(clonePlayerInfo(p))
         end
     end

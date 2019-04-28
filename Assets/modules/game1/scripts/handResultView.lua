@@ -158,7 +158,7 @@ function HandResultView:updatePlayerInfoData(player, c)
     c.textName.text = name
     c.textId.text = "ID:" .. userID
     --房主
-    if player.userID == self.room.ownerID then
+    if player:isMe() then
         c.imageRoom.visible = true
     end
     --头像
@@ -256,8 +256,8 @@ function HandResultView:updateAllData()
     end
 end
 --显示赢标志
-function HandResultView:showWin()
-    -- animation.play("animations/Effects_jiemian_huosheng.prefab", c.group, c.aniPos.x, c.aniPos.y, true)
+function HandResultView:showWin(c)
+    animation.play("animations/Effects_jiemian_huosheng.prefab", c.group, c.aniPos.x, c.aniPos.y, true)
     -- local prefabName = dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_WIN .. ".prefab"
     -- local effobj = Animator.PlayLoop(prefabName, self.canvasOrder)
     -- effobj:SetParent(c.group.transform, false)

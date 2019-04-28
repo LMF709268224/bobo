@@ -898,8 +898,6 @@ end
 function RoomView:updateLeaveAndDisbandButtons()
     local room = self.room
 
-    --logger.debug("room:me().userID == ", room:me().userID)
-
     local handStartted = room.handStartted
     if handStartted > 0 then
         self.exitBtn:SetActive(false)
