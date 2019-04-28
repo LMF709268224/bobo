@@ -86,14 +86,6 @@ function SG:tryEnterRoom(serverUUID, myUser, roomInfo)
         self.room = nil
     end
 
-    -- if self.forceExit then
-    --     --self:logout()
-    -- elseif self.isTokenExpire then
-    -- --self:logout("登录超时，请重新登录")
-    -- end
-    --self.forceExit = false
-    -- self.locked = false
-
     logger.debug(" -------destory room complete-------")
     self:backToLobby()
 end
@@ -319,31 +311,6 @@ function SG:sendLeaveRoomMsg()
     self.ws:sendBinary(buf)
 end
 
-------------------------------------------
---执行退出房间流程：
---向服务器发送退出房间请求，并等待回复
---如果超时而未能收到服务器回复，直接回到大厅
-------------------------------------------
-function SG:doLeaveRoom()
-    --先向服务器发送离开请求
-    self:sendLeaveRoomMsg()
-    -- local df = self
-
-    -- local showProgressTips = "正请求服务器离开房间..."
-    -- --显示等待滚动圈
-    -- dfCompatibleAPI:showWaitTip(
-    --     showProgressTips,
-    --     5,
-    --     function()
-    --         df:triggerTimeout()
-    --     end,
-    --     0
-    -- )
-    local canLeave = true
-
-    return canLeave
-end
-
 function SG:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
     --local pkproto2 = game_mahjong_s2s_pb
     local msgHandRecord = proto.decodeMessage("pokerface.SRMsgHandRecorder", msgAccLoadReplayRecord.replayRecordBytes)
@@ -398,45 +365,6 @@ function SG:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
     rp:gogogo()
 
     self:backToLobby()
-end
-
--- 退出到登录界面
-function SG:forceExit2LoginView()
-    if self.room ~= nil then
-        self.room:completedWait()
-        self.room.isDestroy = true
-        self.forceExit = true
-
-        --如果此时等在等待websocket消息，
-        --则唤醒coroutine，并让其执行退出DF流程
-        self:triggerLeaveRoom()
-
-        if self.ws ~= nil then
-            local ws = self.ws
-            self.ws = nil
-            ws:disConnect()
-        end
-    end
-end
-
-function SG:logout(msg)
-    logger.debug("dfsingleton logout:", msg)
-    -- local config = {
-    --     content = msg or "您已在其他地方登录，请重新登录！",
-    --     ignoreCloseBtn = true,
-    --     callback = function(...)
-    --         dispatcher:dispatch("LOGOUT", arg)
-    --         UnityEngine.PlayerPrefs.SetString("weiChat_openid", "")
-    --         UnityEngine.PlayerPrefs.SetString("weiChat_token", "")
-    --         local accModule = require("AccComponent.Script.AccModule")
-    --         g_ModuleMgr:RemoveModule(accModule.moduleName)
-
-    --         local loginModule = require("LoginComponent.Script.LoginModule")
-    --         g_ModuleMgr:AddModule(loginModule.moduleName, loginModule)
-    --         dispatcher:dispatch("OPEN_LOGINVIEW", {isLogout = true})
-    --     end
-    -- }
-    -- g_commonModule:ShowDialog(config)
 end
 
 return SG
