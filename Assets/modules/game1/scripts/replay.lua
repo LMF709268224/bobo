@@ -11,8 +11,7 @@ local proto = require "scripts/proto/proto"
 local actionType = proto.prunfast.ActionType
 local pokerface = proto.pokerface
 local msgQueue = require "scripts/msgQueue"
-
--- local fairy = require "lobby/lcore/fairygui"
+local fairy = require "lobby/lcore/fairygui"
 
 function Replay.new(singleton, msgHandRecord)
     local replay = {}
@@ -67,22 +66,30 @@ function Replay:gogogo()
     local mq = msgQueue.new()
     self.mq = mq
 
-    self.exit = false
     self.actionStep = 0
 
     -- 启动定时器
-    self.room.roomView.unityViewNode:StartTimer(
-        "replay",
-        self.speed,
-        0,
-        function()
-            local msg = {mt = msgQueue.MsgType.replay}
-            mq:pushMsg(msg)
-        end
-    )
+    self:startStepTimer()
 
     local msg = {mt = msgQueue.MsgType.replay}
     mq:pushMsg(msg)
+
+    -- 显示操作面板
+    -- 去除模式对话框背景色（40%透明），设置为100%透明
+    self.modalLayerColor = _ENV.CS.FairyGUI.UIConfig.modalLayerColor
+    local color = _ENV.CS.UnityEngine.Color(0, 0, 0, 0)
+    fairy.GRoot.inst.modalLayer.color = color
+    _ENV.CS.FairyGUI.UIConfig.modalLayerColor = color
+
+    _ENV.thisMod:AddUIPackage("lobby/fui_replay/lobby_replay")
+    local view = _ENV.thisMod:CreateUIObject("lobby_replay", "operations")
+    local win = fairy.Window()
+    win.contentPane = view
+    win.modal = true
+
+    self.win = win
+    self:initView(view)
+    win:Show()
 
     while true do
         msg = self.mq:getMsg()
@@ -95,6 +102,88 @@ function Replay:gogogo()
             self:doReplayStep()
         end
     end
+
+    -- 还原模式对话框背景色（40%透明）
+    fairy.GRoot.inst.modalLayer.color = self.modalLayerColor
+    _ENV.CS.FairyGUI.UIConfig.modalLayerColor = self.modalLayerColor
+end
+
+function Replay:startStepTimer()
+    local mq = self.mq
+    self.room.roomView.unityViewNode:StartTimer(
+        "replay",
+        self.speed,
+        0,
+        function()
+            local msg = {mt = msgQueue.MsgType.replay}
+            mq:pushMsg(msg)
+        end
+    )
+end
+
+function Replay:initView(view)
+    local btnResume = view:GetChild("resume")
+    local btnPause = view:GetChild("pause")
+    local btnFast = view:GetChild("fast")
+    local btnSlow = view:GetChild("slow")
+    local btnBack = view:GetChild("back")
+
+    btnResume.visible = false
+
+    local s = self
+    btnBack.onClick:Set(
+        function()
+            local msg = {mt = msgQueue.MsgType.quit}
+            s.mq:pushMsg(msg)
+        end
+    )
+
+    btnPause.onClick:Set(
+        function()
+            btnPause.visible = false
+            btnResume.visible = true
+            s.room.roomView.unityViewNode:StopTimer("replay")
+        end
+    )
+
+    btnResume.onClick:Set(
+        function()
+            btnPause.visible = true
+            btnResume.visible = false
+            s:startStepTimer()
+
+            local msg = {mt = msgQueue.MsgType.replay}
+            s.mq:pushMsg(msg)
+        end
+    )
+
+    btnFast.onClick:Set(
+        function()
+            if s.speed < 0.2 then
+                logger.debug("fastest speed already")
+                prompt.showPrompt("已经是最快速度")
+                return
+            end
+
+            s.room.roomView.unityViewNode:StopTimer("replay")
+            s.speed = s.speed / 2
+            s:startStepTimer()
+        end
+    )
+
+    btnSlow.onClick:Set(
+        function()
+            if s.speed > 3 then
+                logger.debug("slowest speed already")
+                prompt.showPrompt("已经是最慢速度")
+                return
+            end
+
+            s.room.roomView.unityViewNode:StopTimer("replay")
+            s.speed = s.speed * 2
+            s:startStepTimer()
+        end
+    )
 end
 
 function Replay:doReplayStep()
@@ -112,6 +201,7 @@ function Replay:doReplayStep()
 
             -- 结算页面
             self:handOver()
+            self.win:BringToFront()
         else
             local a = actionlist[self.actionStep]
             if (a.flags & pokerface.SRFlags.SRUserReplyOnly) == 0 then
@@ -121,89 +211,6 @@ function Replay:doReplayStep()
     end
 
     self.actionStep = self.actionStep + 1
-end
-
----------------------------------
---降低速度
----------------------------------
-function Replay:decreaseSpeed()
-    if self.speed >= (4 * self.normalSpeed) then
-        prompt.showPrompt("已经是最慢速度")
-        return
-    end
-
-    self.speed = self.speed * 2
-    self:showCurrentSpeed()
-end
----------------------------------
---增加速度
----------------------------------
-function Replay:increaseSpeed()
-    if self.speed <= (self.normalSpeed / 4) then
-        prompt.showPrompt("已经是最快速度")
-        return
-    end
-
-    self.speed = self.speed / 2
-    self:showCurrentSpeed()
-end
-function Replay:showCurrentSpeed()
-    local scale
-    if self.speed <= self.normalSpeed then
-        scale = self.normalSpeed / self.speed
-        prompt.showPrompt("速度X" .. tostring(scale))
-    else
-        scale = self.speed / self.normalSpeed
-        prompt.showPrompt("速度/" .. tostring(scale))
-    end
-end
----------------------------------
---退出房间
----------------------------------
-function Replay:onExitReplay()
-    self.exit = true
-    --logError("on exit : "..tostring(self.coWait ~= nil))
-    if self.coWait ~= nil then
-        self:resumeCo()
-    end
-end
----------------------------------
---暂停后继续
----------------------------------
-function Replay:onPauseResume()
-    self.pause = false
-    --隐藏继续按钮
-    --显示暂停按钮
-    self.room.roomView:pauseResumeButtons(true, false)
-    if self.coWait ~= nil then
-        self:resumeCo()
-    end
-end
----------------------------------
---暂停
----------------------------------
-function Replay:onPause()
-    self.pause = true
-
-    --隐藏暂停按钮
-    --显示继续按钮
-    self.room.roomView:pauseResumeButtons(false, true)
-end
-
----------------------------------
---等待继续或者退出房间
----------------------------------
-function Replay:waitPauseResume()
-    --隐藏暂停按钮
-    --显示继续按钮
-    self.room.roomView:pauseResumeButtons(false, true)
-
-    local coWait = coroutine.running()
-
-    self.coWait = coWait
-    coroutine.yield()
-
-    self.coWait = nil
 end
 
 ---------------------------------

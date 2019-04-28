@@ -95,7 +95,10 @@ function SG:tryEnterRoom(serverUUID, myUser, roomInfo)
     -- self.locked = false
 
     logger.debug(" -------destory room complete-------")
+    self:backToLobby()
+end
 
+function SG:backToLobby()
     -- 清理界面
     fairy.GRoot.inst:CleanupChildren()
     -- 退回大厅
@@ -393,6 +396,8 @@ function SG:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
     self.room:loadRoomView()
 
     rp:gogogo()
+
+    self:backToLobby()
 end
 
 -- 退出到登录界面
