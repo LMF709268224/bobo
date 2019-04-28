@@ -19,8 +19,6 @@ function Handler.onMsg(actionResultMsg, room)
         player:sortHands(true) -- 新抽牌，必然有14张牌，因此最后一张牌不参与排序
         player:hand2UI()
     end
-
-    room:hideDiscardedTips()
 end
 
 return Handler

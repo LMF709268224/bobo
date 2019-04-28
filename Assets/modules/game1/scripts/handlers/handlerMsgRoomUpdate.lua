@@ -110,7 +110,6 @@ function Handler.onMsg(msgData, room)
 
     --更新房间界面
     room.roomView:onUpdateStatus(msgRoomUpdate.state)
-    room:hideDiscardedTips()
 
     --更新用户状态到视图
     local players = room.players
@@ -137,14 +136,14 @@ function Handler.onMsg(msgData, room)
                     local userID = playerRecord.userID
                     local player = room:getPlayerByUserId(userID)
                     totalScores[j] = totalScores[j] + scoreNumber
-                    player.totalScores = totalScores[j]
+                    player.totalScores = totalScores[j] or "0"
                 end
             end
         end
     end
     for _, player in pairs(room.players) do
         if player ~= nil and player.totalScores ~= nil then
-            player.playerView:setCurScore(player.totalScores)
+            player.playerView:setCurScore()
         end
     end
 end

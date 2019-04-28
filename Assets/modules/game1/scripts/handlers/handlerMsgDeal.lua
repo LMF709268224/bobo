@@ -43,8 +43,7 @@ function Handler.onMsg(msgData, room)
             player.cardCountOnHand = playerTileList.cardCountOnHand
         end
 
-        -- logger.debug("------------------------playerTileList.flowers :  ", playerTileList.flowers)
-        player.playerView:setCurScore(player.totalScores)
+        player.playerView:setCurScore()
     end
 
     --自己手牌排一下序

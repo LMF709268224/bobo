@@ -359,7 +359,6 @@ function Replay:handOver()
     local room = self.room
     --TODO:关闭倒计时
     --room:stopDiscardCountdown()
-    room:hideDiscardedTips()
 
     local handScoreBytes = self.msgHandRecord.handScore
 

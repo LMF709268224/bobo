@@ -835,7 +835,8 @@ function PlayerView:getPartnerWeixinIcon(iconUrl, compCallback, failCallback)
 end
 
 -- 设置当局分数
-function PlayerView:setCurScore(scroe)
+function PlayerView:setCurScore()
+    local scroe = self.player.totalScores or "0"
     self.head.scoreText.text = tostring(scroe)
 end
 

@@ -573,12 +573,6 @@ function Room:updateDisbandVoteView(msgDisbandNotify)
     end
 end
 
-function Room:hideDiscardedTips()
-    for _, p in pairs(self.players) do
-        p:hideDiscardedTips()
-    end
-end
-
 ---------------------------------------
 --发送解散回复给服务器
 ---------------------------------------
