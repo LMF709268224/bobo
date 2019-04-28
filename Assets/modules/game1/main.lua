@@ -32,7 +32,7 @@ local function goTestGame()
 			local serverUUID = "uuid"
 			local userID = pp.GetString("userID", "")
 			local myUser = {userID = userID}
-			local roomInfo = {roomID = "monkey-room"}
+			local roomInfo = {roomID = "monkey-room", roomNumber="monkey"}
 			singleton:tryEnterRoom(serverUUID, myUser, roomInfo)
 		end
 	)
