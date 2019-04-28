@@ -42,10 +42,10 @@ function Replay:gogogo()
     --新建player以及绑定playerView
     --先新建自己
     local players = self.msgHandRecord.players
-    logger.debug("replay msgHandRecord:", self.msgHandRecord)
+    --logger.debug("replay msgHandRecord:", self.msgHandRecord)
     for _, p in ipairs(players) do
         logger.debug(" p.userID ", p.userID)
-        if p:isMe() then
+        if p.userID == self.user.userID then
             room:createMyPlayer(clonePlayerInfo(p))
         end
     end

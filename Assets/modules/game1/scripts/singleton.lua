@@ -380,16 +380,16 @@ function SG:tryEnterReplayRoom(userID, msgAccLoadReplayRecord, chairID)
     self.room = room.new(self.user, rp)
     self.room.host = self
 
-    -- local roomInfo = accessory_pb.RoomInfo {}
-    -- roomInfo.roomID = ""
-    -- roomInfo.roomNumber = msgHandRecord.roomNumber
-    -- roomInfo.gameServerURL = ""
-    -- roomInfo.state = 1
-    -- roomInfo.config = msgHandRecord.roomConfigID
-    -- roomInfo.timeStamp = ""
-    -- roomInfo.handStartted = msgHandRecord.handNum
-    -- roomInfo.lastActiveTime = 0
-    -- self.room.roomInfo = roomInfo
+    local roomInfo = {}
+    roomInfo.roomID = ""
+    roomInfo.roomNumber = msgHandRecord.roomNumber
+    roomInfo.gameServerURL = ""
+    roomInfo.state = 1
+    roomInfo.config = msgHandRecord.roomConfigID
+    roomInfo.timeStamp = ""
+    roomInfo.handStartted = msgHandRecord.handNum
+    roomInfo.lastActiveTime = 0
+    self.room.roomInfo = roomInfo
 
     self.room.handStartted = msgHandRecord.handNum
     self.room.roomNumber = msgHandRecord.roomNumber
