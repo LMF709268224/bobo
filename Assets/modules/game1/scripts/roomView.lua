@@ -72,8 +72,6 @@ function RoomView.new(room)
         end
     )
 
-    roomView.roundInfo = view:GetChild("top_room_info")
-
     settingBtn.onClick:Set(
         function()
             roomView:onDissolveClick()
@@ -84,7 +82,7 @@ function RoomView.new(room)
     -- -- 语音
     -- roomView:initVoiceButton()
     -- --房间号
-    -- roomView:initRoomNumber()
+    roomView:initRoomNumber()
     -- --手机基本信息
     -- roomView:initPhoneInfo()
     -- --房间温馨提示
@@ -484,53 +482,23 @@ end
 --初始化房间号
 --------------------------------------
 function RoomView:initRoomNumber()
-    self.roomInfoNode = self.unityViewNode.transform:Find("RoomInfo")
-    self.roomNumberObject = self.unityViewNode.transform:Find("RoomInfo/RoomIDText")
-    self.tipNode = self.roomInfoNode:Find("TipNode")
-    self.finger = self.tipNode:Find("Finger")
-    -- local isCopyRoomNum = Util.GetFromPlayerPrefs("isCopyRoomNum")
+    self.roomInfoText = self.unityViewNode:GetChild("top_room_info")
 
-    -- if isCopyRoomNum == "1" then --复制过房号 则隐藏
-    --     self.tipNode:SetActive(false)
-    -- else
-    --     self.tipNode:SetActive(true)
-    --     local function fingerMove(posY)
-    --         self.fingerMoveAction =
-    --             self.unityViewNode:RunAction(
-    --             self.finger,
-    --             {
-    --                 "localMoveBy",
-    --                 0,
-    --                 posY,
-    --                 0.5,
-    --                 onEnd = function()
-    --                     fingerMove(-posY)
-    --                 end
-    --             }
-    --         )
+    -- self.unityViewNode:AddClick(
+    --     self.roomInfoNode,
+    --     function()
+    --         if self.room.roomNumber == nil then
+    --             return
+    --         end
+    --         self.tipNode:SetActive(false)
+    --         -- local content = "大丰关张:房号【" .. self.room.roomNumber .. "】, " .. self:getInvitationDescription()
+    --         -- Util.CopyClipboard(content)
+    --         prompt.showPrompt("复制房间信息成功，你可前往其他地方粘贴发送给好友！")
+    --         -- Util.SaveToPlayerPrefs("isCopyRoomNum", "1")
+    --         self.unityViewNode:StopAction(self.fingerMoveAction)
+    --         self.finger:Hide()
     --     end
-    --     fingerMove(20)
-    -- end
-    self.roomNumber = self.unityViewNode:SubGet("RoomInfo/RoomIDText", "Text")
-    self.roundInfo = self.unityViewNode:SubGet("RoomInfo/RoundInfo", "Text")
-
-    self.roomNumberObject:SetActive(false)
-    self.roundInfo:SetActive(false)
-    self.unityViewNode:AddClick(
-        self.roomInfoNode,
-        function()
-            if self.room.roomNumber == nil then
-                return
-            end
-            self.tipNode:SetActive(false)
-            -- local content = "大丰关张:房号【" .. self.room.roomNumber .. "】, " .. self:getInvitationDescription()
-            -- Util.CopyClipboard(content)
-            prompt.showPrompt("复制房间信息成功，你可前往其他地方粘贴发送给好友！")
-            -- Util.SaveToPlayerPrefs("isCopyRoomNum", "1")
-            self.unityViewNode:StopAction(self.fingerMoveAction)
-            self.finger:Hide()
-        end
-    )
+    -- )
 end
 
 function RoomView:initRoomTip()
@@ -603,24 +571,13 @@ end
 --显示房间号
 --------------------------------------
 function RoomView:showRoomNumber()
-    if self.roomNumber == nil then
-        return
-    end
-
-    -- local obj = self.unityViewNode.transform:Find("RuleTop")
     local room = self.room
-    if room.roomNumber ~= nil then
-        -- obj:SetActive(true)
-        self.roomNumber.text = string.format("房号:<color=#e9bf89>%s</color>", room.roomNumber)
-        self.roomNumberObject:SetActive(true)
-    end
-    self.roundInfo:SetActive(true)
-    local roundstr = "局数:<color=#e9bf89>%s/%s</color>"
-    local roomNumberStr = tostring(self.room.handNum)
-    self.roundInfo.text = string.format(roundstr, tostring(self.room.handStartted) or "0", roomNumberStr)
-    if self.room.handStartted and self.room.handStartted > 0 then
-        self.returnHallBtn:Hide()
-    end
+    local num = string.format(tostring(self.room.handStartted) or "0", "/", tostring((self.room.handNum)))
+    local str = "房号:" .. room.roomInfo.roomNumber .. " 局数:" .. num
+    self.roomInfoText.text = str
+    -- if self.room.handStartted and self.room.handStartted > 0 then
+    --     self.returnHallBtn:Hide()
+    -- end
 end
 
 --初始化时间 wifi信号 电量
@@ -864,29 +821,26 @@ end
 --初始化房间状态事件
 ----------------------------------------------------------
 function RoomView:initRoomStatus()
-    local roomView = self
-    local room = self.room
-
     -- 房间正在等待玩家准备
     local onWait = function()
         -- roomView.wind:SetActive(false)
         --等待状态重置上手牌遗留
-        roomView.room:resetForNewHand()
+        self.room:resetForNewHand()
         --roomView.tilesInWall:SetActive(false)
 
-        local config = self.room:getRoomConfig()
-        if config ~= nil then
-            logger.debug(" players:", room:playerCount(), ", required:", config.playerNumAcquired)
-            if room:playerCount() >= config.playerNumAcquired then
-                roomView.invitButton:SetActive(false)
-            else
-                -- IOS 提审
-                -- if configModule:IsIosAudit() then
-                --     roomView.invitButton:SetActive(false)
-                -- end
-                roomView.invitButton:SetActive(true)
-            end
-        end
+        -- local config = self.room:getRoomConfig()
+        -- if config ~= nil then
+        --     logger.debug(" players:", room:playerCount(), ", required:", config.playerNumAcquired)
+        --     if room:playerCount() >= config.playerNumAcquired then
+        --         roomView.invitButton:SetActive(false)
+        --     else
+        --         -- IOS 提审
+        --         -- if configModule:IsIosAudit() then
+        --         --     roomView.invitButton:SetActive(false)
+        --         -- end
+        --         roomView.invitButton:SetActive(true)
+        --     end
+        -- end
 
         -- roomView:updateLeaveAndDisbandButtons()
     end
@@ -900,19 +854,17 @@ function RoomView:initRoomStatus()
         -- roomView.invitButton:SetActive(false)
         -- roomView.returnHallBtn:SetActive(false)
         --roomView.wind:SetActive(false) --发牌的时候，或者掉线恢复的时候会设置风圈因此此处不需要visible
-
         --if not room:isReplayMode() then
         --<color=#775D42FF>" .. formatStr .. "</color>
         -- local roundstr = "局数:<color=#e9bf89>%s/%s</color>"
         --roomView.tilesInWall:SetActive(true)
         -- roomView.tipNode:SetActive(false)
         -- roomView.ruleTipNode:SetActive(false)
-        roomView.roundInfo.text = string.format("局数:", tostring(self.room.handStartted), tostring((self.room.handNum)))
+        self:showRoomNumber()
         -- else
         --     roomView.curRound:SetActive(false)
         --     roomView.totalRound:SetActive(false)
         -- end
-
         -- roomView:updateLeaveAndDisbandButtons()
         -- self.scrollTip:Hide()
         -- self.unityViewNode:StopTimer("SHowTips")

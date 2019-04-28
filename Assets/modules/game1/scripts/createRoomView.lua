@@ -356,8 +356,8 @@ function CreateRoomView:createRoom()
         body,
         function(req, resp)
             if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
-                logger.debug("create room ok--------: ", resp.Data)
                 local createRoomRsp = proto.decodeMessage("lobby.MsgCreateRoomRsp", resp.Data)
+                logger.debug("create room ok createRoomRsp--------: ", createRoomRsp)
                 self:enterGame(createRoomRsp.roomInfo.gameServerID, createRoomRsp.roomInfo)
             else
                 logger.debug("create room error : ", req.State)

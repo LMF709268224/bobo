@@ -153,7 +153,7 @@ end
 -- 判断player是否玩家自身
 -------------------------------------------
 function Room:isMe(player)
-    return self.user.userID == player.userID
+    return tostring(self.user.userID) == tostring(player.userID)
 end
 
 -------------------------------------------

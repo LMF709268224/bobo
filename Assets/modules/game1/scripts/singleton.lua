@@ -181,8 +181,8 @@ function SG:doEnterRoom(url, myUser, roomInfo)
     logger.info("doEnterRoom leave---")
 end
 
-function SG:createRoom(roomInfo)
-    self.room = room.new(self.myUser)
+function SG:createRoom(myUser, roomInfo)
+    self.room = room.new(myUser)
     self.room.host = self
     self.room.roomInfo = roomInfo
     self.room:loadRoomView()
