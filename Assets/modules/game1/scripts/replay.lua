@@ -76,7 +76,7 @@ function Replay:gogogo()
 
     -- 显示操作面板
     -- 去除模式对话框背景色（40%透明），设置为100%透明
-    self.modalLayerColor = _ENV.CS.FairyGUI.UIConfig.modalLayerColor
+    self.modalLayerColor = fairy.GRoot.inst.modalLayer.color
     local color = _ENV.CS.UnityEngine.Color(0, 0, 0, 0)
     fairy.GRoot.inst.modalLayer.color = color
 
