@@ -79,7 +79,6 @@ function Replay:gogogo()
     self.modalLayerColor = _ENV.CS.FairyGUI.UIConfig.modalLayerColor
     local color = _ENV.CS.UnityEngine.Color(0, 0, 0, 0)
     fairy.GRoot.inst.modalLayer.color = color
-    _ENV.CS.FairyGUI.UIConfig.modalLayerColor = color
 
     _ENV.thisMod:AddUIPackage("lobby/fui_replay/lobby_replay")
     local view = _ENV.thisMod:CreateUIObject("lobby_replay", "operations")
@@ -105,7 +104,6 @@ function Replay:gogogo()
 
     -- 还原模式对话框背景色（40%透明）
     fairy.GRoot.inst.modalLayer.color = self.modalLayerColor
-    _ENV.CS.FairyGUI.UIConfig.modalLayerColor = self.modalLayerColor
 end
 
 function Replay:startStepTimer()
