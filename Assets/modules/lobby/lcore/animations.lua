@@ -140,6 +140,8 @@ function AnimationMgr.playAnimation(ctx)
 
 	local goCached = getGocached(ctx)
 	playGameObject(goCached, ctx)
+
+	return goCached
 end
 
 function AnimationMgr.play(prefabName, parentComponent, x, y, noAutoHide)
@@ -151,7 +153,7 @@ function AnimationMgr.play(prefabName, parentComponent, x, y, noAutoHide)
 		noAutoHide = noAutoHide
 	}
 
-	AnimationMgr.playAnimation(ctx)
+	return AnimationMgr.playAnimation(ctx)
 end
 
 function AnimationMgr.coplay(prefabName, parentComponent, x, y)
@@ -163,7 +165,7 @@ function AnimationMgr.coplay(prefabName, parentComponent, x, y)
 		coYield = true
 	}
 
-	AnimationMgr.playAnimation(ctx)
+	return AnimationMgr.playAnimation(ctx)
 end
 
 return AnimationMgr
