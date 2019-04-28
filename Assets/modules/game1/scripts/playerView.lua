@@ -834,6 +834,11 @@ function PlayerView:getPartnerWeixinIcon(iconUrl, compCallback, failCallback)
     end
 end
 
+-- 设置当局分数
+function PlayerView:setCurScore(scroe)
+    self.head.scoreText.text = tostring(scroe)
+end
+
 ----------------------------------------------------------
 --显示桌主
 ----------------------------------------------------------

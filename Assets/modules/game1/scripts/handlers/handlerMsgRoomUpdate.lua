@@ -144,8 +144,7 @@ function Handler.onMsg(msgData, room)
     end
     for _, player in pairs(room.players) do
         if player ~= nil and player.totalScores ~= nil then
-            logger.debug(" 更新 player.totalScores ： ", player.totalScores)
-        -- player.playerView:setGold(player.totalScores)
+            player.playerView:setCurScore(player.totalScores)
         end
     end
 end

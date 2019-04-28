@@ -332,10 +332,6 @@ end
 function Player:bindView(playerView)
     self.playerView = playerView
     playerView.player = self
-    if self.nick ~= nil then
-        playerView.head.scoreText.text = "" .. self.nick
-    end
-
     playerView:initCardLists()
     -- playerView.head.root:SetActive(true)
     -- playerView.tilesRoot:SetActive(true)
