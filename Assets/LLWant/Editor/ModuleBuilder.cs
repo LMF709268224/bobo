@@ -105,6 +105,8 @@ public class ModuleBuilder
         var mcfg = new ModOutputCfg();
         mcfg.name = mb.Cfg.Name;
         mcfg.version = mb.version;
+        mcfg.csVer = ctx.csVersion;
+        mcfg.lobbyVer = ctx.lobbyVersion;
 
         var bcfgList = new List<ModBundleOutputCfg>();
         foreach(var bb in mb.bundleBuilders)
@@ -140,5 +142,15 @@ public class ModuleBuilder
 
         var vstr = text.Substring(quto1Index + 1, quto2Index - quto1Index - 1);
         return vstr;
+    }
+
+    public static string GetLobbyVersionString()
+    {
+        return GetVersionString(ProductCfg.LOBBY_MODULE_NAME);
+    }
+
+    public static string GetCSVersionString()
+    {
+        return Version.VER_STR;
     }
 }

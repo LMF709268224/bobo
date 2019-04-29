@@ -8,6 +8,8 @@ public class ModOutputCfg
 {
     public string name;
     public string version;
+    public string csVer;
+    public string lobbyVer;
     public ModBundleOutputCfg[] abList;
 }
 

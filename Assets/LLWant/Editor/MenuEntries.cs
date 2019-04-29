@@ -9,6 +9,8 @@ public class CreateAssetBundlesContext
     public string modulesRootPath;
     public BuildAssetBundleOptions options;
     public BuildTarget target;
+    public string csVersion;
+    public string lobbyVersion;
 }
 
 public class CreateAssetBundles
@@ -32,6 +34,8 @@ public class CreateAssetBundles
         ctx.options = options;
         ctx.target = EditorUserBuildSettings.activeBuildTarget;
         ctx.modulesRootPath = Path.Combine(UnityEngine.Application.dataPath, ProductCfg.MODULES_PATH);
+        ctx.csVersion = ModuleBuilder.GetCSVersionString();
+        ctx.lobbyVersion = ModuleBuilder.GetLobbyVersionString();
 
         if (Directory.Exists(outputRootDir))
         {

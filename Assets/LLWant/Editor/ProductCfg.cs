@@ -10,6 +10,7 @@ public class ProductCfg
 {
     public const string TEXT_PATH_TEMP = "TextABTemp";
     public const string MODULES_PATH = "modules";
+    public static string LOBBY_MODULE_NAME = "lobby";
 
     [DataContract]
     public class BundleCfg
@@ -58,7 +59,7 @@ public class ProductCfg
 
     [DataMember(Name = "modules")]
     public List<ModuleCfg> Modules = new List<ModuleCfg>();
-    
+
     public void Dump(StringBuilder sb)
     {
         sb.AppendLine($"Product name:{Name}");

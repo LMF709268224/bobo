@@ -35,6 +35,10 @@
 					"filters":"*.png,*.bytes"
 				},
 				{
+					"path":"lobby/fui_replay",
+					"filters":"*.png,*.bytes"
+				},
+				{
 					"path":"lobby/scripts/chat",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
