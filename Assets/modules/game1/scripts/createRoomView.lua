@@ -319,8 +319,8 @@ function CreateRoomView:updateCostDiamond()
 end
 
 function CreateRoomView:enterGame(serverUUID, roomInfo)
-    local uu = CS.UnityEngine.PlayerPrefs.GetString("userInfo", "")
-    local userInfo = rapidjson.decode(uu)
+    local userID = CS.UnityEngine.PlayerPrefs.GetString("userID", "")
+    -- local userInfo = rapidjson.decode(uu)
     -- serverUUID = "",
     -- myUser = "",
     -- roomInfo = ""
@@ -330,7 +330,7 @@ function CreateRoomView:enterGame(serverUUID, roomInfo)
     local co =
         coroutine.create(
         function()
-            singleton:tryEnterRoom(serverUUID, {userID = userInfo.userID}, roomInfo)
+            singleton:tryEnterRoom(serverUUID, {userID = userID}, roomInfo)
         end
     )
 
