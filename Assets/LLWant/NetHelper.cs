@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
+using BestHTTP.Decompression.Zlib;
+using System.IO;
 
 /// <summary>
 /// 搞若干个网络相关的辅助函数，方便lua环境内使用
@@ -169,5 +171,25 @@ public static class NetHelper
         var hotfix = int.Parse(vers[2]);
 
         return (major << 24) | (minor << 16) | hotfix;
+    }
+
+    /// <summary>
+    /// 解压gzip
+    /// </summary>
+    /// <param name="ver"></param>
+    /// <returns></returns>
+    public static byte[] GZipDeflate(byte[] bytes) {
+        using (var readMS = new MemoryStream(bytes)) {
+            var gzi =  new GZipStream(readMS, CompressionMode.Decompress);
+            using (var writeMS = new MemoryStream(4096)) {
+                int count = 0;
+                byte[] data = new byte[4096];
+                while ((count = gzi.Read(data, 0, data.Length)) != 0) {
+                    writeMS.Write(data, 0, count);
+                }
+
+                return writeMS.ToArray();
+            }
+        }
     }
 }

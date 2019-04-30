@@ -26,7 +26,7 @@ function RecordTotalView.showView()
 
     RecordTotalView.win:Show()
 
-    -- RecordTotalView:loadData()
+    RecordTotalView:loadData()
 end
 
 function RecordTotalView:initView()
@@ -81,18 +81,23 @@ end
 
 function RecordTotalView:loadData()
     local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
-    local url = urlpathsCfg.rootURL .. urlpathsCfg.lrproom .. "?tk=" .. tk
+    local url = urlpathsCfg.rootURL .. urlpathsCfg.lrproom .. "?rt=1&tk=" .. tk
     httpHelper.get(
         self.viewNode,
         url,
         function(req, resp)
             if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
-                -- self:enterGame(createRoomRsp.roomInfo.gameServerID, createRoomRsp.roomInfo)
-                local createRoomRsp = proto.decodeMessage("lobby.MsgAccLoadReplayRoomsReply", resp.Data)
-                logger.debug("+++++++++++++++++++++++--------: ", createRoomRsp)
+                if resp.data then
+                    local data = CS.NetHelper.GZipDeflate(resp.data)
+                    -- self:enterGame(createRoomRsp.roomInfo.gameServerID, createRoomRsp.roomInfo)
+                    local createRoomRsp = proto.decodeMessage("lobby.MsgAccLoadReplayRoomsReply", data)
+                    logger.debug("+++++++++++++++++++++++--------: ", createRoomRsp)
 
-                --初始化数据
-                self:updateList()
+                    --初始化数据
+                    self:updateList()
+                else
+                    logger.log("no room reply")
+                end
             else
                 errHelper.dumpHttpReqError(req)
             end
