@@ -87,16 +87,17 @@ function RecordTotalView:loadData()
         url,
         function(req, resp)
             if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
-                if resp.data then
-                    local data = CS.NetHelper.GZipDeflate(resp.data)
-                    -- self:enterGame(createRoomRsp.roomInfo.gameServerID, createRoomRsp.roomInfo)
-                    local createRoomRsp = proto.decodeMessage("lobby.MsgAccLoadReplayRoomsReply", data)
-                    logger.debug("+++++++++++++++++++++++--------: ", createRoomRsp)
+                local httpError = errHelper.dumpHttpRespError(resp)
+                if httpError == nil then
+                    if resp.Data then
+                        local data = CS.NetHelper.GZipDeflate(resp.Data)
+                        -- self:enterGame(createRoomRsp.roomInfo.gameServerID, createRoomRsp.roomInfo)
+                        local createRoomRsp = proto.decodeMessage("lobby.MsgAccLoadReplayRoomsReply", data)
+                        logger.debug("+++++++++++++++++++++++--------: ", createRoomRsp)
 
-                    --初始化数据
-                    self:updateList()
-                else
-                    logger.log("no room reply")
+                        --初始化数据
+                        self:updateList()
+                    end
                 end
             else
                 errHelper.dumpHttpReqError(req)
