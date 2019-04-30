@@ -1,5 +1,6 @@
 local logger = require "lobby/lcore/logger"
 local CreateRoomView = require "scripts/createRoomView"
+-- local RecordTotalView = require "scripts/recordTotalView"
 
 logger.warn("i am game1")
 
@@ -21,6 +22,11 @@ local function testCreateUI()
 	CreateRoomView.new()
 end
 
+-- local function testRecordUI()
+-- 	_ENV.thisMod:AddUIPackage("game1/fgui/runfast")
+-- 	RecordTotalView.showView()
+-- end
+
 local function goTestGame()
 	local singletonMod = require("scripts/singleton")
 	local singleton = singletonMod.getSingleton()
@@ -32,7 +38,7 @@ local function goTestGame()
 			local serverUUID = "uuid"
 			local userID = pp.GetString("userID", "")
 			local myUser = {userID = userID}
-			local roomInfo = {roomID = "monkey-room", roomNumber="monkey"}
+			local roomInfo = {roomID = "monkey-room", roomNumber = "monkey"}
 			singleton:tryEnterRoom(serverUUID, myUser, roomInfo)
 		end
 	)
@@ -116,13 +122,12 @@ local function main()
 		local json = rapidjson.decode(jsonString)
 		logger.debug("launchArgs:", json)
 		if json.gameType == "1" then
-			-- logger.debug("abc == 1")
 			goTestGame()
 		elseif json.gameType == "2" then
-			-- logger.debug("abc == 2")
 			testCreateUI()
 		elseif json.gameType == "3" then
 			goTestReplay()
+		-- testRecordUI()
 		end
 	end
 

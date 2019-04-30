@@ -258,6 +258,7 @@ end
 --显示赢标志
 function HandResultView:showWin(c)
     animation.play("animations/Effects_jiemian_huosheng.prefab", c.group, c.aniPos.x, c.aniPos.y, true)
+
     -- local prefabName = dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_WIN .. ".prefab"
     -- local effobj = Animator.PlayLoop(prefabName, self.canvasOrder)
     -- effobj:SetParent(c.group.transform, false)

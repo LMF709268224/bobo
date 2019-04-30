@@ -20,7 +20,10 @@ local UrlPaths = {
 	register = "/lobby/uuid/trust/register",
 	chat = "/lobby/uuid/untrust/chat",
 	lobbyWebsocket = "ws://172.18.3.126:3002/lobby/uuid/ws/",
-	createRoom = "/lobby/uuid/untrust/createRoom"
+	createRoom = "/lobby/uuid/untrust/createRoom",
+	--战绩
+	lrproom = "/lobby/uuid/untrust/lrproom",
+	lrprecord = "/lobby/uuid/untrust/lrprecord"
 }
 
 return UrlPaths
