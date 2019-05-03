@@ -148,6 +148,13 @@ function HTTPHelper.post(component, url, body, onFinished)
 	return reqWrapper
 end
 
+function HTTPHelper.postRequest(component, url, onFinished)
+	local reqWrapper = newHttpRequest(component, url, CS.BestHTTP.HTTPMethods.Post, onFinished)
+
+	-- 外部需要自己调用reqWrapper.req:Send()
+	return reqWrapper
+end
+
 function HTTPHelper.websocket(component, url)
 	local ws = CS.BestHTTP.WebSocket.WebSocket(CS.System.Uri(url))
 	local reqWrapper = {ws = ws, isWS = true}

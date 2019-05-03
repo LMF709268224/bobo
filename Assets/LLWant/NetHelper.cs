@@ -172,24 +172,4 @@ public static class NetHelper
 
         return (major << 24) | (minor << 16) | hotfix;
     }
-
-    /// <summary>
-    /// 解压gzip
-    /// </summary>
-    /// <param name="ver"></param>
-    /// <returns></returns>
-    public static byte[] GZipDeflate(byte[] bytes) {
-        using (var readMS = new MemoryStream(bytes)) {
-            var gzi =  new GZipStream(readMS, CompressionMode.Decompress);
-            using (var writeMS = new MemoryStream(4096)) {
-                int count = 0;
-                byte[] data = new byte[4096];
-                while ((count = gzi.Read(data, 0, data.Length)) != 0) {
-                    writeMS.Write(data, 0, count);
-                }
-
-                return writeMS.ToArray();
-            }
-        }
-    }
 }

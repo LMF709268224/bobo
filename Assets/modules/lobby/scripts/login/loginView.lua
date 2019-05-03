@@ -59,9 +59,51 @@ function LoginView:initView()
     progressView:updateView(self)
 end
 
+-- local function testUploadLog()
+	-- local logPath = CS.UnityEngine.Application.persistentDataPath
+	-- local logAName = "Player.log"
+	-- local logA = logPath .. "/" .. logAName
+	-- local logBName = "Player-prev.log"
+	-- local logB = logPath .. "/" .. logBName
+	-- -- 拼接日志文件名时，时间戳在前面，便于排序查看
+	-- local zipfileName = "timestamp-userid-log.zip"
+	-- local zipfile = logPath .. "/" .. zipfileName
+	-- CS.System.IO.File.Delete(zipfile)
+
+	-- local zip = CS.ZipStorer.Create(zipfile, "log")
+	-- zip:AddFile(CS.ZipStorer.Compression.Deflate, logA, logAName, "logA")
+	-- zip:AddFile(CS.ZipStorer.Compression.Deflate, logB, logBName, "logB")
+
+	-- zip:Close()
+
+	-- local zipContent = CS.System.IO.File.ReadAllBytes(zipfile)
+	-- local httpHelper = require ('lobby/lcore/httpHelper')
+	-- local reqWrapper = httpHelper.postRequest(LoginView.viewNode, 'http://localhost:3000/upload', function(req, resp)
+		-- if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
+			-- httpError = errHelper.dumpHttpRespError(resp)
+			-- resp:Dispose()
+		-- else
+			-- httpError = errHelper.dumpHttpReqError(req)
+		-- end
+
+		-- if httpError ~= nil then
+			-- logger.debug('upload log error', httpError)
+		-- else
+			-- logger.debug('upload log succeed')
+		-- end
+		-- req:Dispose()
+	-- end)
+
+	-- reqWrapper.req:AddBinaryData("file", zipContent, zipfileName)
+	-- reqWrapper.req:Send()
+-- end
+
 function LoginView:onQuicklyBtnClick()
-    logger.debug("onQuicklyBtnClick")
-    self:quicklyLogin()
+    -- logger.debug("onQuicklyBtnClick")
+    -- self:quicklyLogin()
+
+	-- 测试压缩文件
+	--testUploadLog()
 end
 
 function LoginView:onWeixinBtnClick()

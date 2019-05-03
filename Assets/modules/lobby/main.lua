@@ -61,7 +61,8 @@ onGameEnter()
 -- 子游戏模块会调用本函数（通过跨lua虚拟机调用）
 _ENV.gameServerScheme = function()
 	-- 以后这个host也统一到某个lua文件中，由它结合防DDOS流程来给出
-	return "ws://172.18.3.126:3001"
+	-- "ws://172.18.3.126:3001"
+	return "ws://localhost:3001"
 end
 
 local function showLoginView()
