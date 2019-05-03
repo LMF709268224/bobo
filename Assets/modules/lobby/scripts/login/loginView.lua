@@ -10,6 +10,7 @@ local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
 local httpHelper = require "lobby/lcore/httpHelper"
 local proto = require "lobby/scripts/proto/proto"
 local errHelper = require "lobby/lcore/lobbyErrHelper"
+local dialog = require "lobby/lcore/dialog"
 local CS = _ENV.CS
 
 function LoginView.showLoginView()
@@ -150,6 +151,24 @@ function LoginView:destroy()
     self.win = nil
 end
 
+function LoginView:showLoginErrMsg(errCode)
+    local errMsg = {}
+    errMsg[proto.LoginError.ErrParamWechatCodeIsEmpty] = "获取微信code失败"
+    errMsg[proto.LoginError.ErrLoadWechatUserInfoFailed] = "获取微信用户信息失败"
+    errMsg[proto.LoginError.ErrParamAccountIsEmpty] = "输入账号不能为空"
+    errMsg[proto.LoginError.ErrParamPasswordIsEmpty] = "输入密码不能为空"
+    errMsg[proto.LoginError.ErrAccountNotExist] = "输入账号不存在"
+    errMsg[proto.LoginError.ErrAccountNotSetPassword] = "账号没有设置密码，不能登录"
+    errMsg[proto.LoginError.ErrPasswordNotMatch] = "账号没有设置密码，不能登录"
+
+    local msg = errMsg[errCode]
+    if not msg then
+        msg = "登录失败"
+    end
+
+    dialog.showDialog(msg)
+end
+
 function LoginView:quicklyLogin()
     local account = CS.UnityEngine.PlayerPrefs.GetString("account", "")
     local quicklyLoginURL = urlpathsCfg.rootURL .. urlpathsCfg.quicklyLogin .. "?&account=" .. account
@@ -169,12 +188,16 @@ function LoginView:quicklyLogin()
                     else
                         -- TODO: show error msg
                         logger.debug("quickly login error, errCode:", quicklyLoginReply.result)
+                        self:showLoginErrMsg(quicklyLoginReply.result)
                     end
                     logger.debug("quicklyLoginReply", quicklyLoginReply)
                 end
                 resp:Dispose()
             else
-                errHelper.dumpHttpReqError(req)
+               local err = errHelper.dumpHttpReqError(req)
+               if err then
+                   dialog.showDialog(err.msg)
+               end
             end
 
             req:Dispose()

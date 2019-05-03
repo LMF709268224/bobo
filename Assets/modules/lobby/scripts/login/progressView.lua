@@ -6,6 +6,7 @@ local ProgressView = {}
 local mt = {__index = ProgressView}
 local logger = require "lobby/lcore/logger"
 local lenv = require "lobby/lenv"
+local dialog = require "lobby/lcore/dialog"
 local CS = _ENV.CS
 
 function ProgressView:new(loginView)
@@ -70,6 +71,25 @@ function ProgressView:isUpgradeEnable()
 	return not isEditor
 end
 
+---------------------------------------
+--显示重连对话框，如果用户选择重试
+--则return true，否则返回false
+---------------------------------------
+function ProgressView:showRetryMsgBox(msg)
+	local retry = false
+    dialog.coShowDialog(
+        msg,
+		function()
+			retry = true
+        end,
+        function()
+			retry = false
+        end
+	)
+
+	return retry
+end
+
 function ProgressView:runCoroutine()
 	logger.trace("mainEntryCoroutine()")
 
@@ -86,7 +106,7 @@ function ProgressView:runCoroutine()
 			err, upgraded = self:doUpgrade()
 			if err ~= nil then
 				-- 发生错误，询问是否重试
-				retry = self.loginView:msgBox(err)
+				retry = self:showRetryMsgBox(err)
 			else
 				break
 			end
