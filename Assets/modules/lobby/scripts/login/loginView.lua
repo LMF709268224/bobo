@@ -99,8 +99,8 @@ end
 -- end
 
 function LoginView:onQuicklyBtnClick()
-    -- logger.debug("onQuicklyBtnClick")
-    -- self:quicklyLogin()
+    logger.debug("onQuicklyBtnClick")
+    self:quicklyLogin()
 
 	-- 测试压缩文件
 	--testUploadLog()
