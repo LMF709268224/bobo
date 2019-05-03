@@ -19,7 +19,7 @@ local UrlPaths = {
 	wxLogin = "/lobby/uuid/wxLogin",
 	register = "/lobby/uuid/register",
 	chat = "/lobby/uuid/chat",
-	lobbyWebsocket = "ws://172.18.3.126:3002/lobby/uuid/ws/",
+	lobbyWebsocket = "ws://172.18.3.126:3002/lobby/uuid/ws",
 	createRoom = "/lobby/uuid/createRoom",
 	--战绩
 	lrproom = "/lobby/uuid/lrproom",
