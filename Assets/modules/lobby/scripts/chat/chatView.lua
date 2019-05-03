@@ -41,8 +41,7 @@ function ChatView.showChatView()
     ChatView.viewNode.x = screenWidth - 500
     ChatView.viewNode.y = 0
     --自己的信息
-    local uu = CS.UnityEngine.PlayerPrefs.GetString("userInfo", "")
-    ChatView.userInfo = rapidjson.decode(uu)
+    ChatView.userID = CS.UnityEngine.PlayerPrefs.GetString("userID", "")
 end
 
 function ChatView:initView()
@@ -164,11 +163,12 @@ function ChatView:sendMsg(str)
     -- local co = coroutine.running()
     -- 请求服务器获取模块更新信息
     local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
-    local info = self.userInfo
+    local nickname = CS.UnityEngine.PlayerPrefs.GetString("nickName", "")
+
     local url = urlpathsCfg.rootURL .. urlpathsCfg.chat .. "?tk=" .. tk
-    local jsonString = rapidjson.encode({msg = str, url = "", nickname = info.nickName, sex = "", index = 0})
+    local jsonString = rapidjson.encode({msg = str, url = "", nickname = nickname, sex = "", index = 0})
     local chat = {
-        from = info.userID,
+        from = self.userID,
         scope = proto.lobby.ChatScopeType.InRoom,
         dataType = proto.lobby.ChatDataType.Text,
         data = jsonString
@@ -202,9 +202,8 @@ end
 
 function ChatView:getHistoryListItemResource(index)
     local msgChat = self.msgList[index + 1]
-    -- logger.debug("self.userInfo.userID : ", self.userInfo.userID)
     -- logger.debug("msgChat.from : ", msgChat.from)
-    if tostring(msgChat.from) == tostring(self.userInfo.userID) then
+    if tostring(msgChat.from) == tostring(self.userID) then
         return "ui://lobby_chat/chat_history_me_item"
     else
         return "ui://lobby_chat/chat_history_other_item"
