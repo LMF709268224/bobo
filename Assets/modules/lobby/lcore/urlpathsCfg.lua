@@ -14,16 +14,16 @@ local UrlPaths = {
 	gameWebsocketMonkey = "/game/%s/ws/monkey",
 	gameWebsocketPlay = "/game/%s/ws/play",
 	rootURL = "http://172.18.3.126:3002",
-	quicklyLogin = "/lobby/uuid/trust/quicklyLogin",
-	accountLogin = "/lobby/uuid/trust/accountLogin",
-	wxLogin = "/lobby/uuid/trust/wxLogin",
-	register = "/lobby/uuid/trust/register",
-	chat = "/lobby/uuid/untrust/chat",
+	quicklyLogin = "/lobby/uuid/quicklyLogin",
+	accountLogin = "/lobby/uuid/accountLogin",
+	wxLogin = "/lobby/uuid/wxLogin",
+	register = "/lobby/uuid/register",
+	chat = "/lobby/uuid/chat",
 	lobbyWebsocket = "ws://172.18.3.126:3002/lobby/uuid/ws/",
-	createRoom = "/lobby/uuid/untrust/createRoom",
+	createRoom = "/lobby/uuid/createRoom",
 	--战绩
-	lrproom = "/lobby/uuid/untrust/lrproom",
-	lrprecord = "/lobby/uuid/untrust/lrprecord"
+	lrproom = "/lobby/uuid/lrproom",
+	lrprecord = "/lobby/uuid/lrprecord"
 }
 
 return UrlPaths
