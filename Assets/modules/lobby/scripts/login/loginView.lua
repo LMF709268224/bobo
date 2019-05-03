@@ -166,7 +166,10 @@ function LoginView:showLoginErrMsg(errCode)
         msg = "登录失败"
     end
 
-    dialog.showDialog(msg)
+    dialog.showDialog(msg,
+        function()
+        end
+    )
 end
 
 function LoginView:quicklyLogin()
@@ -196,7 +199,10 @@ function LoginView:quicklyLogin()
             else
                local err = errHelper.dumpHttpReqError(req)
                if err then
-                   dialog.showDialog(err.msg)
+                   dialog.showDialog(err.msg,
+                        function()
+                        end
+                    )
                end
             end
 
