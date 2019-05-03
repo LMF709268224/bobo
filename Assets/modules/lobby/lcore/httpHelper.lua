@@ -118,6 +118,11 @@ local function newHttpRequest(component, url, method, onFinished)
 		end
 	)
 
+	-- 设置一下timeout，其中connect timeout 为2秒，bestHTTP默认是20秒
+	-- send/receive timeout 设置为15秒，bestHTTP默认是60秒
+	req.ConnectTimeout = CS.System.TimeSpan.FromSeconds(2)
+	req.Timeout = CS.System.TimeSpan.FromSeconds(15)
+
 	reqWrapper.req = req
 
 	addReq(component, reqWrapper)
@@ -157,6 +162,10 @@ end
 
 function HTTPHelper.websocket(component, url)
 	local ws = CS.BestHTTP.WebSocket.WebSocket(CS.System.Uri(url))
+	local req = ws.InternalRequest
+	-- 设置一下timeout，其中connect timeout 为2秒，bestHTTP默认是20秒
+	req.ConnectTimeout = CS.System.TimeSpan.FromSeconds(2)
+
 	local reqWrapper = {ws = ws, isWS = true}
 	addReq(component, reqWrapper)
 
