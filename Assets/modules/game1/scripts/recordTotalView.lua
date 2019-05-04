@@ -3,7 +3,6 @@
 ]]
 --luacheck: no self
 local RecordTotalView = {}
-local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
 local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
 local httpHelper = require "lobby/lcore/httpHelper"
@@ -48,9 +47,13 @@ function RecordTotalView:initView()
     end
     self.list:SetVirtual()
 end
--- 更新短语列表
-function RecordTotalView:updateList()
+-- 更新列表
+function RecordTotalView:updateList(createRoomRsp)
     self.dataMap = {}
+    for i, replayRoom in ipairs(createRoomRsp.replayRooms) do
+        local r = proto.decodeMessage("lobby.MsgReplayRoom", replayRoom.replayRoomBytes)
+        self.dataMap[i] = r
+    end
     self.list.onClickItem:Add(
         function(onClickItem)
             self:sendMsg(onClickItem.data:GetChild("n0").text)
@@ -59,10 +62,35 @@ function RecordTotalView:updateList()
 
     self.list.numItems = #self.dataMap
 end
+
 function RecordTotalView:renderPhraseListItem(index, obj)
-    local msg = self.dataMap[index + 1]
-    local t = obj:GetChild("n0")
-    t.text = msg
+    local replayRoom = self.dataMap[index + 1]
+
+    local roomNumber = obj:GetChild("roomNumber")
+    roomNumber.text = replayRoom.roomNumber .. "号 房间"
+    local gameName = obj:GetChild("gameName")
+    gameName.text = ""
+    local date = obj:GetChild("date")
+    date.text = os.date("%Y-%m-%d %H:%M", replayRoom.startTime * 60)
+    for i, playerInfo in ipairs(replayRoom.players) do
+        -- logger.debug("replayRoom.players ---------------- : ", playerInfo)
+        local player = obj:GetChild("player" .. i)
+        local name = player:GetChild("name")
+        name.text = playerInfo.nick
+        local winScore = player:GetChild("winScore")
+        local loseScore = player:GetChild("loseScore")
+        winScore.visible = false
+        loseScore.visible = false
+        if playerInfo.totalScore < 0 then
+            loseScore.visible = true
+            loseScore.text = playerInfo.totalScore
+        else
+            winScore.visible = true
+            winScore.text = "+" .. playerInfo.totalScore
+        end
+        local roomOwer = player:GetChild("roomOwer")
+        roomOwer.visible = false
+    end
 end
 
 function RecordTotalView:showLobbyView()
@@ -90,13 +118,11 @@ function RecordTotalView:loadData()
                 local httpError = errHelper.dumpHttpRespError(resp)
                 if httpError == nil then
                     if resp.Data then
-                        local data = CS.NetHelper.GZipDeflate(resp.Data)
-                        -- self:enterGame(createRoomRsp.roomInfo.gameServerID, createRoomRsp.roomInfo)
-                        local createRoomRsp = proto.decodeMessage("lobby.MsgAccLoadReplayRoomsReply", data)
-                        logger.debug("+++++++++++++++++++++++--------: ", createRoomRsp)
+                        local createRoomRsp = proto.decodeMessage("lobby.MsgAccLoadReplayRoomsReply", resp.Data)
+                        -- logger.debug("+++++++++++++++++++++++--------: ", createRoomRsp)
 
-                        --初始化数据
-                        self:updateList()
+                        -- 初始化数据
+                        self:updateList(createRoomRsp)
                     end
                 end
             else
