@@ -150,7 +150,8 @@ function Updater:checkUpdate()
 
 	-- 检查服务器HTTP返回结果
 	if httpError ~= nil then
-		return httpError
+		return {code = errHelper.ERR_HTTP_TIME_OUT, msg = "连接超时"}
+
 	end
 
 	if respBytes == nil then
@@ -159,6 +160,9 @@ function Updater:checkUpdate()
 
 	-- JSON decode得到远端json配置
 	local remoteJSON = rapidjson.decode(respBytes)
+
+	logger.trace("Updater:checkUpdate,remoteJSON = ",remoteJSON)
+
 	if remoteJSON == nil then
 		-- 没有内容需要更新
 		return {code = errHelper.ERR_JSON_DECODE, msg = "无法decode服务器返的json字符串"}
