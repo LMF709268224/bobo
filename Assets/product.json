@@ -39,12 +39,22 @@
 					"filters":"*.png,*.bytes"
 				},
 				{
+					"path":"lobby/scripts",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
 					"path":"lobby/scripts/chat",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
 				},
 				{
 					"path":"lobby/scripts/login",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"lobby/scripts/proto",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
 				}

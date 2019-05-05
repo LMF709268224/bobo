@@ -106,7 +106,7 @@ function ProgressView:runCoroutine()
 			err, upgraded = self:doUpgrade()
 			if err ~= nil then
 				-- 发生错误，询问是否重试
-				retry = self:showRetryMsgBox(err)
+				retry = self:showRetryMsgBox(err.msg)
 			else
 				break
 			end
