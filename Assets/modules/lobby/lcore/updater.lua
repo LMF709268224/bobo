@@ -204,7 +204,7 @@ function Updater:checkUpdate()
 
 	self.totalSize = totalSize
 
-	local downloadURL = urlpathsCfg.rootURL..urlpathsCfg.updateDownload .. "/" .. self.modName .. "/" .. remoteJSON.version
+	local downloadURL = urlpathsCfg.updateDownload .. "/" .. self.modName .. "/" .. remoteJSON.version
 	for _, ab in ipairs(upgrades) do
 		if ab.url == nil then
 			ab.url = downloadURL .. "/" .. ab.name

@@ -10,7 +10,7 @@ Note:
 local UrlPaths = {
 	-- updateQuery = "/lobby/upgrade/query",
 	updateQuery = "/lobby/uuid/upgradeQuery",
-	updateDownload = "/webax/fileServer",
+	updateDownload = "http://172.18.3.126:3002/webax/fileServer",
 	gameWebsocketMonkey = "/game/%s/ws/monkey",
 	gameWebsocketPlay = "/game/%s/ws/play",
 	rootURL = "http://172.18.3.126:3002",
