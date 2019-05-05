@@ -12,7 +12,7 @@ public class Boot : MonoBehaviour
     // 大厅模块，之后的其他游戏模块，由大厅模块激活
     private ModuleHub lobby;
 
-    private string logPath;
+    private StreamWriter logWriter;
 
     // 用于每间隔一定时间调用一次lua虚拟机做GC
     private static float lastGCTime = 0;
@@ -32,7 +32,41 @@ public class Boot : MonoBehaviour
     {
         instance = this;
 
+        SubscribeLog();
+
         DoStart();
+    }
+
+    void SubscribeLog()
+    {
+        if (Application.platform != RuntimePlatform.Android
+            && Application.platform != RuntimePlatform.IPhonePlayer)
+        {
+            // 只在这两个平台上，才启用自定义的日志记录
+            return;
+        }
+
+        var logFileName = "Player.log";
+        var preLogFileName = "Player-prev.log";
+        var logFilePath = Path.Combine(Application.persistentDataPath, logFileName);
+        var preLogFilePath = Path.Combine(Application.persistentDataPath, preLogFileName);
+
+        if (File.Exists(preLogFilePath))
+        {
+            File.Delete(preLogFilePath);
+        }
+
+        if (File.Exists(logFilePath))
+        {
+            File.Move(logFilePath, preLogFilePath);
+        }
+
+        logWriter = new StreamWriter(logFilePath, false, System.Text.Encoding.UTF8);
+        Application.logMessageReceived += (logString, stackTrace, type) =>
+        {
+            // 只写，不flush
+            logWriter.Write("[" + type + "]" + logString + "\r\n");
+        };
     }
 
     private void DoStart()
@@ -135,5 +169,12 @@ public class Boot : MonoBehaviour
     void OnApplicationQuit()
     {
         Debug.Log("Application ending after " + Time.time + " seconds");
+
+        // 如果日志文件存在，则关闭文件
+        if (logWriter != null)
+        {
+            logWriter.Flush();
+            logWriter.Close();
+        }
     }
 }
