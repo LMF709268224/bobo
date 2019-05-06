@@ -150,6 +150,7 @@ function Updater:checkUpdate()
 
 	-- 检查服务器HTTP返回结果
 	if httpError ~= nil then
+		logger.trace("Updater:checkUpdate, httpError = ", httpError)
 		return {code = errHelper.ERR_HTTP_TIME_OUT, msg = "连接超时"}
 
 	end
@@ -160,8 +161,7 @@ function Updater:checkUpdate()
 
 	-- JSON decode得到远端json配置
 	local remoteJSON = rapidjson.decode(respBytes)
-
-	logger.trace("Updater:checkUpdate,remoteJSON = ",remoteJSON)
+	--logger.trace("Updater:checkUpdate,remoteJSON = ",remoteJSON)
 
 	if remoteJSON == nil then
 		-- 没有内容需要更新
@@ -175,12 +175,14 @@ function Updater:checkUpdate()
 
 	-- 不需要更新
 	if (not remoteJSON.abValid) then
+		logger.trace("Updater:checkUpdate, not remoteJSON.abValid")
 		return nil, false
 	end
 
 	-- 检查JSON配置合法
 	httpError = self:validateJSON(remoteJSON)
 	if httpError ~= nil then
+		logger.trace("Updater:checkUpdate, validateJSON error ",httpError)
 		return httpError
 	end
 
@@ -203,6 +205,7 @@ function Updater:checkUpdate()
 
 	if totalSize == 0 then
 		-- 没有内容需要更新
+		logger.trace("Updater:checkUpdate, totalSize === 0 ")
 		return nil, false
 	end
 
@@ -272,6 +275,7 @@ function Updater:doUpgrade(progressHandler, retryConfirmHandler)
 		remains = batch.remains
 
 		if #remains > 0 then
+			logger.trace("Updater:checkUpdate, remains === ",remains)
 			if retryConfirmHandler then
 				-- 询问是否重试
 				loop = retryConfirmHandler(totalCount, #remains)
