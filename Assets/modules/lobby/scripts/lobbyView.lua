@@ -84,6 +84,28 @@ function LobbyView:initView()
             self:onCoinClick()
         end
     )
+
+    local listView = self.viewNode:GetChild("n29")
+    local dfTestBtn = listView:GetChild("n8")
+    dfTestBtn.onClick:Set(
+        function()
+            self:ondfTestClick()
+        end
+    )
+end
+
+function LobbyView:ondfTestClick()
+    local mylobbyView = fairy.GRoot.inst:GetChildAt(0)
+    fairy.GRoot.inst:RemoveChild(mylobbyView)
+    fairy.GRoot.inst:CleanupChildren()
+
+    local parameters = {
+        gameType = "1"
+    }
+
+    local rapidjson = require("rapidjson")
+    local jsonString = rapidjson.encode(parameters)
+    _ENV.thisMod:LaunchGameModule("game2", jsonString)
 end
 
 function LobbyView:onCoinClick()
