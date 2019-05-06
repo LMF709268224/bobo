@@ -7,7 +7,9 @@ local logger = require "lobby/lcore/logger"
 local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
 local httpHelper = require "lobby/lcore/httpHelper"
 local proto = require "lobby/scripts/proto/proto"
+local urlEncoder = require "lobby/lcore/urlEncode"
 local rapidJson = require("rapidjson")
+local updateProgress = require "lobby/scripts/newRoom/updateProgress"
 local CS = _ENV.CS
 
 function NewRoomView.new()
@@ -35,7 +37,7 @@ function NewRoomView.new()
         )
     end
 
-    local clostBtn = NewRoomView.unityViewNode:GetChild("n51")
+    local clostBtn = NewRoomView.unityViewNode:GetChild("closeBtn")
     clostBtn.onClick:Set(
         function()
             NewRoomView:destroy()
@@ -46,11 +48,14 @@ function NewRoomView.new()
 end
 
 function NewRoomView:initAllView()
-    local gzRuleView = NewRoomView.unityViewNode:GetChild("n49")
+    self.progressBar = self.unityViewNode:GetChild("downloadProgress")
+    self.progressBar.visible = false
+
+    local gzRuleView = self.unityViewNode:GetChild("gzRule")
     local runFastRuleView = require "lobby/scripts/newRoom/runFastRuleView"
     runFastRuleView.bindView(gzRuleView, self)
 
-    -- local viewObj = NewRoomView.unityViewNode:GetChild("n50")
+    -- local viewObj = self.unityViewNode:GetChild("dfmjRule")
     -- local dfRuleView = require "lobby/scripts/newRoom/dfRuleView"
     -- dfRuleView.bindView(viewObj)
 end
@@ -73,16 +78,45 @@ function NewRoomView:reEnterGame(roomInfo)
     self.enterGame(roomInfo)
 end
 
-function NewRoomView:doUpgrade()
-    -- TODO: 更新
+function NewRoomView:doUpgrade(ruleJson, roomInfo)
+    logger.debug("doUpgrade")
+    local upgradeComplete = function()
+        self:enterGame(roomInfo)
+    end
+
+    updateProgress.updateView(self.unityViewNode, ruleJson.modName, self.progressBar, upgradeComplete)
 end
 
-function NewRoomView:createRoom(ruleJsonString)
+function NewRoomView:constructQueryString(ruleJson)
+    local modName = ruleJson.modName
+    local lobbyVersion = require "lobby/version"
+    local modVersion = require(modName .. "/version")
+    logger.debug("constructQueryString")
+    logger.debug(lobbyVersion)
+    logger.debug(modVersion)
+	local qs = "qMod=" .. urlEncoder.encode(modName) -- current module name
+	qs = qs .. "&modV=" .. urlEncoder.encode(modVersion.VER_STR) -- current module version
+	qs = qs .. "&csVer=" .. urlEncoder.encode(CS.Version.VER_STR) -- csharp core version
+	qs = qs .. "&lobbyVer=" .. urlEncoder.encode(lobbyVersion.VER_STR) -- lobby version
+	qs = qs .. "&operatingSystem=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.operatingSystem) -- system name
+	qs = qs .. "&operatingSystemFamily=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.operatingSystemFamily:ToString())
+	-- system family
+	qs = qs .. "&deviceUniqueIdentifier=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.deviceUniqueIdentifier)
+	-- mobile device id
+	qs = qs .. "&deviceName=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.deviceName) -- device name
+	qs = qs .. "&deviceModel=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.deviceModel) -- device mode
+	qs = qs .. "&network=" .. urlEncoder.encode(CS.NetHelper.NetworkTypeString()) -- device network type
+    qs = qs .. "&tk=".. CS.UnityEngine.PlayerPrefs.GetString("token", "")
+	return qs
+end
+
+function NewRoomView:createRoom(ruleJson)
     logger.debug("createRoom")
 
     local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
-    local url = urlpathsCfg.rootURL .. urlpathsCfg.createRoom .. "?tk=" .. tk
-    local jsonString = rapidJson.encode(ruleJsonString)
+    -- local queryString = self:constructQueryString(ruleJson)
+    local url = urlpathsCfg.rootURL .. urlpathsCfg.createRoom .. "?tk="..tk
+    local jsonString = rapidJson.encode(ruleJson)
     local createRoomReq = {
         config = jsonString
     }
@@ -95,12 +129,14 @@ function NewRoomView:createRoom(ruleJsonString)
             if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
                 local createRoomRsp = proto.decodeMessage("lobby.MsgCreateRoomRsp", resp.Data)
                 logger.debug("create room ok createRoomRsp--------: ", createRoomRsp)
-                if createRoomRsp.Result == proto.MsgError.ErrSuccess then
+                if createRoomRsp.result == proto.lobby.MsgError.ErrSuccess then
                     self:enterGame(createRoomRsp.roomInfo)
-                elseif createRoomRsp.Result == proto.MsgError.ErrUserInOtherRoom then
+                elseif createRoomRsp.result == proto.lobby.MsgError.ErrUserInOtherRoom then
                     self:reEnterGame(createRoomRsp.roomInfo)
-                elseif createRoomRsp.Result == proto.MsgError.ErrIsNeedUpdate then
-                    self:doUpgrade()
+                elseif createRoomRsp.result == proto.lobby.MsgError.ErrIsNeedUpdate then
+                    self:doUpgrade(ruleJson, createRoomRsp.roomInfo)
+                else
+                    logger.debug("unknow error:"..createRoomRsp.result)
                 end
             else
                 logger.debug("create room error : ", req.State)

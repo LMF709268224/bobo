@@ -9,15 +9,20 @@ local dialog = require "lobby/lcore/dialog"
 local CS = _ENV.CS
 
 function UpdateProgress:doUpgrade()
-	if not self.loginView then
-		logger.debug("not progressView.loginView")
+	if not self.modName then
+		logger.debug("UpdateProgress, self.modName == nil")
+	end
+
+	if not self.component then
+		logger.debug("UpdateProgress, self.component== nil")
 	end
 
     -- 准备检查更新Lobby模块
     local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
     logger.debug("urlpathsCfg.updateQuery:", urlpathsCfg.updateQuery)
     local updaterM = require "lobby/lcore/updater"
-	local updater = updaterM:new("lobby", urlpathsCfg.rootURL..urlpathsCfg.updateQuery, self.loginView.viewNode)
+	local updater = updaterM:new(self.modName, urlpathsCfg.rootURL..urlpathsCfg.updateQuery,
+	 self.component)
 
 	local err
 	local isNeedUpgrade
@@ -32,13 +37,13 @@ function UpdateProgress:doUpgrade()
 	-- 如果有更新，执行更新
     if isNeedUpgrade then
 
-        self.loginView.progressBar.visible = true
+        self.progressBar.visible = true
 
 		err = updater:doUpgrade(
                 function(event, downloaded, total)
                     logger.debug(event, downloaded, total)
                     if downloaded then
-                        self.loginView.progressBar.value = 100 * downloaded / total
+                        self.progressBar.value = 100 * downloaded / total
                     end
 
                 end
@@ -110,16 +115,27 @@ function UpdateProgress:runCoroutine()
 	end
 
 	if upgraded then
-		-- 更新完成后，卸载背景，并reboot
-		_ENV.CS.Boot.Reboot()
-        return
-    else
-        self.loginView:updateComplete()
+		logger.debug("upgrade complete")
+	end
+	-- if upgraded then
+	-- 	-- 更新完成后，卸载背景，并reboot
+	-- 	_ENV.CS.Boot.Reboot()
+    --     return
+    -- else
+    --     self.bingView:updateComplete()
+	-- end
+
+	if self.endCallBack then
+		self.endCallBack()
 	end
 end
 
-function UpdateProgress:updateView(loginView)
-	self.loginView = loginView
+function UpdateProgress:updateView(component, modName, progressBar,  endCallBack)
+	-- self.bingView = bingView
+	self.component = component
+	self.endCallBack = endCallBack
+	self.modName = modName
+	self.progressBar = progressBar
 
 	local co = coroutine.create(
         function()

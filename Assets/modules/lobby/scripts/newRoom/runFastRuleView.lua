@@ -14,7 +14,8 @@ local rules = {
     ["payType"] = 0,
     ["handNum"] = 4,
     --游戏ID
-    ["GameID"] = 10034
+    ["GameID"] = 10034,
+    ["modName"] = "game1"
 }
 
 local configTable = {
@@ -47,7 +48,7 @@ function RunFastRuleView.bindView(viewObj, newRoomView)
 
     RunFastRuleView:initAllView()
 
-    local createBtn = RunFastRuleView.unityViewNode:GetChild("n20")
+    local createBtn = RunFastRuleView.unityViewNode:GetChild("createRoomButton")
     createBtn.onClick:Set(
         function()
             RunFastRuleView:createRoom()
@@ -58,8 +59,8 @@ end
 function RunFastRuleView:initAllView()
     -- 支付
     self.togglePay = {}
-    self.togglePay[1] = self.unityViewNode:GetChild("n14")
-    self.togglePay[2] = self.unityViewNode:GetChild("n13")
+    self.togglePay[1] = self.unityViewNode:GetChild("ownerPayButton")
+    self.togglePay[2] = self.unityViewNode:GetChild("aapPayButton")
     self.togglePay[1].selected = true
     self.togglePay[1].onClick:Set(
         function()
@@ -76,9 +77,9 @@ function RunFastRuleView:initAllView()
 
     --局数
     self.toggleCount = {}
-    self.toggleCount[1] = self.unityViewNode:GetChild("n10")
-    self.toggleCount[2] = self.unityViewNode:GetChild("n12")
-    self.toggleCount[3] = self.unityViewNode:GetChild("n11")
+    self.toggleCount[1] = self.unityViewNode:GetChild("round4Button")
+    self.toggleCount[2] = self.unityViewNode:GetChild("round8Button")
+    self.toggleCount[3] = self.unityViewNode:GetChild("round16Button")
     self.toggleCount[1].selected = true
     self.toggleCount[1].onClick:Set(
         function()
