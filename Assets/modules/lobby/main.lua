@@ -28,7 +28,8 @@ end
 -- 两个子游戏之间复用同样一个lua虚拟机而不会干扰彼此
 -- 当然任意时刻只能有一个子游戏正在运行着，不能同时运行
 -- 两个子游戏。大厅和子游戏则不同，他们是两个不同的lua虚拟机
-local launchSubModuleLuaCode = [[
+local launchSubModuleLuaCode =
+	[[
 local logger = require 'lobby/lcore/logger'
 
 local function onGameExit()
@@ -61,8 +62,16 @@ onGameEnter()
 -- 子游戏模块会调用本函数（通过跨lua虚拟机调用）
 _ENV.gameServerScheme = function()
 	-- 以后这个host也统一到某个lua文件中，由它结合防DDOS流程来给出
-	-- "ws://172.18.3.126:3001"
-	return "ws://localhost:3001"
+	--测试 大丰3003 关张3001
+	return "ws://172.18.3.126:3001"
+	-- return "ws://localhost:3001"
+end
+
+_ENV.gameServerSchemeFD = function()
+	-- 以后这个host也统一到某个lua文件中，由它结合防DDOS流程来给出
+	--测试 大丰3003 关张3001
+	return "ws://172.18.3.126:3003"
+	-- return "ws://localhost:3001"
 end
 
 local function showLoginView()

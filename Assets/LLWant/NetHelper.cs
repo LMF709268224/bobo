@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Networking;
 using BestHTTP.Decompression.Zlib;
+using System.Runtime.Serialization.Json;
 using System.IO;
 
 /// <summary>
@@ -171,5 +172,58 @@ public static class NetHelper
         var hotfix = int.Parse(vers[2]);
 
         return (major << 24) | (minor << 16) | hotfix;
+    }
+
+    public static string GetModVersion(string modName)
+    {
+        var streamingModPath = Path.Combine(Application.streamingAssetsPath, "modules", modName, "cfg.json");
+        var persistentModPath = Path.Combine(Application.persistentDataPath, "modules", modName, "cfg.json");
+
+        ModuleOutputVersionCfg streamingVersion = null;
+        ModuleOutputVersionCfg persistentVersion = null;
+        DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(ModuleOutputVersionCfg));
+
+        if (File.Exists(streamingModPath)) {
+            var streamingModCfgJSONBytes = NetHelper.UnityWebRequestLocalGet(streamingModPath);
+            if (streamingModCfgJSONBytes.Length > 1) {
+                using (MemoryStream stream = new MemoryStream(streamingModCfgJSONBytes))
+                {
+                    streamingVersion = (ModuleOutputVersionCfg)ser.ReadObject(stream);
+                }
+            }
+
+        }
+
+        if (File.Exists(persistentModPath)) {
+            var persistentModCfgJSONBytes = NetHelper.UnityWebRequestLocalGet(persistentModPath);
+            if (persistentModCfgJSONBytes.Length > 1)
+            {
+                using (MemoryStream stream2 = new MemoryStream(persistentModCfgJSONBytes))
+                {
+                    persistentVersion = (ModuleOutputVersionCfg)ser.ReadObject(stream2);
+                }
+            }
+        }
+
+        if (streamingVersion == null && persistentVersion == null) {
+            return "";
+        }
+
+        if (streamingVersion == null) {
+            return persistentVersion.Version;
+        }
+
+        if (persistentVersion == null) {
+            return streamingVersion.Version;
+        }
+
+
+        var icmp =  NetHelper.VersionCompare(streamingVersion.Version, persistentVersion.Version);
+
+        if (icmp >0) {
+            return streamingVersion.Version;
+        }
+
+        return persistentVersion.Version;
     }
 }
