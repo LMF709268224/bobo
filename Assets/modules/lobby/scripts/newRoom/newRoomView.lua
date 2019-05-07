@@ -12,6 +12,7 @@ local rapidJson = require("rapidjson")
 local updateProgress = require "lobby/scripts/newRoom/updateProgress"
 local lenv = require "lobby/lenv"
 local dialog = require "lobby/lcore/dialog"
+local errHelper = require "lobby/lcore/lobbyErrHelper"
 local CS = _ENV.CS
 
 function NewRoomView.new()
@@ -22,13 +23,11 @@ function NewRoomView.new()
         local viewObj = _ENV.thisMod:CreateUIObject("lobby_create_room", "createRoom")
 
         NewRoomView.unityViewNode = viewObj
+        -- NewRoomView.priceCfgs = priceCfgs
 
         local win = fairy.Window()
         win.contentPane = NewRoomView.unityViewNode
         NewRoomView.win = win
-
-        --初始化View
-        NewRoomView:initAllView()
 
         -- 由于win隐藏，而不是销毁，隐藏后和GRoot脱离了关系，因此需要
         -- 特殊销毁
@@ -39,10 +38,11 @@ function NewRoomView.new()
         )
     end
 
-    local clostBtn = NewRoomView.unityViewNode:GetChild("closeBtn")
-    clostBtn.onClick:Set(
-        function()
-            NewRoomView:destroy()
+    -- 拉取价格配置后，再初始化界面
+    NewRoomView:loadPriceCfgs(
+        function(priceCfgs)
+            NewRoomView.priceCfgs = priceCfgs
+            NewRoomView:initAllView()
         end
     )
 
@@ -53,6 +53,13 @@ function NewRoomView:initAllView()
     self.progressBar = self.unityViewNode:GetChild("downloadProgress")
     self.progressBar.visible = false
 
+    local clostBtn = self.unityViewNode:GetChild("closeBtn")
+    clostBtn.onClick:Set(
+        function()
+            self:destroy()
+        end
+    )
+
     local gzRuleView = self.unityViewNode:GetChild("gzRule")
     local runFastRuleView = require "lobby/scripts/newRoom/runFastRuleView"
     runFastRuleView.bindView(gzRuleView, self)
@@ -60,6 +67,40 @@ function NewRoomView:initAllView()
     -- local viewObj = self.unityViewNode:GetChild("dfmjRule")
     -- local dfRuleView = require "lobby/scripts/newRoom/dfRuleView"
     -- dfRuleView.bindView(viewObj)
+end
+
+function NewRoomView:loadPriceCfgs(cb)
+        -- 拉取价格配置表
+        local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
+        local loadRoomPriceCfgsURL = urlpathsCfg.rootURL .. urlpathsCfg.loadRoomPriceCfgs .. "?&tk=" .. tk
+        httpHelper.get(
+            self.unityViewNode,
+            loadRoomPriceCfgsURL,
+            function(req, resp)
+                if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
+                    local httpError = errHelper.dumpHttpRespError(resp)
+                    if httpError == nil then
+                        local rapidjson = require("rapidjson")
+                        local priceCfgs = rapidjson.decode(resp.Data)
+                        logger.debug("priceCfgs:", priceCfgs)
+                        if cb ~= nil then
+                            cb(priceCfgs)
+                        end
+
+                    end
+                    resp:Dispose()
+                else
+                   local err = errHelper.dumpHttpReqError(req)
+                   if err then
+                       dialog.showDialog(err.msg,
+                            function()
+                            end
+                        )
+                   end
+                end
+                req:Dispose()
+            end
+        )
 end
 
 function NewRoomView:enterGame(roomInfo)

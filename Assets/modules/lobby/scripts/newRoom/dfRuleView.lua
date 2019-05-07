@@ -64,23 +64,23 @@ function DFRuleView:initAllView()
     self.togglePay[1].onClick:Set(
         function()
             self.togglePay[2].selected = false
-            self:UpdateComsumer()
+            self:updateComsumer()
         end
     )
     self.togglePay[2].onClick:Set(
         function()
             self.togglePay[1].selected = false
-            self:UpdateComsumer()
+            self:updateComsumer()
         end
     )
     -- self.togglePay[1].onChanged.Add(
     --     function()
-    --         self:UpdateComsumer(false)
+    --         self:updateComsumer(false)
     --     end
     -- )
     -- self.togglePay[2].onChanged.Add(
     --     function()
-    --         self:UpdateComsumer(false)
+    --         self:updateComsumer(false)
     --     end
     -- )
 
@@ -94,21 +94,21 @@ function DFRuleView:initAllView()
         function()
             self.toggleCount[2].selected = false
             self.toggleCount[3].selected = false
-            self:UpdateComsumer()
+            self:updateComsumer()
         end
     )
     self.toggleCount[2].onClick:Set(
         function()
             self.toggleCount[1].selected = false
             self.toggleCount[3].selected = false
-            self:UpdateComsumer()
+            self:updateComsumer()
         end
     )
     self.toggleCount[3].onClick:Set(
         function()
             self.toggleCount[1].selected = false
             self.toggleCount[2].selected = false
-            self:UpdateComsumer()
+            self:updateComsumer()
         end
     )
     --获取记录刷新界面
@@ -138,18 +138,18 @@ function DFRuleView:initAllView()
     --         self.toggleKX[3].isOn = self:ToggleDefault(key[8], false)
 
     --         --key[3] == 2 表示是AA支付
-    --         self:UpdateComsumer(key[3] == 2)
+    --         self:updateComsumer(key[3] == 2)
     --     end
     -- end
 
     --退出时记录
     -- self.OnDestroy = function()
     --     local key = {}
-    --     key[1] = self:GetToggleIndex(self.toggleCount)
-    --     key[2] = self:GetToggleIndex(self.togglePlayerNum)
-    --     key[3] = self:GetToggleIndex(self.togglePay)
-    --     key[4] = self:GetToggleIndex(self.toggleFengDing)
-    --     key[5] = self:GetToggleIndex(self.toggleDunZi)
+    --     key[1] = self:getToggleIndex(self.toggleCount)
+    --     key[2] = self:getToggleIndex(self.togglePlayerNum)
+    --     key[3] = self:getToggleIndex(self.togglePay)
+    --     key[4] = self:getToggleIndex(self.toggleFengDing)
+    --     key[5] = self:getToggleIndex(self.toggleDunZi)
     --     key[6] = self.toggleKX[1].isOn
     --     key[7] = self.toggleKX[2].isOn
     --     key[8] = self.toggleKX[3].isOn
@@ -159,12 +159,12 @@ function DFRuleView:initAllView()
     --     dispatcher:unregister("LOAD_PRICES_CFG", self, self.OnUpdatePriceCfgs)
     -- end
 
-    self:UpdateComsumer()
+    self:updateComsumer()
     self:updateCostDiamond()
 end
 
 --获取规则设置的值
-function DFRuleView:GetToggleIndex(toggles)
+function DFRuleView:getToggleIndex(toggles)
     for i, v in ipairs(toggles) do
         --log("test " .. v.gameObject.name ..","..tostring(v.isOn))
         -- if v.isOn then
@@ -177,7 +177,7 @@ function DFRuleView:GetToggleIndex(toggles)
 end
 
 --重置Text的颜色
-function DFRuleView:ResetTextColor(toggles, descriptios)
+function DFRuleView:resetTextColor(toggles, descriptios)
     for i, v in ipairs(toggles) do
         v.lable.text = string.format("<color=#FFFFFFFF>%s</color>", descriptios[i])
     end
@@ -197,11 +197,11 @@ end
 -- end
 
 --获取房间规则
-function DFRuleView:GetRules()
-    local playCountIndex = self:GetToggleIndex(self.toggleCount)
+function DFRuleView:getRules()
+    local playCountIndex = self:getToggleIndex(self.toggleCount)
     rules["handNum"] = configTable["handNum"][playCountIndex]
 
-    local payIndex = self:GetToggleIndex(self.togglePay)
+    local payIndex = self:getToggleIndex(self.togglePay)
     rules["payType"] = configTable["payType"][payIndex]
 
     -- 暂时不知道什么配置
@@ -213,9 +213,9 @@ function DFRuleView:GetRules()
 end
 
 --更新消耗数量
-function DFRuleView:UpdateComsumer()
-    local payIndex = self:GetToggleIndex(self.togglePay)
-    local handIndex = self:GetToggleIndex(self.toggleCount)
+function DFRuleView:updateComsumer()
+    local payIndex = self:getToggleIndex(self.togglePay)
+    local handIndex = self:getToggleIndex(self.toggleCount)
     logger.debug("更新消耗数量  : ", payIndex, " : ", handIndex)
 
     -- local playerNum = configTable["playerNumAcquired"][playerNumIndex]
@@ -252,16 +252,16 @@ function DFRuleView:ToggleDefault(status, default)
 end
 
 function DFRuleView:calcAADiamond()
-    local toggle = self:GetToggleIndex(self.togglePay)
+    local toggle = self:getToggleIndex(self.togglePay)
 
     local isAA = false
 
     if toggle == 2 then
         isAA = true
-    --self:UpdateComsumer(true)
+    --self:updateComsumer(true)
     end
 
-    self:UpdateComsumer(isAA)
+    self:updateComsumer(isAA)
 end
 
 function DFRuleView:OnUpdatePriceCfgs()
@@ -269,11 +269,11 @@ function DFRuleView:OnUpdatePriceCfgs()
 end
 
 function DFRuleView:updateCostDiamond()
-    -- local payIndex = self:GetToggleIndex(self.togglePay)
+    -- local payIndex = self:getToggleIndex(self.togglePay)
     -- local payType = configTable["payType"][payIndex]
-    -- local playerNumIndex = self:GetToggleIndex(self.togglePlayerNum)
+    -- local playerNumIndex = self:getToggleIndex(self.togglePlayerNum)
     -- local playerNumAcquired = configTable["playerNumAcquired"][playerNumIndex]
-    -- local playCountIndex = self:GetToggleIndex(self.toggleCount)
+    -- local playCountIndex = self:getToggleIndex(self.toggleCount)
     -- local handNum = configTable["handNum"][playCountIndex]
     -- local cost = self:GetCost(payType, playerNumAcquired, handNum)
     -- -- self.costDiamond.text = "x"..cost
@@ -293,7 +293,7 @@ function DFRuleView:updateCostDiamond()
 end
 
 function DFRuleView:createRoom()
-    self.newRoomView:createRoom(self:GetRules())
+    self.newRoomView:createRoom(self:getRules())
 
 end
 

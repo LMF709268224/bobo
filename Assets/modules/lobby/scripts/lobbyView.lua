@@ -15,6 +15,7 @@ local fairy = require "lobby/lcore/fairygui"
 local msgCenter = require "lobby/scripts/msgCenter"
 local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
 local newRoomView = require "lobby/scripts/newRoom/newRoomView"
+local joinRoomView = require "lobby/scripts/newRoom/joinRoomView"
 local CS = _ENV.CS
 
 function LobbyView:show()
@@ -100,6 +101,13 @@ function LobbyView:initView()
             self:onJoinRoom()
         end
     )
+
+    local createRoom = self.viewNode:GetChild("createRoom")
+    createRoom.onClick:Set(
+        function()
+            self:onCreateRoom()
+        end
+    )
 end
 
 function LobbyView:ondfTestClick()
@@ -159,8 +167,11 @@ function LobbyView:onCreateClick()
 end
 
 function LobbyView:onJoinRoom()
-    newRoomView.new()
+    joinRoomView.new()
 end
 
+function LobbyView:onCreateRoom()
+    newRoomView.new()
+end
 
 return LobbyView
