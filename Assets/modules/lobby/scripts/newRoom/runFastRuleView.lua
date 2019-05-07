@@ -45,6 +45,7 @@ local configTable = {
 function RunFastRuleView.bindView(viewObj, newRoomView)
     RunFastRuleView.unityViewNode = viewObj
     RunFastRuleView.newRoomView = newRoomView
+    RunFastRuleView.priceCfg = newRoomView.priceCfgs[tostring(rules.roomType)]
 
     RunFastRuleView:initAllView()
 
@@ -57,6 +58,9 @@ function RunFastRuleView.bindView(viewObj, newRoomView)
 end
 
 function RunFastRuleView:initAllView()
+    local consume = self.unityViewNode:GetChild("consumeCom")
+    self.consumeText = consume:GetChild("consumeText")
+
     -- 支付
     self.togglePay = {}
     self.togglePay[1] = self.unityViewNode:GetChild("ownerPayButton")
@@ -65,13 +69,13 @@ function RunFastRuleView:initAllView()
     self.togglePay[1].onClick:Set(
         function()
             self.togglePay[2].selected = false
-            self:UpdateComsumer()
+            self:updateComsumer()
         end
     )
     self.togglePay[2].onClick:Set(
         function()
             self.togglePay[1].selected = false
-            self:UpdateComsumer()
+            self:updateComsumer()
         end
     )
 
@@ -85,30 +89,30 @@ function RunFastRuleView:initAllView()
         function()
             self.toggleCount[2].selected = false
             self.toggleCount[3].selected = false
-            self:UpdateComsumer()
+            self:updateComsumer()
         end
     )
     self.toggleCount[2].onClick:Set(
         function()
             self.toggleCount[1].selected = false
             self.toggleCount[3].selected = false
-            self:UpdateComsumer()
+            self:updateComsumer()
         end
     )
     self.toggleCount[3].onClick:Set(
         function()
             self.toggleCount[1].selected = false
             self.toggleCount[2].selected = false
-            self:UpdateComsumer()
+            self:updateComsumer()
         end
     )
 
-    self:UpdateComsumer()
-    self:updateCostDiamond()
+    self:updateComsumer()
+    -- self:updateCostDiamond()
 end
 
 --获取规则设置的值
-function RunFastRuleView:GetToggleIndex(toggles)
+function RunFastRuleView:getToggleIndex(toggles)
     for i, v in ipairs(toggles) do
         --log("test " .. v.gameObject.name ..","..tostring(v.isOn))
         -- if v.isOn then
@@ -121,33 +125,67 @@ function RunFastRuleView:GetToggleIndex(toggles)
 end
 
 --重置Text的颜色
-function RunFastRuleView:ResetTextColor(toggles, descriptios)
+function RunFastRuleView:resetTextColor(toggles, descriptios)
     for i, v in ipairs(toggles) do
         v.lable.text = string.format("<color=#FFFFFFFF>%s</color>", descriptios[i])
     end
 end
 
 --获取房间规则
-function RunFastRuleView:GetRules()
-    local playCountIndex = self:GetToggleIndex(self.toggleCount)
+function RunFastRuleView:getRules()
+    local playCountIndex = self:getToggleIndex(self.toggleCount)
     rules["handNum"] = configTable["handNum"][playCountIndex]
 
-    local payIndex = self:GetToggleIndex(self.togglePay)
+    local payIndex = self:getToggleIndex(self.togglePay)
     rules["payType"] = configTable["payType"][payIndex]
 
     -- 暂时不知道什么配置
     -- rules["doubleScoreWhenSelfDrawn"] = self.toggleKX[1].isOn
 
-    -- rules["payNum"] = self:GetCost(rules["payType"], rules["playerNumAcquired"], rules["handNum"])
+    -- rules["payNum"] = self:getCost(rules["payType"], rules["playerNumAcquired"], rules["handNum"])
     -- 暂时不知道什么配置
     return rules
 end
 
+
+function RunFastRuleView:getCost(payType, playerNum, handNum)
+    -- logError("payType:"..payType..", playerNum:"..playerNum..", handNum"..handNum)
+    local key = "ownerPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
+    if payType == 1 then
+        key = "aaPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
+    end
+
+    if self.priceCfg.activityPriceCfg ~= nil and type(self.priceCfg.activityPriceCfg) == "table"  then
+        return self.priceCfg.activityPriceCfg[key]
+    end
+
+    if self.priceCfg.originalPriceCfg  ~= nil or type(self.priceCfg.originalPriceCfg ) == "table" then
+        return self.priceCfg.originalPriceCfg[key]
+    end
+
+    return nil
+end
+
 --更新消耗数量
-function RunFastRuleView:UpdateComsumer()
-    local payIndex = self:GetToggleIndex(self.togglePay)
-    local handIndex = self:GetToggleIndex(self.toggleCount)
-    logger.debug("更新消耗数量  : ", payIndex, " : ", handIndex)
+function RunFastRuleView:updateComsumer()
+    local payIndex = self:getToggleIndex(self.togglePay)
+    local payType = configTable["payType"][payIndex]
+
+    local playCountIndex = self:getToggleIndex(self.toggleCount)
+    local handNum = configTable["handNum"][playCountIndex]
+
+    -- 0 是不配置或者无限用户个数
+    local playerNumAcquired = 0
+
+    local cost = self:getCost(payType, playerNumAcquired, handNum)
+
+    if cost == nil then
+        logger.error("No price cfg found, payType:"..payType..", playerNumAcquired:"
+        ..playerNumAcquired..", handNum:")
+    end
+
+    logger.debug("cost:"..cost)
+    self.consumeText.text = cost
 
 end
 
@@ -159,32 +197,32 @@ function RunFastRuleView:ToggleDefault(status, default)
     end
 end
 
-function RunFastRuleView:calcAADiamond()
-    local toggle = self:GetToggleIndex(self.togglePay)
+-- function RunFastRuleView:calcAADiamond()
+--     local toggle = self:getToggleIndex(self.togglePay)
 
-    local isAA = false
+--     local isAA = false
 
-    if toggle == 2 then
-        isAA = true
-    --self:UpdateComsumer(true)
-    end
+--     if toggle == 2 then
+--         isAA = true
+--     --self:updateComsumer(true)
+--     end
 
-    self:UpdateComsumer(isAA)
-end
+--     self:updateComsumer(isAA)
+-- end
 
-function RunFastRuleView:OnUpdatePriceCfgs()
-    self:updateCostDiamond()
-end
+-- function RunFastRuleView:OnUpdatePriceCfgs()
+--     self:updateCostDiamond()
+-- end
 
 function RunFastRuleView:createRoom()
-    logger.debug("createRoom")
-    self.newRoomView:createRoom(self:GetRules())
+    logger.debug("RunFastRuleView:createRoom")
+    self.newRoomView:createRoom(self:getRules())
 
 
 end
 
-function RunFastRuleView:updateCostDiamond()
+-- function RunFastRuleView:updateCostDiamond()
 
-end
+-- end
 
 return RunFastRuleView

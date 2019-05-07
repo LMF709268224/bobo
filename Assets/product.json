@@ -39,6 +39,10 @@
 					"filters":"*.png,*.bytes"
 				},
 				{
+					"path":"lobby/fui_create_room",
+					"filters":"*.png,*.bytes"
+				},
+				{
 					"path":"lobby/scripts",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
@@ -55,6 +59,11 @@
 				},
 				{
 					"path":"lobby/scripts/proto",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"lobby/scripts/newRoom",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
 				}

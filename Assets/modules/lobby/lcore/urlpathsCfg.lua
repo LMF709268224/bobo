@@ -10,7 +10,7 @@ Note:
 local UrlPaths = {
 	-- updateQuery = "/lobby/upgrade/query",
 	updateQuery = "/lobby/uuid/upgradeQuery",
-	updateDownload = "http://172.18.3.126:8080",
+	updateDownload = "http://localhost:8080",
 	gameWebsocketMonkey = "/game/%s/ws/monkey",
 	gameWebsocketPlay = "/game/%s/ws/play",
 	rootURL = "http://121.196.210.106:30002",
@@ -20,10 +20,14 @@ local UrlPaths = {
 	register = "/lobby/uuid/register",
 	chat = "/lobby/uuid/chat",
 	lobbyWebsocket = "ws://121.196.210.106:30002/lobby/uuid/ws",
+	-- 创建房间
 	createRoom = "/lobby/uuid/createRoom",
+	loadRoomPriceCfgs = "/lobby/uuid/loadPrices",
+
 	--战绩
 	lrproom = "/lobby/uuid/lrproom",
 	lrprecord = "/lobby/uuid/lrprecord"
+
 }
 
 return UrlPaths

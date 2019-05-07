@@ -61,6 +61,7 @@ namespace BestHTTP
     }
 
     public delegate void OnRequestFinishedDelegate(HTTPRequest originalRequest, HTTPResponse response);
+    [XLua.CSharpCallLua]
     public delegate void OnDownloadProgressDelegate(HTTPRequest originalRequest, long downloaded, long downloadLength);
     public delegate void OnUploadProgressDelegate(HTTPRequest originalRequest, long uploaded, long uploadLength);
     public delegate bool OnBeforeRedirectionDelegate(HTTPRequest originalRequest, HTTPResponse response, Uri redirectUri);
