@@ -74,6 +74,8 @@ function NewRoomView:enterGame(roomInfo)
 
     local jsonString = rapidJson.encode(parameters)
     _ENV.thisMod:LaunchGameModule("game1", jsonString)
+
+    self:destroy()
 end
 
 function NewRoomView:reEnterGame(roomInfo)
