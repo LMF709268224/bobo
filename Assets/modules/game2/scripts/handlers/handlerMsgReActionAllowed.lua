@@ -38,48 +38,48 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
 
     local playerView = player.playerView
 
-    local needShowOperationButtons = false
+    -- local needShowOperationButtons = falses
 
     -- 过胡牌提示只有在胡和过同时存在才是true，任何情况都为false
     player.isGuoHuTips = false
 
     --如果可以吃
-    local mjproto = proto.prunfast.ActionType
+    local mjproto = proto.mahjong.ActionType
     if proto.actionsHasAction(actions, mjproto.enumActionType_CHOW) then
         print("llwant, can chow")
-        needShowOperationButtons = true
-        playerView.chowBtn:SetActive(true)
+        -- needShowOperationButtons = true
+        playerView.chowBtn.visible = true
     end
 
     --如果可以碰
     if proto.actionsHasAction(actions, mjproto.enumActionType_PONG) then
         print("llwant, can pong")
-        needShowOperationButtons = true
+        -- needShowOperationButtons = true
 
-        playerView.pongBtn:SetActive(true)
+        playerView.pongBtn.visible = true
     end
 
     --如果可以明杠
     if proto.actionsHasAction(actions, mjproto.enumActionType_KONG_Exposed) then
         print("llwant, can concealed kong")
-        needShowOperationButtons = true
+        -- needShowOperationButtons = true
 
-        playerView.kongBtn:SetActive(true)
+        playerView.kongBtn.visible = true
     end
 
     --如果可以吃铳胡牌
     if proto.actionsHasAction(actions, mjproto.enumActionType_WIN_Chuck) then
         print("llwant, can win chuck")
-        needShowOperationButtons = true
+        -- needShowOperationButtons = true
 
-        playerView.winBtn:SetActive(true)
+        playerView.winBtn.visible = true
     end
 
     --如果可以过
     if proto.actionsHasAction(actions, mjproto.enumActionType_SKIP) then
         print("llwant, can skip")
-        needShowOperationButtons = true
-        playerView.skipBtn:SetActive(true)
+        -- needShowOperationButtons = true
+        playerView.skipBtn.visible = true
     end
 
     -- 可胡牌时，需要点击2次过才可过牌。
@@ -90,9 +90,9 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
         end
     end
 
-    if needShowOperationButtons then
-        playerView.operationButtonsRoot:SetActive(true)
-    end
+    -- if needShowOperationButtons then
+    -- playerView.operationButtonsRoot.visible = true
+    -- end
 end
 
 return Handler

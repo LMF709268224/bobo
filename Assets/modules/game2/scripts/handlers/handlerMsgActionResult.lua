@@ -56,8 +56,7 @@ function Handler.onMsg(msg, room)
         print("llwant, no action handler for:" .. action)
         return
     end
-
-    handler:onMsg(actionResultMsg, room)
+    handler.onMsg(actionResultMsg, room)
 
     --起手听牌比较特殊，因为服务器是每收到一个起手听，立即广播给其他人
     --因此如果本玩家还处于选择起手听状态，那么不应该把操作面板关闭

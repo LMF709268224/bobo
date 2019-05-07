@@ -54,7 +54,7 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     --如果可以抓牌
     -- if proto.actionsHasAction(actions, at.enumActionType_AccumulateWin) then
     --     needShowOperationButtons = true
-    --     playerView.finalDrawBtn:SetActive(true)
+    --     playerView.finalDrawBtn.visible = true
     --     player.waitSkip = true
     -- end
 
@@ -62,7 +62,7 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     if proto.actionsHasAction(actions, at.enumActionType_FirstReadyHand) then
         print("llwant, can ready hand")
         needShowOperationButtons = true
-        playerView.readyHandBtn:SetActive(true)
+        playerView.readyHandBtn.visible = true
         --这个标志用来判断可否出牌，当点击了动作按钮之后flagsAction会设置为true，这时候才可以出牌
         player.waitSkip = true
     end
@@ -71,21 +71,21 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     if proto.actionsHasAction(actions, at.enumActionType_SKIP) then
         print("llwant, can skip")
         needShowOperationButtons = true
-        playerView.skipBtn:SetActive(true)
+        playerView.skipBtn.visible = true
     end
 
     --如果可以暗杠
     if proto.actionsHasAction(actions, at.enumActionType_KONG_Concealed) then
         print("llwant, can concealed kong")
         needShowOperationButtons = true
-        playerView.kongBtn:SetActive(true)
+        playerView.kongBtn.visible = true
     end
 
     --如果可以加杠
     if proto.actionsHasAction(actions, at.enumActionType_KONG_Triplet2) then
         print("llwant, can triplet2 kong")
         needShowOperationButtons = true
-        playerView.kongBtn:SetActive(true)
+        playerView.kongBtn.visible = true
     end
 
     --如果可以自摸胡牌
@@ -93,7 +93,7 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
         print("llwant, can win self drawn")
         needShowOperationButtons = true
 
-        playerView.winBtn:SetActive(true)
+        playerView.winBtn.visible = true
     end
 
     -- 可胡牌时，需要点击2次过才可过牌。
@@ -127,9 +127,9 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
             handsClickCtrl14.isDiscardable = true
 
             if #discarAbleTiles[1].readyHandList < 1 then
-                handsClickCtrl14.t:SetActive(false)
+                handsClickCtrl14.t.visible = false
             else
-                handsClickCtrl14.t:SetActive(true)
+                handsClickCtrl14.t.visible = true
             end
         else
             --检查所有可以打出的牌，并设置其点击控制isDiscardable为true，以便玩家可以点击
@@ -144,9 +144,9 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
 
                         --加入可听列表，空表示不可听
                         if #discardAbleTile.readyHandList < 1 then
-                            handsClickCtrl.t:SetActive(false)
+                            handsClickCtrl.t.visible = false
                         else
-                            handsClickCtrl.t:SetActive(true)
+                            handsClickCtrl.t.visible = true
                         end
                         handsClickCtrl.readyHandList = discardAbleTile.readyHandList
                     else
@@ -160,8 +160,7 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     end
 
     if needShowOperationButtons then
-        playerView.operationButtonsRoot:SetActive(true)
-        --playerView.skipBtn:SetActive(true)
+        -- playerView.operationButtonsRoot.visible = true
         --这个标志用来判断可否出牌，当点击了动作按钮之后flagsAction会设置为true，这时候才可以出牌
         player.waitSkip = true
     end
