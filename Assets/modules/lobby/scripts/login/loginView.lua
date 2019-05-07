@@ -11,6 +11,7 @@ local httpHelper = require "lobby/lcore/httpHelper"
 local proto = require "lobby/scripts/proto/proto"
 local errHelper = require "lobby/lcore/lobbyErrHelper"
 local dialog = require "lobby/lcore/dialog"
+local lenv = require "lobby/lenv"
 local CS = _ENV.CS
 
 function LoginView.showLoginView()
@@ -37,6 +38,27 @@ function LoginView:initView()
     self.loginBtn = self.viewNode:GetChild("n2")
     self.weixinButton = self.viewNode:GetChild("n3")
     self.progressBar = self.viewNode:GetChild("n4")
+
+    self.gameAdviceText = self.viewNode:GetChild("gameAdvice")
+    self.text1 = self.viewNode:GetChild("text1")
+    self.text2 = self.viewNode:GetChild("text2")
+    self.text3 = self.viewNode:GetChild("text3")
+    self.text4 = self.viewNode:GetChild("text4")
+    self.text5 = self.viewNode:GetChild("text5")
+    self.text6 = self.viewNode:GetChild("text6")
+
+    self.versionName = self.viewNode:GetChild("versionName")
+
+    self.versionName.text = lenv.VER_STR
+
+    self.gameAdviceText.text = "抵制不良游戏，拒绝盗版游戏。注意自我保护，谨防受骗上当。适度游戏益脑，沉迷游戏伤身。合理安排时间，享受健康生活。"
+    self.text1.text = "出版单位：深圳市xxx科技有限公司"
+    self.text2.text = "审批文号：xxxxxxxxxxxx"
+    self.text3.text = "网络游戏出版物号：123456789"
+    self.text4.text = "游戏著作权人：深圳市xxx科技有限公司"
+    self.text5.text = "增值电信业务：46546546546"
+    self.text6.text = "粤网文：深圳市xxx科技有限公司"
+
     self.loginBtn.visible = false
     self.weixinButton.visible = false
     self.progressBar.value = 0
@@ -115,6 +137,7 @@ function LoginView:updateComplete()
     self.progressBar.visible = false
     self.weixinButton.visible = true
     self.loginBtn.visible = true
+
 end
 
 function LoginView:saveQuicklyLoginReply(quicklyLoginReply)

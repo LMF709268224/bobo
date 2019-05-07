@@ -27,6 +27,29 @@ end
 -- 	RecordTotalView.showView()
 -- end
 
+local function testCreateRoom(roomInfo)
+	logger.debug("testCreateRoom,roomInfo:", roomInfo)
+	local singletonMod = require("scripts/singleton")
+	local singleton = singletonMod.getSingleton()
+	-- 启动cortouine
+	local co =
+		coroutine.create(
+		function()
+			local pp = _ENV.CS.UnityEngine.PlayerPrefs
+			local serverUUID = roomInfo.gameServerID
+			local userID = pp.GetString("userID", "")
+			local myUser = {userID = userID}
+			-- local roomInfo = {roomID = "monkey-room", roomNumber = "monkey"}
+			singleton:tryEnterRoom(serverUUID, myUser, roomInfo)
+		end
+	)
+
+	local r, err = coroutine.resume(co)
+	if not r then
+		logger.error(debug.traceback(co, err))
+	end
+end
+
 local function goTestGame()
 	local singletonMod = require("scripts/singleton")
 	local singleton = singletonMod.getSingleton()
@@ -128,6 +151,8 @@ local function main()
 		elseif json.gameType == "3" then
 			goTestReplay()
 		-- testRecordUI()
+		elseif json.gameType == "4" then
+			testCreateRoom(json.roomInfo)
 		end
 	end
 
