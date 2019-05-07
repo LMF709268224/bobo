@@ -37,6 +37,8 @@ function NewRoomView.new()
             end
         )
     end
+    NewRoomView.progressBar = NewRoomView.unityViewNode:GetChild("downloadProgress")
+    NewRoomView.progressBar.visible = false
 
     -- 拉取价格配置后，再初始化界面
     NewRoomView:loadPriceCfgs(
@@ -50,9 +52,6 @@ function NewRoomView.new()
 end
 
 function NewRoomView:initAllView()
-    self.progressBar = self.unityViewNode:GetChild("downloadProgress")
-    self.progressBar.visible = false
-
     local clostBtn = self.unityViewNode:GetChild("closeBtn")
     clostBtn.onClick:Set(
         function()
