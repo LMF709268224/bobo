@@ -14,6 +14,7 @@ local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
 local msgCenter = require "lobby/scripts/msgCenter"
 local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
+local newRoomView = require "lobby/scripts/newRoom/newRoomView"
 local CS = _ENV.CS
 
 function LobbyView:show()
@@ -92,6 +93,13 @@ function LobbyView:initView()
             self:ondfTestClick()
         end
     )
+
+    local joinRoomBtn = self.viewNode:GetChild("n12")
+    joinRoomBtn.onClick:Set(
+        function()
+            self:onJoinRoom()
+        end
+    )
 end
 
 function LobbyView:ondfTestClick()
@@ -149,5 +157,10 @@ function LobbyView:onCreateClick()
     local jsonString = rapidjson.encode(parameters)
     _ENV.thisMod:LaunchGameModule("game1", jsonString)
 end
+
+function LobbyView:onJoinRoom()
+    newRoomView.new()
+end
+
 
 return LobbyView
