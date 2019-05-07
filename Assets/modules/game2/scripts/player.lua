@@ -7,6 +7,7 @@ local Player = {}
 
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
+-- local logger = require "lobby/lcore/logger"
 -- local agariIndex = require("scripts/AgariIndex")
 local mjproto = proto.mahjong
 
@@ -216,7 +217,6 @@ function Player:hand2UI(wholeMove)
     --先取消所有手牌显示
     local playerView = self.playerView
     playerView:hideHands()
-
     if self:isMe() then
         playerView:showHandsForMe(wholeMove)
     else
@@ -261,15 +261,14 @@ end
 --隐藏打出的牌提示
 ------------------------------------
 function Player:hideDiscardedTips()
-    if not self.waitDiscardReAction then
-        return
-    end
-
-    self.waitDiscardReAction = false
-    local discardTips = self.playerView.discardTips
-    local discardTipsTile = self.playerView.discardTipsTile
-    discardTipsTile.visible = false
-    discardTips.visible = false
+    -- if not self.waitDiscardReAction then
+    --     return
+    -- end
+    -- self.waitDiscardReAction = false
+    -- local discardTips = self.playerView.discardTips
+    -- local discardTipsTile = self.playerView.discardTipsTile
+    -- discardTipsTile.visible = false
+    -- discardTips.visible = false
 end
 
 ------------------------------------
@@ -278,7 +277,7 @@ end
 function Player:richiIconShow(showOrHide)
     self.isRichi = showOrHide
     local playerView = self.playerView
-    playerView.head.ting:SetActive(showOrHide)
+    playerView.head.ting.visible = showOrHide
 end
 ------------------------------------
 --播放吃牌动画
@@ -1017,8 +1016,6 @@ function Player:onPlayerDiscardTile(tileID)
         local actionMsg = {}
         actionMsg.qaIndex = self.allowedActionMsg.qaIndex
         actionMsg.action = mjproto.ActionType.enumActionType_DISCARD
-        print("llwant, discard enumActionType_DISCARD :" .. tostring(mjproto.enumActionType_DISCARD))
-        print("llwant, discard actionMsg.action :" .. tostring(actionMsg.action))
         actionMsg.tile = tileID
         if self.flagsTing then
             actionMsg.flags = 1
@@ -1040,14 +1037,13 @@ function Player:onPlayerDiscardTile(tileID)
     return true
 end
 
-function Player:updateReadyHandList(readyHandList)
-    self.readyHandList = readyHandList
-
-    if self.readyHandList ~= nil and #self.readyHandList > 0 then
-        self.playerView.checkReadyHandBtn.visible = true
-    else
-        self.playerView.checkReadyHandBtn.visible = false
-    end
+function Player:updateReadyHandList(_)
+    -- self.readyHandList = readyHandList
+    -- if self.readyHandList ~= nil and #self.readyHandList > 0 then
+    --     self.playerView.checkReadyHandBtn.visible = true
+    -- else
+    --     self.playerView.checkReadyHandBtn.visible = false
+    -- end
 end
 
 return Player

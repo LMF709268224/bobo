@@ -66,6 +66,7 @@ function RoomView.new(room)
     infoBtn.visible = true
 
     roomView.readyButton = view:GetChild("ready")
+    roomView.readyButton.visible = false
     roomView.readyButton.onClick:Set(
         function()
             roomView.room:onReadyButtonClick()
@@ -241,8 +242,8 @@ function RoomView.new(room)
 end
 
 function RoomView:pauseResumeButtons(pauseBtnVisible, resumeBtnVisible)
-    self.pauseBtn:SetActive(pauseBtnVisible)
-    self.resumeBtn:SetActive(resumeBtnVisible)
+    self.pauseBtn.visible = pauseBtnVisible
+    self.resumeBtn.visible = resumeBtnVisible
 end
 
 function RoomView:destroyReplayView()
@@ -1202,4 +1203,67 @@ function RoomView:getRule(isLoadDouble)
     return rule
 end
 
+--------------------------------------
+--显示出牌提示箭头
+--------------------------------------
+function RoomView:setArrowByParent(_)
+    -- if self.arrowObj then
+    --     self.arrowObj:SetParent(parentObj, false)
+    --     --self.arrowObj.localPosition = Vector3(0, 0, 0)
+    --     self.arrowObj.localPosition = Vector3(0, 40, 0)
+    --     -- 这里不需要设置显不显示，因为会在SetOneOutCardShowByID中调用SetOutCardAni时让它显示出来的
+    --     self.arrowObj:Show()
+    -- -- 这里主要用来判断自摸的时候，隐藏上一家的打牌的箭头，如果是打牌出去，会在之后的代码中被显示出来。
+    -- --self.arrowObj:Hide()
+    -- end
+end
+
+--------------------------------------
+--隐藏出牌提示箭头
+--------------------------------------
+function RoomView:setArrowHide()
+    -- if self.arrowObj then
+    --     self.arrowObj:Hide()
+    -- end
+end
+
+--------------------------------------
+--家家庄标志
+--------------------------------------
+function RoomView:setJiaJiaZhuang()
+    -- self.jiaJiaZhuang:SetActive(self.room.markup > 0)
+    --self.playerViews[index]:setHeadEffectBox()
+end
+
+--------------------------------------
+--设置当前房间所使用的风圈
+--------------------------------------
+function RoomView:setRoundMask(index)
+    logger.debug("llwant , set round mask = " .. index)
+
+    -- local curRoundMask = self.roundMarks[index]
+    -- curRoundMask.transform:SetActive(true)
+    -- self.curRoundMask = curRoundMask
+    -- self:clearWaitingPlayer()
+
+    -- --设置风圈和被当做花牌的风牌
+    -- self.wind:SetActive(true)
+    -- tileMounter:mountTileImage(self.windTile, self.room.windFlowerID)
+
+    --self.playerViews[index]:setHeadEffectBox()
+end
+
+--------------------------------------
+--隐藏听牌详情界面
+--------------------------------------
+function RoomView:hideTingDataView()
+end
+--------------------------------------
+--显示听牌详情界面
+--------------------------------------
+function RoomView:showTingDataView(data)
+    if not data or #data == 0 then
+        return
+    end
+end
 return RoomView
