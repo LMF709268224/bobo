@@ -14,7 +14,6 @@ local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
 local msgCenter = require "lobby/scripts/msgCenter"
 local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
-local newRoomView = require "lobby/scripts/newRoom/newRoomView"
 local CS = _ENV.CS
 
 function LobbyView:show()
@@ -86,12 +85,27 @@ function LobbyView:initView()
         end
     )
 
-    local joinBtn = self.viewNode:GetChild("n12")
-    joinBtn.onClick:Set(
+    local listView = self.viewNode:GetChild("n29")
+    local dfTestBtn = listView:GetChild("n8")
+    dfTestBtn.onClick:Set(
         function()
-            self:onJoinRoom()
+            self:ondfTestClick()
         end
     )
+end
+
+function LobbyView:ondfTestClick()
+    local mylobbyView = fairy.GRoot.inst:GetChildAt(0)
+    fairy.GRoot.inst:RemoveChild(mylobbyView)
+    fairy.GRoot.inst:CleanupChildren()
+
+    local parameters = {
+        gameType = "1"
+    }
+
+    local rapidjson = require("rapidjson")
+    local jsonString = rapidjson.encode(parameters)
+    _ENV.thisMod:LaunchGameModule("game2", jsonString)
 end
 
 function LobbyView:onCoinClick()
@@ -135,11 +149,5 @@ function LobbyView:onCreateClick()
     local jsonString = rapidjson.encode(parameters)
     _ENV.thisMod:LaunchGameModule("game1", jsonString)
 end
-
-
-function LobbyView:onJoinRoom()
-    newRoomView.new()
-end
-
 
 return LobbyView
