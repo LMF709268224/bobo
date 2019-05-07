@@ -61,7 +61,7 @@ function Handler.onMsg(msgData, room)
         end
 
         --填充花牌列表
-        -- player:addFlowerTiles(playerTileList.tilesFlower)
+        player:addFlowerTiles(playerTileList.tilesFlower)
 
         --填充打出去的牌列表
         player:addDiscardedTiles(playerTileList.tilesDiscard)

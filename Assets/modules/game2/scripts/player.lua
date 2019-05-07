@@ -246,7 +246,7 @@ function Player:flower2UI()
     local playerView = self.playerView
     playerView:hideFlowers()
 
-    -- playerView:showFlowers()
+    playerView:showFlowers()
 end
 
 ------------------------------------

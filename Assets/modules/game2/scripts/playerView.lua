@@ -116,13 +116,13 @@ function PlayerView:initMeld()
     -- self.meldViews = meldViews
 end
 
-function PlayerView:initFlower()
+function PlayerView:initFlowers()
     -- 花牌列表
     -- TODO: 先拿这个hu牌列表来当做花牌列表，hu牌列表只有10个，花牌最多
     -- 时候会有12个，4个当做花牌的风牌+8个花牌
     local flowers = {}
-    local myFlowerTilesNode = self.myView:GetChild("Flowers")
-    for i = 1, 24 do
+    local myFlowerTilesNode = self.myView:GetChild("flowers")
+    for i = 1, 12 do
         local h = myFlowerTilesNode:GetChild("n" .. i)
         flowers[i] = h
     end
@@ -144,31 +144,31 @@ function PlayerView:initDiscards()
     -- 打出的牌列表
     local discards = {}
     local myDicardTilesNode = self.myView:GetChild("discards")
-    local resName = ""
-    local start = 1
-    local addNum = 1
-    if self.viewChairID == 1 then
-        resName = "mahjong_mine_luo"
-    elseif self.viewChairID == 2 then
-        resName = "mahjong_right_luo"
-        start = 20
-        addNum = -1
-    elseif self.viewChairID == 3 then
-        resName = "mahjong_dui_luo"
-        start = 20
-        addNum = -1
-    elseif self.viewChairID == 4 then
-        resName = "mahjong_left_luo"
-    end
+    -- local resName = ""
+    -- local start = 1
+    -- local addNum = 1
+    -- if self.viewChairID == 1 then
+    --     resName = "mahjong_mine_luo"
+    -- elseif self.viewChairID == 2 then
+    --     resName = "mahjong_right_luo"
+    --     start = 20
+    --     addNum = -1
+    -- elseif self.viewChairID == 3 then
+    --     resName = "mahjong_dui_luo"
+    --     start = 20
+    --     addNum = -1
+    -- elseif self.viewChairID == 4 then
+    --     resName = "mahjong_left_luo"
+    -- end
     for i = 1, 20 do
-        local h = myDicardTilesNode:GetChild("n" .. i)
-        local card = _ENV.thisMod:CreateUIObject("lobby_mahjong", resName)
-        card.position = h.position
-        card.scale = h.scale
-        myDicardTilesNode:AddChild(card)
+        local card = myDicardTilesNode:GetChild("n" .. i)
+        -- local card = _ENV.thisMod:CreateUIObject("lobby_mahjong", resName)
+        -- card.position = h.position
+        -- card.scale = h.scale
+        -- myDicardTilesNode:AddChild(card)
 
-        local j = start + (i - 1) * addNum
-        discards[j] = card
+        -- local j = start + (i - 1) * addNum
+        discards[i] = card
     end
     self.discards = discards
 end
@@ -232,6 +232,7 @@ function PlayerView:initCardLists()
     self:initHands()
     -- 出牌列表
     self:initDiscards()
+    self:initFlowers()
     -- 明牌列表
     -- self:initLights()
 end
@@ -569,13 +570,13 @@ function PlayerView:showFlowers()
     --花牌挂载点个数
     local dCount = #flowers
 
-    if tileCount > 0 then
-        --self.head.HuaNode.visible = true
-        self.head.HuaCountText.text = tostring(tileCount)
-    else
-        --self.head.HuaNode.visible = false
-        self.head.HuaCountText.text = "0"
-    end
+    -- if tileCount > 0 then
+    --self.head.HuaNode.visible = true
+    -- self.head.HuaCountText.text = tostring(tileCount)
+    -- else
+    --self.head.HuaNode.visible = false
+    -- self.head.HuaCountText.text = "0"
+    -- end
     self.head.HuaNode.visible = true
 
     --从那张牌开始挂载，由于tileCount可能大于dCount
