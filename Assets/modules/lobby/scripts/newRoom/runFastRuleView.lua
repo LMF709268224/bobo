@@ -177,7 +177,7 @@ function RunFastRuleView:OnUpdatePriceCfgs()
 end
 
 function RunFastRuleView:createRoom()
-    logger.debug("createRoom")
+    logger.debug("RunFastRuleView:createRoom")
     self.newRoomView:createRoom(self:GetRules())
 
 
