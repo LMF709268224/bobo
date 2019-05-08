@@ -14,7 +14,7 @@ function Handler.onMsg(msgData, room)
     room:resetForNewHand()
 
     --隐藏gps
-    room.roomView.distanceView:SetActive(false)
+    -- room.roomView.distanceView.visible = false
 
     --保存一些房间属性
     room.bankerChairID = msgDeal.bankerChairID
@@ -30,11 +30,11 @@ function Handler.onMsg(msgData, room)
 
     local players = room.players
     --隐藏复制按钮
-    --room.roomView.copyRoomNumber:SetActive(false)
+    --room.roomView.copyRoomNumber.visible = false
     --对局开始动画
-    room.roomView:gameStartAnimation()
+    -- room.roomView:gameStartAnimation()
     --TODO: 播放投色子动画
-    room.roomView:touZiStartAnimation(msgDeal.dice1, msgDeal.dice2)
+    -- room.roomView:touZiStartAnimation(msgDeal.dice1, msgDeal.dice2)
     --TODO:修改家家庄标志
     room.roomView:setJiaJiaZhuang()
     --根据风圈修改
@@ -63,7 +63,7 @@ function Handler.onMsg(msgData, room)
     end
 
     --播放发牌动画，并使用coroutine等待动画完成
-    room.roomView:dealAnimation()
+    -- room.roomView:dealAnimation()
 
     --等待庄家出牌
     local bankerPlayer = room:getPlayerByChairID(room.bankerChairID)

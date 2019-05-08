@@ -5,7 +5,7 @@ local Handler = {}
 Handler.VERSION = "1.0"
 
 function Handler.onMsg(actionResultMsg, room)
-    --print('llwant, Discarded result')
+    print("llwant, Discarded result")
     --TODO:开启倒计时
     --room:startDiscardCountdown(15)
 

@@ -4,6 +4,7 @@
 local Handler = {}
 
 local proto = require "scripts/proto/proto"
+-- local logger = require "lobby/lcore/logger"
 
 function Handler.onMsg(msgData, room)
     --print('llwant, handle room restore')
@@ -25,9 +26,9 @@ function Handler.onMsg(msgData, room)
     room.tilesInWall = msgDeal.tilesInWall
     --大丰 1：就表示家家庄    -- 盐城 >0 表示加价局计数
     room.markup = msgDeal.markup
-    print("llwant,handlerMsgRestore ---------------" .. tostring(msgDeal.markup))
+    -- print("llwant,handlerMsgRestore ---------------" .. tostring(msgDeal.markup))
     --print("llwant,msgDeal.markup : " .. msgDeal.markup)
-    print("llwant , handlerMsgRestore.room.markup : " .. tostring(room.markup))
+    -- print("llwant , handlerMsgRestore.room.markup : " .. tostring(room.markup))
     --起手听状态
     for _, chairID in ipairs(msgRestore.readyHandChairs) do
         local player = room:getPlayerByChairID(chairID)
@@ -66,7 +67,7 @@ function Handler.onMsg(msgData, room)
         player:addDiscardedTiles(playerTileList.tilesDiscard)
 
         --填充面子牌列表
-        -- player:addMelds(playerTileList.melds)
+        player:addMelds(playerTileList.melds)
 
         if player.chairID == room.bankerChairID then
             room.roomView:setWaitingPlayer(player)
@@ -80,11 +81,12 @@ function Handler.onMsg(msgData, room)
 
     --显示各个玩家的手牌（对手只显示暗牌）和花牌和打出去的牌
     for _, p in pairs(room.players) do
-        if mySelf == p then
-            p:hand2UI(not newDraw)
-        else
-            p:hand2UI()
-        end
+        p:hand2UI(not newDraw)
+        -- if mySelf == p then
+        --     p:hand2UI(not newDraw)
+        -- else
+        --     p:hand2UI()
+        -- end
 
         p:flower2UI()
         local newDiscarded = false

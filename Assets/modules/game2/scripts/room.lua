@@ -252,7 +252,7 @@ function Room:getPlayerViewByChairID(chairID)
     local myChairId = self.myPlayer.chairID
 
     --获得chairID相对于本玩家的偏移
-    local c = (chairID - myChairId + 3) % 3
+    local c = (chairID - myChairId + 4) % 4
     --加1是由于lua table索引从1开始
     return playerViews[c + 1]
 end
@@ -662,9 +662,9 @@ end
 
 --关闭吃牌，杠牌，听牌详情
 function Room:cleanUI()
-    -- self.roomView.MultiChiOpsObj:SetActive(false)
-    -- self.roomView.MultiGangOpsObj:SetActive(false)
-    -- self.roomView.ListensObj:SetActive(false)
+    -- self.roomView.MultiChiOpsObj.visible = false
+    -- self.roomView.MultiGangOpsObj.visible = false
+    -- self.roomView.ListensObj.visible = false
 end
 
 -----------------------------------------------------------
@@ -702,6 +702,12 @@ end
 
 function Room:loadGameOverResultView()
     GameOverResultView.new(self)
+end
+
+function Room:hideDiscardedTips()
+    for _, p in pairs(self.players) do
+        p:hideDiscardedTips()
+    end
 end
 
 return Room
