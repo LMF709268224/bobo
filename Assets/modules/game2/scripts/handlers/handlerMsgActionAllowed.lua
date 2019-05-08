@@ -8,9 +8,6 @@ local proto = require "scripts/proto/proto"
 
 function Handler.onMsg(msg, room)
     --print('llwant, Action allowed msg')
-
-    --TODO:开启倒计时
-    --room:startDiscardCountdown(31)
     local allowedActionMsg = proto.decodeMessage("mahjong.MsgAllowPlayerAction", msg)
     -- allowedActionMsg:ParseFromString(msg)
 

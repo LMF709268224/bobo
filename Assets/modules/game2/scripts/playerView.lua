@@ -179,7 +179,6 @@ function PlayerView:initHands()
         if isMe then
             --订阅点击事件
             --TODO: 增加drag/drop
-            logger.debug("订阅点击事件 : ", card.name)
             card.onClick:Set(
                 function(obj)
                     self:onHandTileBtnClick(obj, i)
@@ -195,11 +194,11 @@ function PlayerView:initHands()
 end
 
 function PlayerView:initCardLists()
-    -- 手牌
+    -- 手牌列表
     self:initHands()
     -- 出牌列表
     self:initDiscards()
-    --花牌
+    -- 花牌列表
     self:initFlowers()
     -- 明牌列表
     self:initLights()

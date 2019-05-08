@@ -9,8 +9,6 @@ local proto = require "scripts/proto/proto"
 function Handler.onMsg(msg, room)
     --print('llwant, ReAction allowed msg')
 
-    --TODO:开始倒计时
-    --room:startDiscardCountdown(15)
     local allowedReActionMsg = proto.decodeMessage("mahjong.MsgAllowPlayerReAction", msg)
 
     -- allowedReActionMsg:ParseFromString(msg)
@@ -26,7 +24,7 @@ function Handler.onMsg(msg, room)
     end
 
     --设置等待箭头
-    --room.roomView:setWaitingPlayer(player)
+    room.roomView:setWaitingPlayer(player)
 end
 
 function Handler.processMyAllowedReActions(allowedReActionMsg, player)
