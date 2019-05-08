@@ -10,6 +10,7 @@ local proto = require "lobby/scripts/proto/proto"
 local urlEncoder = require "lobby/lcore/urlEncode"
 local dialog = require "lobby/lcore/dialog"
 local updateProgress = require "lobby/scripts/newRoom/updateProgress"
+local lobbyError = require "lobby/scripts/lobbyError"
 local lenv = require "lobby/lenv"
 local CS = _ENV.CS
 
@@ -38,6 +39,8 @@ function JoinRoomView.new()
         )
     end
 
+    JoinRoomView.roomNumber = ""
+
     JoinRoomView.win:Show()
 
 end
@@ -51,6 +54,19 @@ function JoinRoomView:initAllView()
         end
     )
 
+    local resetBtn = self.unityViewNode:GetChild("buttonCS")
+    resetBtn.onClick:Set(
+        function()
+            self:onResetBtnClick()
+        end
+    )
+
+    local backBtn = self.unityViewNode:GetChild("buttonSC")
+    backBtn.onClick:Set(
+        function()
+            self:onBackBtnClick()
+        end
+    )
 
     for i = 0, 9 do
         local button = self.unityViewNode:GetChild("button" .. tostring(i))
@@ -62,6 +78,39 @@ function JoinRoomView:initAllView()
 
     end
 
+    self.numbers = {}
+    for i = 1, 6 do
+        local num = self.unityViewNode:GetChild("number"..i)
+        self.numbers[i] = num
+    end
+
+    self.hintText = self.unityViewNode:GetChild("hintText")
+
+end
+
+function JoinRoomView:onResetBtnClick()
+    for i = 1, 6 do
+        self.numbers[i].text = ""
+    end
+
+    self.roomNumber = ""
+    self.hintText.visible = true
+end
+
+function JoinRoomView:onBackBtnClick()
+    local len = string.len(self.roomNumber)
+
+    if len ~= 0 then
+        self.numbers[len].text = ""
+    end
+
+    self.roomNumber = string.sub(self.roomNumber,0,len - 1)
+
+    if self.roomNumber == "" then
+        self.hintText.visible = true
+    else
+        self.hintText.visible = false
+    end
 end
 
 function JoinRoomView:onInputButton(number)
@@ -72,13 +121,23 @@ function JoinRoomView:onInputButton(number)
 
     if numberLength < 6 then
         local strIndex = numberLength + 1
-        local num = self.unityViewNode:GetChild("number"..strIndex)
-        num.text = tostring(number)
+        local num = self.numbers[strIndex]
+        if num ~= nil then
+            num.text = tostring(number)
+        else
+            logger.error("JoinRoomView:onInputButton, index "..strIndex.." out of range")
+        end
 
         if self.roomNumber then
             self.roomNumber= self.roomNumber .. tostring(number)
         else
             self.roomNumber=  tostring(number)
+        end
+
+        if self.roomNumber == "" then
+            self.hintText.visible = true
+        else
+            self.hintText.visible = false
         end
     end
 
@@ -181,8 +240,14 @@ function JoinRoomView:requetJoinRoom(roomNumber)
                     if requestRoomInfoRsp.result == proto.lobby.MsgError.ErrSuccess then
                         self:checkUpdate(requestRoomInfoRsp.roomInfo)
                     else
-                        logger.debug("request room info error, code:"..requestRoomInfoRsp.result)
-                        -- TODO: 提示错误
+                        local errMsg = lobbyError[requestRoomInfoRsp.result]
+                        logger.debug("errMsg:"..errMsg)
+                        if errMsg ~= nil then
+                           dialog.showDialog(errMsg,
+                             function()
+                             end
+                           )
+                        end
                     end
                 else
                     logger.debug("requetJoinRoom error : ", req.State)

@@ -13,6 +13,7 @@ local updateProgress = require "lobby/scripts/newRoom/updateProgress"
 local lenv = require "lobby/lenv"
 local dialog = require "lobby/lcore/dialog"
 local errHelper = require "lobby/lcore/lobbyErrHelper"
+local lobbyError = require "lobby/scripts/lobbyError"
 local CS = _ENV.CS
 
 function NewRoomView.new()
@@ -185,7 +186,13 @@ function NewRoomView:createRoom(ruleJson)
                 elseif createRoomRsp.result == proto.lobby.MsgError.ErrIsNeedUpdate then
                     self:doUpgrade(ruleJson)
                 else
-                    logger.debug("unknow error:"..createRoomRsp.result)
+                   local errMsg = lobbyError[createRoomRsp.result]
+                   if errMsg ~= nil then
+                      dialog.showDialog(errMsg,
+                        function()
+                        end
+                      )
+                   end
                 end
             else
                 logger.debug("create room error : ", req.State)
