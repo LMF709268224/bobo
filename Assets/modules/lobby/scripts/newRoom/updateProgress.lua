@@ -3,10 +3,22 @@
 ]]
 --luacheck: no self
 local UpdateProgress = {}
+local mt = {__index = UpdateProgress}
 local logger = require "lobby/lcore/logger"
 local lenv = require "lobby/lenv"
 local dialog = require "lobby/lcore/dialog"
 local CS = _ENV.CS
+
+function UpdateProgress:new(component, modName, progressBar,  endCallBack)
+	local progressView = {component = component, modName = modName, progressBar = progressBar, endCallBack = endCallBack}
+
+	if not progressView.component then
+		logger.debug("not progressView.loginView")
+	end
+
+	return setmetatable(progressView, mt)
+end
+
 
 function UpdateProgress:doUpgrade()
 	if not self.modName then
@@ -14,7 +26,11 @@ function UpdateProgress:doUpgrade()
 	end
 
 	if not self.component then
-		logger.debug("UpdateProgress, self.component== nil")
+		logger.debug("UpdateProgress, self.component == nil")
+	end
+
+	if not self.progressBar then
+		logger.debug("UpdateProgress, self.progressBar == nil")
 	end
 
     -- 准备检查更新Lobby模块
@@ -51,7 +67,7 @@ function UpdateProgress:doUpgrade()
 	end
 
 	-- 返回err
-	return err, isNeedUpgrade
+	return err
 end
 
 function UpdateProgress:isUpgradeEnable()
@@ -89,7 +105,6 @@ function UpdateProgress:runCoroutine()
 
 	-- 先显示启动背景
 	local err = nil
-	local upgraded = false
 
 	-- 如果使用更新
 	if self:isUpgradeEnable() then
@@ -97,7 +112,7 @@ function UpdateProgress:runCoroutine()
 		-- 失败时，不断重试
 		while retry do
 			-- 尝试检查和实施更新
-			err, upgraded = self:doUpgrade()
+			err = self:doUpgrade()
 			if err ~= nil then
 				-- 发生错误，询问是否重试
 				retry = self:showRetryMsgBox(err.msg)
@@ -107,36 +122,12 @@ function UpdateProgress:runCoroutine()
 		end
 	end
 
-	if err ~= nil then
-		-- 发生错误，退出
-		logger.error("Error:", err.msg, "Code:", err.code, ",程序将结束运行")
-		--_ENV.thisMod:AppExit()
-		return
-	end
-
-	if upgraded then
-		logger.debug("upgrade complete")
-	end
-	-- if upgraded then
-	-- 	-- 更新完成后，卸载背景，并reboot
-	-- 	_ENV.CS.Boot.Reboot()
-    --     return
-    -- else
-    --     self.bingView:updateComplete()
-	-- end
-
 	if self.endCallBack then
-		self.endCallBack()
+		self.endCallBack(err)
 	end
 end
 
-function UpdateProgress:updateView(component, modName, progressBar,  endCallBack)
-	-- self.bingView = bingView
-	self.component = component
-	self.endCallBack = endCallBack
-	self.modName = modName
-	self.progressBar = progressBar
-
+function UpdateProgress:updateView()
 	local co = coroutine.create(
         function()
             self:runCoroutine()

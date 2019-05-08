@@ -30,8 +30,9 @@ function Updater:new(modName, remoteURL, component)
 
 	-- version data
 	local lobbyVersion = require "lobby/version"
-	local modVersion = require(modName .. "/version")
-	updater.modVersion = modVersion
+	-- local modVersion = require(modName .. "/version")
+	local modVersionStr = CS.NetHelper.GetModVersion(modName)
+	updater.modVersionStr = modVersionStr
 	updater.lobbyVersion = lobbyVersion
 
 	local writeAbleDir = CS.UnityEngine.Application.persistentDataPath
@@ -53,7 +54,7 @@ end
 
 function Updater:constructQueryString()
 	local qs = "qMod=" .. urlEncoder.encode(self.modName) -- current module name
-	qs = qs .. "&modV=" .. urlEncoder.encode(self.modVersion.VER_STR) -- current module version
+	qs = qs .. "&modV=" .. urlEncoder.encode(self.modVersionStr) -- current module version
 	qs = qs .. "&csVer=" .. urlEncoder.encode(CS.Version.VER_STR) -- csharp core version
 	qs = qs .. "&lobbyVer=" .. urlEncoder.encode(self.lobbyVersion.VER_STR) -- lobby version
 	qs = qs .. "&operatingSystem=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.operatingSystem) -- system name
