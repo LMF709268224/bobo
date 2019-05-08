@@ -30,7 +30,10 @@ function PlayerView.new(viewUnityNode, viewChairID)
     local view = viewUnityNode:GetChild("player" .. viewChairID)
     if (viewChairID == 1) then
         playerView.operationPanel = viewUnityNode:GetChild("operationPanel")
+        playerView.meldOpsPanel = viewUnityNode:GetChild("meldOpsPanel")
+
         playerView:initOperationButtons()
+        playerView:initMeldsPanel()
     end
     playerView.viewChairID = viewChairID
     playerView.viewUnityNode = viewUnityNode
@@ -232,17 +235,34 @@ function PlayerView:initCardLists()
     self:initHands()
     -- 出牌列表
     self:initDiscards()
+    --花牌
     self:initFlowers()
     -- 明牌列表
     -- self:initLights()
 end
 
 -------------------------------------------------
+--面子牌选择面板
+-------------------------------------------------
+function PlayerView:initMeldsPanel()
+    local meldMap = {}
+    meldMap[1] = self.meldOpsPanel:GetChild("n1")
+    meldMap[2] = self.meldOpsPanel:GetChild("n2")
+    meldMap[3] = self.meldOpsPanel:GetChild("n3")
+    meldMap[4] = self.meldOpsPanel:GetChild("bg")
+
+    meldMap[1].visible = false
+    meldMap[2].visible = false
+    meldMap[3].visible = false
+
+    self.multiOpsObj = meldMap
+end
+-------------------------------------------------
 --保存操作按钮
 -------------------------------------------------
 function PlayerView:initOperationButtons()
     -- local operationButtonsRoot = viewUnityNode.transform:Find("TsBtnGroup/BgImg")
-    -- self.operationButtonsRoot = operationButtonsRoot
+    self.operationButtonsRoot = self.operationPanel
 
     local pv = self
 
@@ -341,7 +361,7 @@ function PlayerView:hideOperationButtons()
     end
 
     -- 隐藏根节点
-    -- self.operationButtonsRoot.visible = false
+    self.operationButtonsRoot.visible = false
 end
 
 -------------------------------------------------

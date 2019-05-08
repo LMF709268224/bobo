@@ -160,7 +160,7 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     end
 
     if needShowOperationButtons then
-        -- playerView.operationButtonsRoot.visible = true
+        playerView.operationButtonsRoot.visible = true
         --这个标志用来判断可否出牌，当点击了动作按钮之后flagsAction会设置为true，这时候才可以出牌
         player.waitSkip = true
     end
