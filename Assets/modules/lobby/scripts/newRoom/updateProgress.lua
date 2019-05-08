@@ -45,15 +45,11 @@ end
 
 function UpdateProgress:doUpgrade()
 	if not self.modName then
-		logger.debug("UpdateProgress, self.modName == nil")
-	end
-
-	if not self.component then
-		logger.debug("UpdateProgress, self.component == nil")
+		logger.error("UpdateProgress, self.modName == nil")
 	end
 
 	if not self.progressBar then
-		logger.debug("UpdateProgress, self.progressBar == nil")
+		logger.error("UpdateProgress, self.progressBar == nil")
 	end
 
     -- 准备检查更新Lobby模块
