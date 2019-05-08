@@ -155,11 +155,12 @@ function RunFastRuleView:getCost(payType, playerNum, handNum)
         key = "aaPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
     end
 
-    if self.priceCfg.activityPriceCfg ~= nil and type(self.priceCfg.activityPriceCfg) == "table"  then
-        return self.priceCfg.activityPriceCfg[key]
+    local activityPriceCfg = self.priceCfg.activityPriceCfg
+    if activityPriceCfg ~= nil and type(activityPriceCfg) == "table" and activityPriceCfg.discountCfg ~= nil then
+        return activityPriceCfg.discountCfg[key]
     end
 
-    if self.priceCfg.originalPriceCfg  ~= nil or type(self.priceCfg.originalPriceCfg ) == "table" then
+    if self.priceCfg.originalPriceCfg  ~= nil and type(self.priceCfg.originalPriceCfg) == "table" then
         return self.priceCfg.originalPriceCfg[key]
     end
 
