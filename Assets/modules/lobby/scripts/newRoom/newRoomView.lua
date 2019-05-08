@@ -17,7 +17,7 @@ local CS = _ENV.CS
 
 function NewRoomView.new()
     if NewRoomView.unityViewNode then
-        logger.debug("CreateRoomView ---------------------")
+        logger.debug("NewRoomView ---------------------")
     else
         _ENV.thisMod:AddUIPackage("lobby/fui_create_room/lobby_create_room")
         local viewObj = _ENV.thisMod:CreateUIObject("lobby_create_room", "createRoom")
@@ -133,7 +133,7 @@ function NewRoomView:doUpgrade(ruleJson)
         end
     end
 
-    local progress = updateProgress:new(self.unityViewNode, ruleJson.modName, self.progressBar, upgradeComplete)
+    local progress = updateProgress:new(ruleJson.modName, upgradeComplete)
     progress:updateView()
 end
 
@@ -160,8 +160,7 @@ function NewRoomView:constructQueryString(ruleJson)
 end
 
 function NewRoomView:createRoom(ruleJson)
-    logger.debug("createRoom")
-
+    logger.debug("NewRoomView:createRoom")
     -- local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
     local queryString = self:constructQueryString(ruleJson)
     local url = urlpathsCfg.rootURL .. urlpathsCfg.createRoom .. "?"..queryString

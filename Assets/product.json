@@ -27,11 +27,19 @@
 					"filters":"*.png,*.bytes"
 				},
 				{
+					"path":"lobby/fui_join_room",
+					"filters":"*.png,*.bytes"
+				},
+				{
 					"path":"lobby/fui_login",
 					"filters":"*.png,*.bytes"
 				},
 				{
 					"path":"lobby/fui_lobby_poker",
+					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"lobby/fui_lobby_progress_bar",
 					"filters":"*.png,*.bytes"
 				},
 				{
