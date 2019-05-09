@@ -60,13 +60,11 @@ function NewRoomView:initAllView()
         end
     )
 
-    local gzRuleView = self.unityViewNode:GetChild("gzRule")
     local runFastRuleView = require "lobby/scripts/newRoom/runFastRuleView"
-    runFastRuleView.bindView(gzRuleView, self)
+    runFastRuleView.bindView(self)
 
-    -- local viewObj = self.unityViewNode:GetChild("dfmjRule")
-    -- local dfRuleView = require "lobby/scripts/newRoom/dfRuleView"
-    -- dfRuleView.bindView(viewObj)
+    local dfRuleView = require "lobby/scripts/newRoom/dfRuleView"
+    dfRuleView.bindView(self)
 end
 
 function NewRoomView:loadPriceCfgs(cb)
@@ -162,7 +160,7 @@ function NewRoomView:constructQueryString(ruleJson)
 end
 
 function NewRoomView:createRoom(ruleJson)
-    logger.debug("NewRoomView:createRoom")
+    logger.debug("NewRoomView:createRoom, ruleJson:", ruleJson)
     -- local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
     local queryString = self:constructQueryString(ruleJson)
     local url = urlpathsCfg.rootURL .. urlpathsCfg.createRoom .. "?"..queryString

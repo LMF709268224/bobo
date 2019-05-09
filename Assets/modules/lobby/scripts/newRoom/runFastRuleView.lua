@@ -13,7 +13,7 @@ local rules = {
     ["payNum"] = 4,
     ["payType"] = 0,
     ["handNum"] = 4,
-    --游戏ID
+    --游戏模块
     ["modName"] = "game1"
 }
 
@@ -41,8 +41,8 @@ local configTable = {
     -- 剩下还有些没对应上的配置
 }
 
-function RunFastRuleView.bindView(viewObj, newRoomView)
-    RunFastRuleView.unityViewNode = viewObj
+function RunFastRuleView.bindView(newRoomView)
+    RunFastRuleView.unityViewNode = newRoomView.unityViewNode:GetChild("gzRule")
     RunFastRuleView.newRoomView = newRoomView
     RunFastRuleView.priceCfg = newRoomView.priceCfgs[tostring(rules.roomType)]
 
