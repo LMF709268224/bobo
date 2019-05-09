@@ -6,15 +6,20 @@ local logger = require "lobby/lcore/logger"
 
 --记录键值
 -- local RecordKey = "createRoomView"
-local dfRoomType = 8
+local dfRoomType = 1
 local rules = {
     ["roomType"] = dfRoomType,
-    ["playerNumAcquired"] = 3,
-    ["payNum"] = 4,
+    ["playerNumAcquired"] = 4,
+    ["payNum"] = 24,
     ["payType"] = 0,
     ["handNum"] = 4,
-    --游戏ID
-    ["GameID"] = 10034
+    ["doubleScoreWhenSelfDrawn"] = true,
+    ["doubleScoreWhenContinuousBanker"] = true,
+    ["doubleScoreWhenZuoYuanZi"] = true,
+    ["fengDingType"] = 0,
+    ["dunziPointType"] = 0,
+    --游戏模块
+    ["modName"] = "game2"
 }
 
 local configTable = {
@@ -41,13 +46,14 @@ local configTable = {
     -- 剩下还有些没对应上的配置
 }
 
-function DFRuleView.bindView(viewObj, newRoomView)
-    DFRuleView.unityViewNode = viewObj
+function DFRuleView.bindView(newRoomView)
+    DFRuleView.unityViewNode = newRoomView.unityViewNode:GetChild("damjRule")
     DFRuleView.newRoomView = newRoomView
+    DFRuleView.priceCfg = newRoomView.priceCfgs[tostring(rules.roomType)]
 
-    DFRuleView:initAllView()
+    -- DFRuleView:initAllView()
 
-    local createBtn = DFRuleView.unityViewNode:GetChild("n20")
+    local createBtn = DFRuleView.unityViewNode:GetChild("createRoomButton")
     createBtn.onClick:Set(
         function()
             DFRuleView:createRoom()
@@ -56,10 +62,13 @@ function DFRuleView.bindView(viewObj, newRoomView)
 end
 
 function DFRuleView:initAllView()
+    local consume = self.unityViewNode:GetChild("consumeCom")
+    self.consumeText = consume:GetChild("consumeText")
+
     -- 支付
     self.togglePay = {}
-    self.togglePay[1] = self.unityViewNode:GetChild("pay1")
-    self.togglePay[2] = self.unityViewNode:GetChild("pay2")
+    self.togglePay[1] = self.unityViewNode:GetChild("ownerPayButton")
+    self.togglePay[2] = self.unityViewNode:GetChild("aapPayButton")
     self.togglePay[1].selected = true
     self.togglePay[1].onClick:Set(
         function()
@@ -73,22 +82,12 @@ function DFRuleView:initAllView()
             self:updateComsumer()
         end
     )
-    -- self.togglePay[1].onChanged.Add(
-    --     function()
-    --         self:updateComsumer(false)
-    --     end
-    -- )
-    -- self.togglePay[2].onChanged.Add(
-    --     function()
-    --         self:updateComsumer(false)
-    --     end
-    -- )
 
     --局数
     self.toggleCount = {}
-    self.toggleCount[1] = self.unityViewNode:GetChild("hand4")
-    self.toggleCount[2] = self.unityViewNode:GetChild("hand8")
-    self.toggleCount[3] = self.unityViewNode:GetChild("hand16")
+    self.toggleCount[1] = self.unityViewNode:GetChild("round4Button")
+    self.toggleCount[2] = self.unityViewNode:GetChild("round8Button")
+    self.toggleCount[3] = self.unityViewNode:GetChild("round16Button")
     self.toggleCount[1].selected = true
     self.toggleCount[1].onClick:Set(
         function()
@@ -111,56 +110,9 @@ function DFRuleView:initAllView()
             self:updateComsumer()
         end
     )
-    --获取记录刷新界面
-    -- if UnityEngine.PlayerPrefs.HasKey(RecordKey) then
-    --     local json = UnityEngine.PlayerPrefs.GetString(RecordKey)
-    --     --log("test  json = " .. json)
-    --     if json and #json > 0 then
-    --         local key = Json.decode(json)
-
-    --         local toggle = self.toggleCount[key[1]] or self.toggleCount[1]
-    --         toggle.isOn = true
-
-    --         toggle = self.togglePlayerNum[key[2]] or self.togglePlayerNum[1]
-    --         toggle.isOn = true
-
-    --         toggle = self.togglePay[key[3]] or self.togglePay[2]
-    --         toggle.isOn = true
-
-    --         toggle = self.toggleFengDing[key[4]] or self.toggleFengDing[2]
-    --         toggle.isOn = true
-
-    --         toggle = self.toggleDunZi[key[5]] or self.toggleDunZi[1]
-    --         toggle.isOn = true
-
-    --         self.toggleKX[1].isOn = self:ToggleDefault(key[6], true)
-    --         self.toggleKX[2].isOn = self:ToggleDefault(key[7], true)
-    --         self.toggleKX[3].isOn = self:ToggleDefault(key[8], false)
-
-    --         --key[3] == 2 表示是AA支付
-    --         self:updateComsumer(key[3] == 2)
-    --     end
-    -- end
-
-    --退出时记录
-    -- self.OnDestroy = function()
-    --     local key = {}
-    --     key[1] = self:getToggleIndex(self.toggleCount)
-    --     key[2] = self:getToggleIndex(self.togglePlayerNum)
-    --     key[3] = self:getToggleIndex(self.togglePay)
-    --     key[4] = self:getToggleIndex(self.toggleFengDing)
-    --     key[5] = self:getToggleIndex(self.toggleDunZi)
-    --     key[6] = self.toggleKX[1].isOn
-    --     key[7] = self.toggleKX[2].isOn
-    --     key[8] = self.toggleKX[3].isOn
-    --     local json = Json.encode(key)
-    --     UnityEngine.PlayerPrefs.SetString(RecordKey, json)
-
-    --     dispatcher:unregister("LOAD_PRICES_CFG", self, self.OnUpdatePriceCfgs)
-    -- end
 
     self:updateComsumer()
-    self:updateCostDiamond()
+    -- self:updateCostDiamond()
 end
 
 --获取规则设置的值
@@ -183,64 +135,63 @@ function DFRuleView:resetTextColor(toggles, descriptios)
     end
 end
 
--- function CreateRoomView:GetCost(payType, playerNum, handNum)
---     -- logError("payType:"..payType..", playerNum:"..playerNum..", handNum"..handNum)
---     local key = "ownerPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
---     if payType == 1 then
---         key = "aaPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
---     end
-
---     local originalPrice = yuePaiLogic:GetOriginalPrice(dfRoomType, key)
---     return originalPrice
-
---     -- return payConfig[key]
--- end
-
 --获取房间规则
 function DFRuleView:getRules()
-    local playCountIndex = self:getToggleIndex(self.toggleCount)
-    rules["handNum"] = configTable["handNum"][playCountIndex]
+    -- local playCountIndex = self:getToggleIndex(self.toggleCount)
+    -- rules["handNum"] = configTable["handNum"][playCountIndex]
 
-    local payIndex = self:getToggleIndex(self.togglePay)
-    rules["payType"] = configTable["payType"][payIndex]
+    -- local payIndex = self:getToggleIndex(self.togglePay)
+    -- rules["payType"] = configTable["payType"][payIndex]
 
     -- 暂时不知道什么配置
     -- rules["doubleScoreWhenSelfDrawn"] = self.toggleKX[1].isOn
 
-    -- rules["payNum"] = self:GetCost(rules["payType"], rules["playerNumAcquired"], rules["handNum"])
+    -- rules["payNum"] = self:getCost(rules["payType"], rules["playerNumAcquired"], rules["handNum"])
     -- 暂时不知道什么配置
     return rules
+end
+
+
+function DFRuleView:getCost(payType, playerNum, handNum)
+    -- logError("payType:"..payType..", playerNum:"..playerNum..", handNum"..handNum)
+    local key = "ownerPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
+    if payType == 1 then
+        key = "aaPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
+    end
+
+    local activityPriceCfg = self.priceCfg.activityPriceCfg
+    if activityPriceCfg ~= nil and type(activityPriceCfg) == "table" and activityPriceCfg.discountCfg ~= nil then
+        return activityPriceCfg.discountCfg[key]
+    end
+
+    if self.priceCfg.originalPriceCfg  ~= nil and type(self.priceCfg.originalPriceCfg) == "table" then
+        return self.priceCfg.originalPriceCfg[key]
+    end
+
+    return nil
 end
 
 --更新消耗数量
 function DFRuleView:updateComsumer()
     local payIndex = self:getToggleIndex(self.togglePay)
-    local handIndex = self:getToggleIndex(self.toggleCount)
-    logger.debug("更新消耗数量  : ", payIndex, " : ", handIndex)
+    local payType = configTable["payType"][payIndex]
 
-    -- local playerNum = configTable["playerNumAcquired"][playerNumIndex]
-    -- --logError("playerNum == "..playerNum)
-    -- if playerNum == 4 then
-    --     self.comsumer = configTable.neededDiamond
-    -- elseif playerNum == 3 then
-    --     self.comsumer = configTable.neededDiamond4ThreePlayers
-    -- elseif playerNum == 2 then
-    --     self.comsumer = configTable.neededDiamond4TwoPlayers
-    -- end
-    -- if isAA then
-    --     for i = 1, 3 do
-    --         --logError("comsumer == "..self.comsumer[i])
-    --         --math.ceil 向上取整
-    --         self.costLabels[i].text = isAA and ("每人" .. math.ceil(self.comsumer[i] / playerNum)) or self.comsumer[i]
-    --     end
-    -- else
-    --     for i = 1, 3 do
-    --         self.costLabels[i].text = self.comsumer[i]
-    --     end
-    -- end
-    -- for i = 1, 3 do
-    --     self.costLabels[i].text = isAA and ("每人" ..  math.ceil(self.comsumer[i] / playerNum)) or self.comsumer[i]
-    -- end
+    local playCountIndex = self:getToggleIndex(self.toggleCount)
+    local handNum = configTable["handNum"][playCountIndex]
+
+    -- 0 是不配置或者无限用户个数
+    local playerNumAcquired = 0
+
+    local cost = self:getCost(payType, playerNumAcquired, handNum)
+
+    if cost == nil then
+        logger.error("No price cfg found, payType:"..payType..", playerNumAcquired:"
+        ..playerNumAcquired..", handNum:")
+    end
+
+    logger.debug("cost:"..cost)
+    self.consumeText.text = cost
+
 end
 
 function DFRuleView:ToggleDefault(status, default)
@@ -251,49 +202,10 @@ function DFRuleView:ToggleDefault(status, default)
     end
 end
 
-function DFRuleView:calcAADiamond()
-    local toggle = self:getToggleIndex(self.togglePay)
-
-    local isAA = false
-
-    if toggle == 2 then
-        isAA = true
-    --self:updateComsumer(true)
-    end
-
-    self:updateComsumer(isAA)
-end
-
-function DFRuleView:OnUpdatePriceCfgs()
-    self:updateCostDiamond()
-end
-
-function DFRuleView:updateCostDiamond()
-    -- local payIndex = self:getToggleIndex(self.togglePay)
-    -- local payType = configTable["payType"][payIndex]
-    -- local playerNumIndex = self:getToggleIndex(self.togglePlayerNum)
-    -- local playerNumAcquired = configTable["playerNumAcquired"][playerNumIndex]
-    -- local playCountIndex = self:getToggleIndex(self.toggleCount)
-    -- local handNum = configTable["handNum"][playCountIndex]
-    -- local cost = self:GetCost(payType, playerNumAcquired, handNum)
-    -- -- self.costDiamond.text = "x"..cost
-    -- print("CreateRoomView:updateCostDiamond()----------------cost = " .. tostring(cost))
-    -- if cost == nil then
-    --     g_commonModule:ShowTip("获取不到支付配置")
-    --     return
-    -- end
-    -- self.costDiamond.text = "x" .. cost
-    -- self.discount:SetActive(false)
-    -- local discountPrice = yuePaiLogic:GetDiscountPrice(dfRoomType, payType, playerNumAcquired, handNum)
-    -- if discountPrice ~= nil then
-    --     self.discountPrice.text = "x" .. discountPrice .. "）"
-    --     self.discount:SetActive(true)
-    -- end
-    -- print("CreateRoomView:updateCostDiamond()----------------discountPrice = " .. tostring(discountPrice))
-end
-
 function DFRuleView:createRoom()
+    logger.debug("DFRuleView:createRoom")
     self.newRoomView:createRoom(self:getRules())
+
 
 end
 
