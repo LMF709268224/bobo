@@ -9,8 +9,6 @@ local proto = require "scripts/proto/proto"
 function Handler.onMsg(msg, room)
     --print('llwant, ReAction allowed msg')
 
-    --TODO:开始倒计时
-    --room:startDiscardCountdown(15)
     local allowedReActionMsg = proto.decodeMessage("mahjong.MsgAllowPlayerReAction", msg)
 
     -- allowedReActionMsg:ParseFromString(msg)
@@ -26,7 +24,7 @@ function Handler.onMsg(msg, room)
     end
 
     --设置等待箭头
-    --room.roomView:setWaitingPlayer(player)
+    room.roomView:setWaitingPlayer(player)
 end
 
 function Handler.processMyAllowedReActions(allowedReActionMsg, player)
@@ -38,7 +36,7 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
 
     local playerView = player.playerView
 
-    -- local needShowOperationButtons = falses
+    local needShowOperationButtons = false
 
     -- 过胡牌提示只有在胡和过同时存在才是true，任何情况都为false
     player.isGuoHuTips = false
@@ -47,14 +45,14 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
     local mjproto = proto.mahjong.ActionType
     if proto.actionsHasAction(actions, mjproto.enumActionType_CHOW) then
         print("llwant, can chow")
-        -- needShowOperationButtons = true
+        needShowOperationButtons = true
         playerView.chowBtn.visible = true
     end
 
     --如果可以碰
     if proto.actionsHasAction(actions, mjproto.enumActionType_PONG) then
         print("llwant, can pong")
-        -- needShowOperationButtons = true
+        needShowOperationButtons = true
 
         playerView.pongBtn.visible = true
     end
@@ -62,7 +60,7 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
     --如果可以明杠
     if proto.actionsHasAction(actions, mjproto.enumActionType_KONG_Exposed) then
         print("llwant, can concealed kong")
-        -- needShowOperationButtons = true
+        needShowOperationButtons = true
 
         playerView.kongBtn.visible = true
     end
@@ -70,7 +68,7 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
     --如果可以吃铳胡牌
     if proto.actionsHasAction(actions, mjproto.enumActionType_WIN_Chuck) then
         print("llwant, can win chuck")
-        -- needShowOperationButtons = true
+        needShowOperationButtons = true
 
         playerView.winBtn.visible = true
     end
@@ -78,7 +76,7 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
     --如果可以过
     if proto.actionsHasAction(actions, mjproto.enumActionType_SKIP) then
         print("llwant, can skip")
-        -- needShowOperationButtons = true
+        needShowOperationButtons = true
         playerView.skipBtn.visible = true
     end
 
@@ -90,9 +88,9 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
         end
     end
 
-    -- if needShowOperationButtons then
-    -- playerView.operationButtonsRoot.visible = true
-    -- end
+    if needShowOperationButtons then
+        playerView.operationButtonsRoot.visible = true
+    end
 end
 
 return Handler

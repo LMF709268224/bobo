@@ -39,7 +39,7 @@ function Handler.onMsg(msgData, room)
     --重连
     --room.roomView:onReconnect()
     --TODO:根据风圈修改
-    -- room.roomView:setRoundMask(1)
+    room.roomView:setRoundMask(1)
     --TODO:修改家家庄标志
     -- room.roomView:setJiaJiaZhuang()
     --TODO:修改庄家标志
@@ -61,7 +61,7 @@ function Handler.onMsg(msgData, room)
         end
 
         --填充花牌列表
-        -- player:addFlowerTiles(playerTileList.tilesFlower)
+        player:addFlowerTiles(playerTileList.tilesFlower)
 
         --填充打出去的牌列表
         player:addDiscardedTiles(playerTileList.tilesDiscard)

@@ -11,6 +11,7 @@ local proto = require "scripts/proto/proto"
 local dialog = require "lobby/lcore/dialog"
 local chatView = require "lobby/scripts/chat/chatView"
 local prompt = require "lobby/lcore/prompt"
+local tileMounter = require("scripts/tileImageMounter")
 
 local mt = {__index = RoomView}
 -- local dfPath = "GuanZhang/Script/"
@@ -53,6 +54,7 @@ function RoomView.new(room)
 
     -- local voiceBtn = view:GetChild("voice")
     -- voiceBtn.visible = false
+
     local chatBtn = view:GetChild("chatBtn")
     chatBtn.onClick:Set(
         function()
@@ -91,6 +93,8 @@ function RoomView.new(room)
 
     --房间状态事件初始化
     roomView:initRoomStatus()
+
+    roomView:initOtherView()
 
     -- -- 房间规则
     -- roomView:initRoomRule()
@@ -239,6 +243,24 @@ function RoomView.new(room)
 
     -- logger.debug("进入子游戏关张房间完成，当前系统时间：", os.time())
     return roomView
+end
+
+function RoomView:initOtherView()
+    -- 风圈和当前操作玩家指示箭头roundMarkArrow
+    local roundMarks = {}
+    self.roundMarkView = self.unityViewNode:GetChild("roundMask")
+    for i = 1, 4 do
+        local roundMark = self.roundMarkView:GetChild("n" .. i)
+        roundMarks[i] = roundMark
+    end
+    self.roundMarks = roundMarks
+    self.wind = self.unityViewNode:GetChild("n3")
+    self.windTile = self.unityViewNode:GetChild("fengquan")
+    self.wind.visible = false
+    self.windTile.visible = false
+
+    --倒计时
+    self.countDownText = self.roundMarkView:GetChild("num")
 end
 
 function RoomView:pauseResumeButtons(pauseBtnVisible, resumeBtnVisible)
@@ -458,15 +480,42 @@ function RoomView:handOverAnimation()
     coroutine.yield()
 end
 
+function RoomView:startDiscardCountdown()
+    --清理定时器
+    self.unityViewNode:StopTimer("roomViewCountDown")
+
+    self.leftTime = 0
+    --起定时器
+    self.unityViewNode:StartTimer(
+        "roomViewCountDown",
+        1,
+        0,
+        function()
+            self.leftTime = self.leftTime + 1
+            self.countDownText.text = self.leftTime
+            if self.leftTime >= 999 then
+                self.unityViewNode:StopTimer("roomViewCountDown")
+            end
+        end,
+        self.leftTime
+    )
+end
+
+function RoomView:hideDiscardCountdown()
+    --清理定时器
+    self.unityViewNode:StopTimer("roomViewCountDown")
+    self.countDownText.text = ""
+end
 --------------------------------------
 --设置当前房间所等待的操作玩家
 --------------------------------------
 function RoomView:setWaitingPlayer(player)
     --TODO:假设客户端只允许一个等待标志
     --因此设置一个等待时，先把其他的清理掉
-    --self.room:startDiscardCountdown(31)
+    self:startDiscardCountdown()
     self:clearWaitingPlayer()
-    -- local viewChairID = player.playerView.viewChairID
+    local viewChairID = player.playerView.viewChairID
+    self.roundMarks[viewChairID].visible = true
 
     player.playerView:setHeadEffectBox(true)
 end
@@ -474,6 +523,9 @@ end
 --清除当前房间的等待玩家标志
 --------------------------------------
 function RoomView:clearWaitingPlayer()
+    for _, mask in ipairs(self.roundMarks) do
+        mask.visible = false
+    end
     for _, v in pairs(self.playerViews) do
         v:setHeadEffectBox(false)
     end
@@ -824,7 +876,11 @@ end
 function RoomView:initRoomStatus()
     -- 房间正在等待玩家准备
     local onWait = function()
-        -- roomView.wind.visible = false
+        self.wind.visible = false
+        self.windTile.visible = false
+
+        self.roundMarkView.visible = false
+        self:hideDiscardCountdown()
         --等待状态重置上手牌遗留
         self.room:resetForNewHand()
         --roomView.tilesInWall.visible = false
@@ -854,7 +910,11 @@ function RoomView:initRoomStatus()
     local onPlay = function()
         -- roomView.invitButton.visible = false
         -- roomView.returnHallBtn.visible = false
-        --roomView.wind.visible = false --发牌的时候，或者掉线恢复的时候会设置风圈因此此处不需要visible
+        self.wind.visible = false --发牌的时候，或者掉线恢复的时候会设置风圈因此此处不需要visible
+        self.windTile.visible = false
+
+        self.roundMarkView.visible = true
+        self:clearWaitingPlayer()
         --if not room:isReplayMode() then
         --<color=#775D42FF>" .. formatStr .. "</color>
         -- local roundstr = "局数:<color=#e9bf89>%s/%s</color>"
@@ -1241,14 +1301,10 @@ end
 function RoomView:setRoundMask(index)
     logger.debug("llwant , set round mask = " .. index)
 
-    -- local curRoundMask = self.roundMarks[index]
-    -- curRoundMask.transform:SetActive(true)
-    -- self.curRoundMask = curRoundMask
-    -- self:clearWaitingPlayer()
-
     -- --设置风圈和被当做花牌的风牌
-    -- self.wind:SetActive(true)
-    -- tileMounter:mountTileImage(self.windTile, self.room.windFlowerID)
+    self.wind.visible = true
+    self.windTile.visible = true
+    tileMounter:mountTileImage(self.windTile, self.room.windFlowerID)
 
     --self.playerViews[index]:setHeadEffectBox()
 end
