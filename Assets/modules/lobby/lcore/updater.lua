@@ -233,7 +233,7 @@ function Updater:doUpgrade(progressHandler, retryConfirmHandler)
 	-- 检查是否存在ModeName_Upgrade目录
 	-- 是的话需要删除目录
 	if CS.System.IO.Directory.Exists(self.upgradePath) then
-		CS.System.IO.Directory.Delete(self.upgradePath)
+		CS.System.IO.Directory.Delete(self.upgradePath, true)
 	end
 
 	-- 创建upgrade目录
@@ -314,7 +314,7 @@ function Updater:doUpgrade(progressHandler, retryConfirmHandler)
 
 	-- 删除老的模块目录
 	if self.oldWriteAble then
-		CS.System.IO.Directory.Delete(self.oldPath)
+		CS.System.IO.Directory.Delete(self.oldPath, true)
 	else
 		local modulesPath = CS.UnityEngine.Application.persistentDataPath .. '/modules'
 		if not CS.System.IO.Directory.Exists(modulesPath) then

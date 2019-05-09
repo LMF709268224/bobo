@@ -3,42 +3,60 @@
 ]]
 --luacheck: no self
 local UpdateProgress = {}
-local mt = {__index = UpdateProgress}
+-- local mt = {__index = UpdateProgress}
+local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
 local lenv = require "lobby/lenv"
 local dialog = require "lobby/lcore/dialog"
 local CS = _ENV.CS
 
-function UpdateProgress:new(component, modName, progressBar,  endCallBack)
-	local progressView = {component = component, modName = modName, progressBar = progressBar, endCallBack = endCallBack}
+function UpdateProgress:new(modName, endCallBack)
+	if UpdateProgress.unityViewNode then
+        logger.debug("UpdateProgress ---------------------")
+    else
+        _ENV.thisMod:AddUIPackage("lobby/fui_lobby_progress_bar/lobby_progress_bar")
+        local viewObj = _ENV.thisMod:CreateUIObject("lobby_progress_bar", "progressBar")
 
-	if not progressView.component then
-		logger.debug("not progressView.loginView")
-	end
+		UpdateProgress.unityViewNode = viewObj
+		UpdateProgress.modName = modName
+		UpdateProgress.endCallBack = endCallBack
 
-	return setmetatable(progressView, mt)
+        local win = fairy.Window()
+        win.contentPane = UpdateProgress.unityViewNode
+        UpdateProgress.win = win
+
+        -- 由于win隐藏，而不是销毁，隐藏后和GRoot脱离了关系，因此需要
+        -- 特殊销毁
+        _ENV.thisMod:RegisterCleanup(
+            function()
+                win:Dispose()
+            end
+		)
+
+		UpdateProgress.progressBar = UpdateProgress.unityViewNode:GetChild("n0")
+    end
+
+	UpdateProgress.win:Show()
+
+	return UpdateProgress
 end
+
 
 
 function UpdateProgress:doUpgrade()
 	if not self.modName then
-		logger.debug("UpdateProgress, self.modName == nil")
-	end
-
-	if not self.component then
-		logger.debug("UpdateProgress, self.component == nil")
+		logger.error("UpdateProgress, self.modName == nil")
 	end
 
 	if not self.progressBar then
-		logger.debug("UpdateProgress, self.progressBar == nil")
+		logger.error("UpdateProgress, self.progressBar == nil")
 	end
 
     -- 准备检查更新Lobby模块
     local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
     logger.debug("urlpathsCfg.updateQuery:", urlpathsCfg.updateQuery)
     local updaterM = require "lobby/lcore/updater"
-	local updater = updaterM:new(self.modName, urlpathsCfg.rootURL..urlpathsCfg.updateQuery,
-	 self.component)
+	local updater = updaterM:new(self.modName, urlpathsCfg.rootURL..urlpathsCfg.updateQuery, self.unityViewNode)
 
 	local err
 	local isNeedUpgrade
@@ -125,6 +143,8 @@ function UpdateProgress:runCoroutine()
 	if self.endCallBack then
 		self.endCallBack(err)
 	end
+
+	self:destroy()
 end
 
 function UpdateProgress:updateView()
@@ -139,5 +159,14 @@ function UpdateProgress:updateView()
 	logger.error(debug.traceback(co, err))
 	end
 end
+
+
+function UpdateProgress:destroy()
+    self.win:Hide()
+    self.win:Dispose()
+    self.unityViewNode = nil
+    self.win = nil
+end
+
 
 return UpdateProgress
