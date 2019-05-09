@@ -49,11 +49,12 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
 
     local at = proto.mahjong.ActionType
     --如果可以抓牌
-    -- if proto.actionsHasAction(actions, at.enumActionType_AccumulateWin) then
-    --     needShowOperationButtons = true
-    --     playerView.finalDrawBtn.visible = true
-    --     player.waitSkip = true
-    -- end
+    if proto.actionsHasAction(actions, at.enumActionType_CustomB) then
+        print("llwant, can zhua")
+    -- needShowOperationButtons = true
+    -- playerView.finalDrawBtn.visible = true
+    -- player.waitSkip = true
+    end
 
     --如果可以起手听牌
     if proto.actionsHasAction(actions, at.enumActionType_FirstReadyHand) then

@@ -96,6 +96,8 @@ function RoomView.new(room)
 
     roomView:initOtherView()
 
+    roomView:initTingData()
+
     -- -- 房间规则
     -- roomView:initRoomRule()
 
@@ -501,7 +503,7 @@ function RoomView:startDiscardCountdown()
     )
 end
 
-function RoomView:hideDiscardCountdown()
+function RoomView:stopDiscardCountdown()
     --清理定时器
     self.unityViewNode:StopTimer("roomViewCountDown")
     self.countDownText.text = ""
@@ -880,7 +882,7 @@ function RoomView:initRoomStatus()
         self.windTile.visible = false
 
         self.roundMarkView.visible = false
-        self:hideDiscardCountdown()
+        self:stopDiscardCountdown()
         --等待状态重置上手牌遗留
         self.room:resetForNewHand()
         --roomView.tilesInWall.visible = false
@@ -1313,13 +1315,57 @@ end
 --隐藏听牌详情界面
 --------------------------------------
 function RoomView:hideTingDataView()
+    self.listensObj.visible = false
 end
 --------------------------------------
 --显示听牌详情界面
 --------------------------------------
 function RoomView:showTingDataView(data)
     if not data or #data == 0 then
+        self.listensObj.visible = false
         return
     end
+    local len = #data
+    self.listensDataList = data
+
+    local width = len <= 2 and 150 or 290
+    local height = len > 4 and 230 or 110
+    self.listensObjList:SetSize(width, height)
+    local nCount = 0
+    for _, d in ipairs(data) do
+        nCount = nCount + d.Num
+    end
+    self.listensObjNum.text = nCount .. "张"
+    self.listensObjList.numItems = len
+    self.listensObj.visible = true
 end
+
+--------------------------------------
+--初始化显示听牌详情界面
+--------------------------------------
+function RoomView:initTingData()
+    self.listensObj = self.unityViewNode:GetChild("listensPanel")
+    self.listensObjList = self.listensObj:GetChild("list").asList
+    self.listensObjNum = self.listensObj:GetChild("num")
+
+    self.listensObjList.itemRenderer = function(index, obj)
+        self:renderListensListItem(index, obj)
+    end
+    self.listensObjList:SetVirtual()
+
+    self.listensObj.onClick:Set(
+        function()
+            self.listensObj.visible = false
+        end
+    )
+end
+
+function RoomView:renderListensListItem(index, obj)
+    local data = self.listensDataList[index + 1]
+    local t = obj:GetChild("n1")
+    local num = obj:GetChild("num")
+    num.text = data.Num .. "张"
+    tileMounter:mountTileImage(t, data.Card)
+end
+
 return RoomView

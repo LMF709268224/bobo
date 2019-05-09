@@ -9,7 +9,7 @@ local proto = require "scripts/proto/proto"
 function Handler.onMsg(msgData, room)
     --print('llwant hand over msg')
     --TODO:关闭倒计时
-    room:stopDiscardCountdown()
+    room.roomView:stopDiscardCountdown()
     room:hideDiscardedTips()
 
     local msgHandOver = proto.decodeMessage("mahjong.MsgHandOver", msgData)

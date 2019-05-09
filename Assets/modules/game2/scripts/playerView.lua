@@ -442,6 +442,15 @@ function PlayerView:setHeadEffectBox(isShow)
     end
 end
 
+function PlayerView:hideMelds()
+    local mymeldTilesNode = self.myView:GetChild("melds")
+    for i = 1, 4 do
+        local mm = mymeldTilesNode:GetChild("myMeld" .. i)
+        if mm then
+            mymeldTilesNode:RemoveChild(mm, true)
+        end
+    end
+end
 ------------------------------------
 --从根节点上隐藏所有
 ------------------------------------
@@ -459,6 +468,7 @@ end
 function PlayerView:resetForNewHand()
     self:hideHands()
     self:hideFlowers()
+    self:hideMelds()
     self:hideLights()
     self:clearDiscardable()
     self:hideDiscarded()
