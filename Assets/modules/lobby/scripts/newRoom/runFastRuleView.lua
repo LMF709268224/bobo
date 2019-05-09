@@ -6,15 +6,14 @@ local logger = require "lobby/lcore/logger"
 
 --记录键值
 -- local RecordKey = "createRoomView"
-local dfRoomType = 8
+local runFast = 8
 local rules = {
-    ["roomType"] = dfRoomType,
+    ["roomType"] = runFast,
     ["playerNumAcquired"] = 3,
     ["payNum"] = 4,
     ["payType"] = 0,
     ["handNum"] = 4,
     --游戏ID
-    ["GameID"] = 10034,
     ["modName"] = "game1"
 }
 
@@ -155,11 +154,12 @@ function RunFastRuleView:getCost(payType, playerNum, handNum)
         key = "aaPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
     end
 
-    if self.priceCfg.activityPriceCfg ~= nil and type(self.priceCfg.activityPriceCfg) == "table"  then
-        return self.priceCfg.activityPriceCfg[key]
+    local activityPriceCfg = self.priceCfg.activityPriceCfg
+    if activityPriceCfg ~= nil and type(activityPriceCfg) == "table" and activityPriceCfg.discountCfg ~= nil then
+        return activityPriceCfg.discountCfg[key]
     end
 
-    if self.priceCfg.originalPriceCfg  ~= nil or type(self.priceCfg.originalPriceCfg ) == "table" then
+    if self.priceCfg.originalPriceCfg  ~= nil and type(self.priceCfg.originalPriceCfg) == "table" then
         return self.priceCfg.originalPriceCfg[key]
     end
 
@@ -197,32 +197,11 @@ function RunFastRuleView:ToggleDefault(status, default)
     end
 end
 
--- function RunFastRuleView:calcAADiamond()
---     local toggle = self:getToggleIndex(self.togglePay)
-
---     local isAA = false
-
---     if toggle == 2 then
---         isAA = true
---     --self:updateComsumer(true)
---     end
-
---     self:updateComsumer(isAA)
--- end
-
--- function RunFastRuleView:OnUpdatePriceCfgs()
---     self:updateCostDiamond()
--- end
-
 function RunFastRuleView:createRoom()
     logger.debug("RunFastRuleView:createRoom")
     self.newRoomView:createRoom(self:getRules())
 
 
 end
-
--- function RunFastRuleView:updateCostDiamond()
-
--- end
 
 return RunFastRuleView

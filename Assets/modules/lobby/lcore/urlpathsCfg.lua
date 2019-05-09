@@ -24,6 +24,8 @@ local UrlPaths = {
 	createRoom = "/lobby/uuid/createRoom",
 	loadRoomPriceCfgs = "/lobby/uuid/loadPrices",
 
+	requestRoomInfo = "/lobby/uuid/requestRoomInfo",
+
 	--战绩
 	lrproom = "/lobby/uuid/lrproom",
 	lrprecord = "/lobby/uuid/lrprecord"
