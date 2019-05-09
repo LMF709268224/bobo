@@ -8,7 +8,7 @@ local mt = {__index = PlayerView}
 --local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
--- local animation = require "lobby/lcore/animations"
+local animation = require "lobby/lcore/animations"
 local tileMounter = require("scripts/tileImageMounter")
 
 -----------------------------------------------
@@ -38,6 +38,7 @@ function PlayerView.new(viewUnityNode, viewChairID)
     playerView.viewChairID = viewChairID
     playerView.viewUnityNode = viewUnityNode
     playerView.myView = view
+    playerView.aniPos = view:GetChild("aniPos")
 
     -- 先找到牌相关的节点
     -- 现在的牌相关是在一个独立的prefab里面
@@ -1302,7 +1303,7 @@ end
 function PlayerView:playChowResultAnimation()
     -- local player = self.player
     -- --播放特效
-    -- self:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_CHI)
+    self:playerOperationEffect("Effects_zi_chi")
 end
 
 ----------------------------------------------------------
@@ -1311,7 +1312,7 @@ end
 function PlayerView:playPongResultAnimation()
     -- local player = self.player
     -- --播放特效
-    -- self:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_PENG)
+    self:playerOperationEffect("Effects_zi_peng")
 end
 
 ----------------------------------------------------------
@@ -1320,7 +1321,7 @@ end
 function PlayerView:playExposedKongResultAnimation()
     -- local player = self.player
     -- --播放特效
-    -- self:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_GANG)
+    self:playerOperationEffect("Effects_zi_gang")
 end
 
 ----------------------------------------------------------
@@ -1329,7 +1330,7 @@ end
 function PlayerView:playConcealedKongResultAnimation()
     -- local player = self.player
     -- --播放特效
-    -- self:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_GANG)
+    self:playerOperationEffect("Effects_zi_gang")
 end
 
 ----------------------------------------------------------
@@ -1373,10 +1374,11 @@ end
 ----------------------------------------------------------
 --特效播放
 ----------------------------------------------------------
-function PlayerView:playerOperationEffect(_, _)
+function PlayerView:playerOperationEffect(effectName)
     -- local effectObj = Animator.Play(dfConfig.PATH.EFFECTS .. effectName .. ".prefab", self.viewUnityNode.order)
     -- effectObj:SetParent(self.operationTip)
     -- effectObj.localPosition = Vector3(0, 0, 0)
+    animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
 end
 
 ----------------------------------------------------------

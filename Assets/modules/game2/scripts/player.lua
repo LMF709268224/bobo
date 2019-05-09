@@ -387,7 +387,7 @@ function Player:playZiMoAnimation()
     -- if self.playerView.viewChairID == 2 or self.playerView.viewChairID == 4 then
     --     effect = dfConfig.EFF_DEFINE.SUB_ZI_ZIMO .. "2"
     -- end
-    -- self.playerView:playerOperationEffect(effect)
+    self.playerView:playerOperationEffect("Effects_zi_zimo")
 end
 
 ------------------------------------
@@ -396,7 +396,7 @@ end
 function Player:playDianPaoAnimation()
     --播放对应音效
     self:playOperationSound(SoundDef.WinChuck)
-    -- self.playerView:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_DIANPAO)
+    self.playerView:playerOperationEffect("Effrcts_zi_dianpao")
 end
 
 ------------------------------------

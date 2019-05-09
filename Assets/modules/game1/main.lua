@@ -149,8 +149,8 @@ local function main()
 		elseif json.gameType == "2" then
 			testCreateUI()
 		elseif json.gameType == "3" then
+			-- testRecordUI()
 			goTestReplay()
-		-- testRecordUI()
 		elseif json.gameType == "4" then
 			testCreateRoom(json.roomInfo)
 		end

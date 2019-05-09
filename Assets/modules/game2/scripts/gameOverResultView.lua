@@ -55,7 +55,7 @@ function GameOverResultView:updateRoomData()
     --牌局结算文字动效
     local x = self.aniPos.x
     local y = self.aniPos.y
-    animation.play("animations/Effects_JieMian_ZongJieSuan.prefab", self.unityViewNode, x, y, true)
+    animation.play("animations/Effects_jiemian_paijvzongjiesuan.prefab", self.unityViewNode, x, y, true)
 
     --日期时间
     local date = os.date("%Y-%m-%d %H:%M:%S")
@@ -90,6 +90,10 @@ function GameOverResultView:updatePlayerInfoData(player, c)
     --房主
     if player:isMe() then
         c.imageRoom.visible = true
+    end
+    --庄家
+    if self.room.bankerChairID == player.chairID then
+        c.zhuang.visible = true
     end
     --头像
     -- if player.sex == 1 then
@@ -132,9 +136,9 @@ end
 -------------------------------------------
 function GameOverResultView:updatePlayerScoreData(playerStat, c)
     local score = playerStat.score
-    -- local chucker = playerStat.chuckerCounter
-    local winSelfDrawnCounter = playerStat.winSelfDrawnCounter --赢牌局数
-    c.textWin.text = "胜利局数: " .. winSelfDrawnCounter .. "局"
+    local chucker = playerStat.chuckerCounter
+    -- local winSelfDrawnCounter = playerStat.winSelfDrawnCounter --赢牌局数
+    -- c.textWin.text = "胜利局数: " .. winSelfDrawnCounter .. "局"
     --local colorSText = "#bbdeef"
     --local color = Color(187/255,222/255,239/255,1)
     if score > self.maxScore then
@@ -144,6 +148,14 @@ function GameOverResultView:updatePlayerScoreData(playerStat, c)
     elseif score == self.maxScore then
         local n = #self.maxScoreIndexs
         self.maxScoreIndexs[n + 1] = c
+    end
+    if score < self.maxChucker then
+        self.maxChuckerIndexs = {}
+        self.maxChuckerIndexs[1] = c
+        self.maxChucker = score
+    elseif score == self.maxChucker then
+        local n = #self.maxChuckerIndexs
+        self.maxChuckerIndexs[n + 1] = c
     end
 
     if score >= 0 then
@@ -159,6 +171,14 @@ function GameOverResultView:updatePlayerScoreData(playerStat, c)
         c.textCountLoseT.visible = true
         c.textCountT.visible = false
     end
+    --胡牌次数
+    -- c.textWin.text = tostring(playerStat.winSelfDrawnCounter + playerStat.winChuckCounter)
+    --接炮次数
+    c.textJiepao.text = "接炮次数: " .. tostring(playerStat.winChuckCounter)
+    --放炮次数
+    c.textFangpao.text = "放炮次数: " .. tostring(chucker)
+    --自摸次数
+    c.textZimo.text = "自摸次数: " .. tostring(playerStat.winSelfDrawnCounter)
 end
 
 -------------------------------------------
@@ -173,6 +193,9 @@ function GameOverResultView:updateAllData()
     --暂时保存上一个大赢家数据
     self.maxScore = 0
     self.maxScoreIndexs = {}
+    --暂时保存上一个最佳炮手数据
+    self.maxChucker = 0
+    self.maxChuckerIndexs = {}
 
     if self.msgGameOver ~= nil then
         local playerStats = self.msgGameOver.playerStats
@@ -204,6 +227,14 @@ function GameOverResultView:updateAllData()
                 end
             --self.maxScoreIndex.imageWin.visible = true
             end
+        -- if self.maxChuckerIndexs ~= nil then
+        --     for _, maxChuckerIndex in ipairs(self.maxChuckerIndexs) do
+        --         if maxChuckerIndex then
+        -- maxChuckerIndex.imagePao:SetActive(true)
+        -- end
+        --     end
+        -- --self.maxScoreIndex.imageWin:SetActive(true)
+        -- end
         end
     end
 end
@@ -224,7 +255,7 @@ function GameOverResultView:initAllView()
     -- self.payType = self.unityViewNode.transform:Find("PayType")
 
     local contentGroup = {}
-    for var = 1, 3, 1 do
+    for var = 1, 4 do
         local contentGroupData = {}
         local group = self.unityViewNode:GetChild("player" .. var)
         contentGroupData.group = group
@@ -238,11 +269,15 @@ function GameOverResultView:initAllView()
         --大赢家动画位置
         contentGroupData.aniPos = group:GetChild("aniPos")
         -- contentGroupData.imageWin.visible = false
+        contentGroupData.zhuang = group:GetChild("zhuang")
+        contentGroupData.zhuang.visible = false
         --名字
         contentGroupData.textName = group:GetChild("name")
         contentGroupData.textUserID = group:GetChild("id")
         --赢牌次数
-        contentGroupData.textWin = group:GetChild("number")
+        contentGroupData.textJiepao = group:GetChild("num_jiepao")
+        contentGroupData.textFangpao = group:GetChild("num_fangpao")
+        contentGroupData.textZimo = group:GetChild("num_zimo")
 
         --分数（赢）
         contentGroupData.textCountT = group:GetChild("text_win")
