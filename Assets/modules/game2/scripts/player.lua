@@ -882,7 +882,6 @@ end
 function Player:onSkipBtnClick(_)
     local room = self.room
     -- local playerView = self.playerView
-    local allowedActions = self.allowedActionMsg.allowedActions
     if self.isGuoHuTips then
         -- dfCompatibleAPI:showTip("可胡牌时，需要点击2次过才可过牌。")
         -- 提示完成，设置开关为true
@@ -890,6 +889,7 @@ function Player:onSkipBtnClick(_)
     else
         local discardAble = false
         if self.allowedActionMsg ~= nil then
+            local allowedActions = self.allowedActionMsg.allowedActions
             discardAble = true
             if proto.actionsHasAction(allowedActions, mjproto.ActionType.enumActionType_FirstReadyHand) then
                 if room.bankerChairID ~= self.chairID then
