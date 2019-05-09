@@ -7,8 +7,9 @@ local Player = {}
 
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
--- local logger = require "lobby/lcore/logger"
+local logger = require "lobby/lcore/logger"
 -- local agariIndex = require("scripts/AgariIndex")
+local tileMounter = require("scripts/tileImageMounter")
 local mjproto = proto.mahjong
 
 --音效文件定义
@@ -178,7 +179,7 @@ function Player:refreshConcealedMelds(concealedKongIDs)
     local i = 1
     for _, m in ipairs(self.melds) do
         -- MeldType
-        if m.meldType == mjproto.enumMeldTypeConcealedKong then
+        if m.meldType == mjproto.MeldType.enumMeldTypeConcealedKong then
             m.tile1 = concealedKongIDs[i]
             i = i + 1
         end
@@ -667,7 +668,6 @@ end
 ----------------------------------------
 function Player:onChowBtnClick(_)
     -- local room = self.room
-
     if self.allowedReActionMsg ~= nil then
         local actionMsg = {}
         actionMsg.qaIndex = self.allowedReActionMsg.qaIndex
@@ -676,7 +676,8 @@ function Player:onChowBtnClick(_)
         --必然只有一个可以碰的面子牌组
         --TODO: 吃牌可以有多种吃法
         local ss = self.allowedReActionMsg.meldsForAction
-        local chowMelds = self:selectMeldFromMeldsForAction(ss, mjproto.enumMeldTypeSequence)
+        local chowMelds = self:selectMeldFromMeldsForAction(ss, mjproto.MeldType.enumMeldTypeSequence)
+        logger.debug("chowMelds : ", chowMelds)
         actionMsg.tile = self.allowedReActionMsg.victimTileID
         if #chowMelds > 1 then
             self:showMultiOps(chowMelds, actionMsg, 3)
@@ -703,7 +704,7 @@ function Player:onPongBtnClick(_)
 
         --必然只有一个可以碰的面子牌组
         local ss = self.allowedReActionMsg.meldsForAction
-        local pongMelds = self:selectMeldFromMeldsForAction(ss, mjproto.enumMeldTypeTriplet)
+        local pongMelds = self:selectMeldFromMeldsForAction(ss, mjproto.MeldType.enumMeldTypeTriplet)
         actionMsg.tile = self.allowedReActionMsg.victimTileID
         actionMsg.meldType = pongMelds[1].meldType
         actionMsg.meldTile1 = pongMelds[1].tile1
@@ -730,8 +731,8 @@ function Player:onKongBtnClick(_)
         -- end
         actionMsg.qaIndex = self.allowedActionMsg.qaIndex
         local ss = self.allowedActionMsg.meldsForAction
-        local kongConcealed = self:selectMeldFromMeldsForAction(ss, mjproto.enumMeldTypeConcealedKong)
-        local kongTriplet2 = self:selectMeldFromMeldsForAction(ss, mjproto.enumMeldTypeTriplet2Kong)
+        local kongConcealed = self:selectMeldFromMeldsForAction(ss, mjproto.MeldType.enumMeldTypeConcealedKong)
+        local kongTriplet2 = self:selectMeldFromMeldsForAction(ss, mjproto.MeldType.enumMeldTypeTriplet2Kong)
         local kongs = {}
         local action = mjproto.ActionType.enumActionType_KONG_Triplet2
         if #kongConcealed > 0 then
@@ -763,7 +764,7 @@ function Player:onKongBtnClick(_)
 
         -- 必然只有一个可以明杠的牌组
         local ss = self.allowedReActionMsg.meldsForAction
-        local kongExposedMelds = self:selectMeldFromMeldsForAction(ss, mjproto.enumMeldTypeExposedKong)
+        local kongExposedMelds = self:selectMeldFromMeldsForAction(ss, mjproto.MeldType.enumMeldTypeExposedKong)
         actionMsg.tile = self.allowedReActionMsg.victimTileID
         actionMsg.meldType = kongExposedMelds[1].meldType
         actionMsg.meldTile1 = kongExposedMelds[1].tile1
@@ -788,84 +789,64 @@ end
 ----------------------------------------
 -- 选择如何吃牌，杠牌界面  exp:吃的时候是3，杠的时候是4
 ----------------------------------------
-function Player:showMultiOps(_, _, _)
-    -- local room = self.room
-    -- local item
-    -- local parent
-    -- local multiOpsMaskRectTransform
-    -- local multiOpsRectTransform
-    -- local multiOpsObj
-    -- if exp == 3 then
-    --     item = room.roomView.MultiChiOpsItemObj
-    --     multiOpsObj = room.roomView.MultiChiOpsObj
-    --     parent = room.roomView.MultiChiOpsContentObj
-    --     multiOpsRectTransform = multiOpsObj:GetComponent("RectTransform")
-    --     multiOpsMaskRectTransform = room.roomView.MultiChiOpsMaskObj:GetComponent("RectTransform")
-    -- elseif exp == 4 then
-    --     item = room.roomView.MultiGangOpsItemObj
-    --     multiOpsObj = room.roomView.MultiGangOpsObj
-    --     parent = room.roomView.MultiGangOpsContentObj
-    --     multiOpsRectTransform = multiOpsObj:GetComponent("RectTransform")
-    --     multiOpsMaskRectTransform = room.roomView.MultiGangOpsMaskObj:GetComponent("RectTransform")
-    -- end
-    -- g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE):DestroyAllChilds(parent)
-    -- for i, data in pairs(datas) do
-    --     local oCurOpsObj = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE):UguiAddChild(parent, item, i)
-    --     local oCurCardObj = oCurOpsObj:Find("Cards")
-    --     oCurOpsObj.name = tostring(data.meldType)
-    --     local actionMsg = {}
-    --     actionMsg.qaIndex = actionMsg2.qaIndex
-    --     actionMsg.action = actionMsg2.action
-    --     actionMsg.tile = actionMsg2.tile
-    --     actionMsg.meldType = data.meldType
-    --     actionMsg.meldTile1 = data.tile1
-    --     if data.meldType == mjproto.ActionType.enumMeldTypeConcealedKong then
-    --         actionMsg.tile = data.tile1
-    --         actionMsg.action = mjproto.ActionType.enumActionType_KONG_Concealed
-    --     elseif data.meldType == mjproto.ActionType.enumMeldTypeTriplet2Kong then
-    --         actionMsg.tile = data.tile1
-    --         actionMsg.action = mjproto.ActionType.enumActionType_KONG_Triplet2
-    --     end
-    --     --oCurOpsObj.actionMsg = actionMsg
-    --     local MJ = {} --用来显示可选择的牌
-    --     local addW = 0 --多选框背景的大小偏移值（杠的背景需要大一点）
-    --     local addX = 0 --多选框位置的便宜值（吃的背景比较小，所以往右偏移值要大点）
-    --     if exp == 3 then
-    --         --吃的时候exp是3，所以第4个牌可以隐藏起来
-    --         oCurCardObj:Find(4).visible = false
-    --         MJ = {data.tile1, data.tile1 + 1, data.tile1 + 2}
-    --         addX = 82
-    --     elseif exp == 4 then
-    --         MJ = {data.tile1, data.tile1, data.tile1, data.tile1}
-    --         addW = 200
-    --     end
-    --     --吃杠背景大小
-    --     if #datas == 2 then
-    --         multiOpsRectTransform.sizeDelta = Vector2.New(540 + addW, 200)
-    --         -- multiOpsRectTransform.localPosition = Vector3.New(126 + addX,-30 ,0)
-    --         multiOpsMaskRectTransform.sizeDelta = Vector2.New(500 + addW, 200)
-    --     else
-    --         multiOpsRectTransform.sizeDelta = Vector2.New(780 + addW, 200)
-    --         -- multiOpsRectTransform.localPosition = Vector3.New(32 + addX, -30 ,0)
-    --         multiOpsMaskRectTransform.sizeDelta = Vector2.New(740 + addW, 200)
-    --     end
-    --     for i, v in ipairs(MJ) do
-    --         local oCurCard = oCurCardObj:Find(tostring(i))
-    --         tileMounter:mountTileImage(oCurCard, v)
-    --         oCurCard.visible = true
-    --     end
-    --     oCurOpsObj.visible = true
-    --     self.playerView.viewUnityNode:AddClick(
-    --         oCurOpsObj,
-    --         function(obj)
-    --             local curOpIndex = tonumber(obj.name)
-    --             self:sendActionMsg(actionMsg)
-    --             self.playerView.operationButtonsRoot.visible = false
-    --             multiOpsObj.visible = false
-    --         end
-    --     )
-    -- end
-    -- multiOpsObj.visible = true
+function Player:showMultiOps(datas, actionMsg2, exp)
+    for i = 1, 3 do
+        self.playerView.multiOpsObj[i].visible = false
+    end
+    for i, data in pairs(datas) do
+        local oCurOpsObj = self.playerView.multiOpsObj[i]
+        oCurOpsObj.name = tostring(data.meldType)
+        local actionMsg = {}
+        actionMsg.qaIndex = actionMsg2.qaIndex
+        actionMsg.action = actionMsg2.action
+        actionMsg.tile = actionMsg2.tile
+        actionMsg.meldType = data.meldType
+        actionMsg.meldTile1 = data.tile1
+        if data.meldType == mjproto.ActionType.enumMeldTypeConcealedKong then
+            actionMsg.tile = data.tile1
+            actionMsg.action = mjproto.ActionType.enumActionType_KONG_Concealed
+        elseif data.meldType == mjproto.ActionType.enumMeldTypeTriplet2Kong then
+            actionMsg.tile = data.tile1
+            actionMsg.action = mjproto.ActionType.enumActionType_KONG_Triplet2
+        end
+        local MJ = {} --用来显示可选择的牌
+        -- local addW = 0 --多选框背景的大小偏移值（杠的背景需要大一点）
+        -- local addX = 0 --多选框位置的便宜值（吃的背景比较小，所以往右偏移值要大点）
+        if exp == 3 then
+            -- addX = 82
+            --吃的时候exp是3，所以第4个牌可以隐藏起来
+            oCurOpsObj:GetChild("n4").visible = false
+            MJ = {data.tile1, data.tile1 + 1, data.tile1 + 2}
+        elseif exp == 4 then
+            MJ = {data.tile1, data.tile1, data.tile1, data.tile1}
+        -- addW = 200
+        end
+        --吃杠背景大小
+        -- if #datas == 2 then
+        --     multiOpsRectTransform.sizeDelta = Vector2.New(540 + addW, 200)
+        --     -- multiOpsRectTransform.localPosition = Vector3.New(126 + addX,-30 ,0)
+        --     multiOpsMaskRectTransform.sizeDelta = Vector2.New(500 + addW, 200)
+        -- else
+        --     multiOpsRectTransform.sizeDelta = Vector2.New(780 + addW, 200)
+        --     -- multiOpsRectTransform.localPosition = Vector3.New(32 + addX, -30 ,0)
+        --     multiOpsMaskRectTransform.sizeDelta = Vector2.New(740 + addW, 200)
+        -- end
+        for j, v in ipairs(MJ) do
+            local oCurCard = oCurOpsObj:GetChild("n" .. j)
+            tileMounter:mountTileImage(oCurCard, v)
+            oCurCard.visible = true
+        end
+        oCurOpsObj.visible = true
+        oCurOpsObj.onClick:Set(
+            function(_)
+                -- local curOpIndex = tonumber(obj.name)
+                self:sendActionMsg(actionMsg)
+                self.playerView.operationButtonsRoot.visible = false
+                self.playerView.meldOpsPanel.visible = false
+            end
+        )
+    end
+    self.playerView.meldOpsPanel.visible = true
 end
 ----------------------------------------
 -- 玩家选择了胡牌
@@ -901,7 +882,7 @@ end
 function Player:onSkipBtnClick(_)
     local room = self.room
     -- local playerView = self.playerView
-
+    local allowedActions = self.allowedActionMsg.allowedActions
     if self.isGuoHuTips then
         -- dfCompatibleAPI:showTip("可胡牌时，需要点击2次过才可过牌。")
         -- 提示完成，设置开关为true
@@ -910,7 +891,7 @@ function Player:onSkipBtnClick(_)
         local discardAble = false
         if self.allowedActionMsg ~= nil then
             discardAble = true
-            if proto.actionsHasAction(self.allowedActionMsg.allowedActions, mjproto.enumActionType_FirstReadyHand) then
+            if proto.actionsHasAction(allowedActions, mjproto.ActionType.enumActionType_FirstReadyHand) then
                 if room.bankerChairID ~= self.chairID then
                     local actionMsg = {}
                     actionMsg.qaIndex = self.allowedActionMsg.qaIndex
@@ -921,9 +902,8 @@ function Player:onSkipBtnClick(_)
                     self:sendActionMsg(actionMsg)
                     discardAble = false
                 end
-            elseif proto.actionsHasAction(self.allowedActionMsg.allowedActions, mjproto.enumActionType_SKIP) then
-                local ss = self.allowedActionMsg.allowedActions
-                if proto.actionsHasAction(ss, mjproto.enumActionType_DISCARD) == false then
+            elseif proto.actionsHasAction(allowedActions, mjproto.ActionType.enumActionType_SKIP) then
+                if proto.actionsHasAction(allowedActions, mjproto.ActionType.enumActionType_DISCARD) == false then
                     local actionMsg = {}
                     actionMsg.qaIndex = self.allowedActionMsg.qaIndex
                     actionMsg.action = mjproto.ActionType.enumActionType_SKIP
@@ -983,7 +963,7 @@ function Player:autoDiscard()
         local actions = self.allowedActionMsg.allowedActions
         --如果可以自摸胡牌
         --不再自动胡牌，考虑到如果可以胡，可以过，如果帮助用户选择胡可能不是最优选择
-        if proto.actionsHasAction(actions, mjproto.enumActionType_WIN_SelfDrawn) then
+        if proto.actionsHasAction(actions, mjproto.ActionType.enumActionType_WIN_SelfDrawn) then
             --self:onWinBtnClick(self.playerView.winBtn)
             --可以胡牌，得返回，让用户自己处理
             return

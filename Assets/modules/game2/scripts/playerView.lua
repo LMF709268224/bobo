@@ -30,7 +30,10 @@ function PlayerView.new(viewUnityNode, viewChairID)
     local view = viewUnityNode:GetChild("player" .. viewChairID)
     if (viewChairID == 1) then
         playerView.operationPanel = viewUnityNode:GetChild("operationPanel")
+        playerView.meldOpsPanel = viewUnityNode:GetChild("meldOpsPanel")
+
         playerView:initOperationButtons()
+        playerView:initMeldsPanel()
     end
     playerView.viewChairID = viewChairID
     playerView.viewUnityNode = viewUnityNode
@@ -129,10 +132,10 @@ function PlayerView:initFlowers()
     self.flowers = flowers
 end
 
-function PlayerView:initLight()
+function PlayerView:initLights()
     -- 下面这个Light得到的牌表，是用于结局时摊开牌给其他人看
     local lights = {}
-    local myLightTilesNode = self.myView:GetChild("Light")
+    local myLightTilesNode = self.myView:GetChild("lights")
     for i = 1, 14 do
         local h = myLightTilesNode:GetChild("n" .. i)
         lights[i] = h
@@ -144,30 +147,8 @@ function PlayerView:initDiscards()
     -- 打出的牌列表
     local discards = {}
     local myDicardTilesNode = self.myView:GetChild("discards")
-    -- local resName = ""
-    -- local start = 1
-    -- local addNum = 1
-    -- if self.viewChairID == 1 then
-    --     resName = "mahjong_mine_luo"
-    -- elseif self.viewChairID == 2 then
-    --     resName = "mahjong_right_luo"
-    --     start = 20
-    --     addNum = -1
-    -- elseif self.viewChairID == 3 then
-    --     resName = "mahjong_dui_luo"
-    --     start = 20
-    --     addNum = -1
-    -- elseif self.viewChairID == 4 then
-    --     resName = "mahjong_left_luo"
-    -- end
     for i = 1, 20 do
         local card = myDicardTilesNode:GetChild("n" .. i)
-        -- local card = _ENV.thisMod:CreateUIObject("lobby_mahjong", resName)
-        -- card.position = h.position
-        -- card.scale = h.scale
-        -- myDicardTilesNode:AddChild(card)
-
-        -- local j = start + (i - 1) * addNum
         discards[i] = card
     end
     self.discards = discards
@@ -180,23 +161,9 @@ function PlayerView:initHands()
     local handsClickCtrls = {}
     local myHandTilesNode = self.myView:GetChild("hands")
     -- local resName = ""
-    local isMe = false
-    if self.viewChairID == 1 then
-        -- resName = "mahjong_mine_shu"
-        isMe = true
-    -- elseif self.viewChairID == 2 then
-    --     resName = "mahjong_right_shu"
-    -- elseif self.viewChairID == 3 then
-    --     resName = "mahjong_dui_shu"
-    -- elseif self.viewChairID == 4 then
-    --     resName = "mahjong_left_shu"
-    end
+    local isMe = self.viewChairID == 1
     for i = 1, 14 do
         local card = myHandTilesNode:GetChild("n" .. i)
-        -- local card = _ENV.thisMod:CreateUIObject("lobby_mahjong", resName)
-        -- card.position = h.position
-        -- card.scale = h.scale
-        -- myHandTilesNode:AddChild(card)
 
         card.name = tostring(i) --把手牌按钮对应的序号记忆，以便点击时可以识别
         card.visible = false
@@ -212,7 +179,6 @@ function PlayerView:initHands()
         if isMe then
             --订阅点击事件
             --TODO: 增加drag/drop
-            logger.debug("订阅点击事件 : ", card.name)
             card.onClick:Set(
                 function(obj)
                     self:onHandTileBtnClick(obj, i)
@@ -228,21 +194,38 @@ function PlayerView:initHands()
 end
 
 function PlayerView:initCardLists()
-    -- 手牌
+    -- 手牌列表
     self:initHands()
     -- 出牌列表
     self:initDiscards()
+    -- 花牌列表
     self:initFlowers()
     -- 明牌列表
-    -- self:initLights()
+    self:initLights()
 end
 
+-------------------------------------------------
+--面子牌选择面板
+-------------------------------------------------
+function PlayerView:initMeldsPanel()
+    local meldMap = {}
+    meldMap[1] = self.meldOpsPanel:GetChild("n1")
+    meldMap[2] = self.meldOpsPanel:GetChild("n2")
+    meldMap[3] = self.meldOpsPanel:GetChild("n3")
+    meldMap[4] = self.meldOpsPanel:GetChild("bg")
+
+    meldMap[1].visible = false
+    meldMap[2].visible = false
+    meldMap[3].visible = false
+
+    self.multiOpsObj = meldMap
+end
 -------------------------------------------------
 --保存操作按钮
 -------------------------------------------------
 function PlayerView:initOperationButtons()
     -- local operationButtonsRoot = viewUnityNode.transform:Find("TsBtnGroup/BgImg")
-    -- self.operationButtonsRoot = operationButtonsRoot
+    self.operationButtonsRoot = self.operationPanel
 
     local pv = self
 
@@ -341,7 +324,7 @@ function PlayerView:hideOperationButtons()
     end
 
     -- 隐藏根节点
-    -- self.operationButtonsRoot.visible = false
+    self.operationButtonsRoot.visible = false
 end
 
 -------------------------------------------------
@@ -691,15 +674,15 @@ function PlayerView:showMelds()
     local player = self.player
     local melds = player.melds
     local length = #melds
-    local resName = "mahjong_"
+    local rm = ""
     if self.viewChairID == 1 then
-        resName = resName .. "mine_meld_"
+        rm = "mahjong_mine_meld_"
     elseif self.viewChairID == 2 then
-        resName = resName .. "right_meld_"
+        rm = "mahjong_right_meld_"
     elseif self.viewChairID == 3 then
-        resName = resName .. "dui_meld_"
+        rm = "mahjong_dui_meld_"
     elseif self.viewChairID == 4 then
-        resName = resName .. "left_meld_"
+        rm = "mahjong_left_meld_"
     end
     --摆放牌
     local mymeldTilesNode = self.myView:GetChild("melds")
@@ -711,21 +694,22 @@ function PlayerView:showMelds()
         end
         --TODO:根据面子牌挂载牌的图片
         local meldData = melds[i]
+        local resName = ""
         if meldData.meldType == proto.mahjong.MeldType.enumMeldTypeTriplet2Kong then
             -- 如果是加杠，需要检查之前的碰的牌组是否存在，是的话需要删除
-            resName = resName .. "gang1"
+            resName = rm .. "gang1"
         elseif meldData.meldType == proto.mahjong.MeldType.enumMeldTypeExposedKong then
             --明杠
-            resName = resName .. "gang1"
+            resName = rm .. "gang1"
         elseif meldData.meldType == proto.mahjong.MeldType.enumMeldTypeConcealedKong then
             --暗杠
-            resName = resName .. "gang2"
+            resName = rm .. "gang2"
         elseif meldData.meldType == proto.mahjong.MeldType.enumMeldTypeSequence then
             --吃
-            resName = resName .. "chipeng"
+            resName = rm .. "chipeng"
         elseif meldData.meldType == proto.mahjong.MeldType.enumMeldTypeTriplet then
             --碰
-            resName = resName .. "chipeng"
+            resName = rm .. "chipeng"
         end
         local meldView = _ENV.thisMod:CreateUIObject("lobby_mahjong", resName)
         meldView.position = mv.position
