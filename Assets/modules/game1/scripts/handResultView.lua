@@ -349,7 +349,7 @@ function HandResultView:onAgainButtonClick()
         room.host.mq:unblockNormal()
     end
     if self.ani then
-        self.ani.visible = false
+        self.ani.setVisible(false)
     end
     self.win:Hide()
     if self.msgHandOver.continueAble then

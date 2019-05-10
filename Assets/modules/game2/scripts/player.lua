@@ -101,7 +101,7 @@ function Player:sortHands(excludeLast)
 end
 
 function Player:addDicardedTile(tileID)
-    print("llwant, add discard:" .. tileID .. ",chairID:" .. self.chairID)
+    -- print("llwant, add discard:" .. tileID .. ",chairID:" .. self.chairID)
     table.insert(self.tilesDiscarded, tileID)
 end
 
