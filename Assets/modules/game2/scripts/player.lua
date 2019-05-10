@@ -23,6 +23,15 @@ local SoundDef = {
     Common = "effect_common"
 }
 
+--按钮定义
+Player.ButtonDef = {
+    Chow = "chi",
+    Pong = "peng",
+    Kong = "gang",
+    Ting = "ting",
+    Skip = "guo",
+    Hu = "hu"
+}
 function Player.new(userID, chairID, room)
     local player = {userID = userID, chairID = chairID, room = room}
     setmetatable(player, mt)
@@ -841,7 +850,7 @@ function Player:showMultiOps(datas, actionMsg2, exp)
             function(_)
                 -- local curOpIndex = tonumber(obj.name)
                 self:sendActionMsg(actionMsg)
-                self.playerView.operationButtonsRoot.visible = false
+                self.playerView.hideOperationButtons()
                 self.playerView.meldOpsPanel.visible = false
             end
         )
