@@ -44,4 +44,15 @@ public class UIHelper
 
         return particels;
     }
+
+    public static UnityEngine.Object GetComponent(UnityEngine.GameObject go, System.Type t)
+    {
+        var comp = go.GetComponent(t);
+        if (comp == null )
+        {
+            return null;
+        }
+
+        return comp;
+    }
 }
