@@ -3,9 +3,11 @@
 local DFRuleView = {}
 
 local logger = require "lobby/lcore/logger"
+local rapidJson = require("rapidjson")
+local CS = _ENV.CS
 
 --记录键值
--- local RecordKey = "createRoomView"
+local RecordKey = "DFMJRule"
 local dfRoomType = 1
 local rules = {
     ["roomType"] = dfRoomType,
@@ -87,6 +89,11 @@ function DFRuleView.bindView(newRoomView)
 
     DFRuleView:initAllView()
 
+    _ENV.thisMod:RegisterCleanup(
+        function()
+        end
+    )
+
     local createBtn = DFRuleView.unityViewNode:GetChild("createRoomButton")
     createBtn.onClick:Set(
         function()
@@ -95,34 +102,46 @@ function DFRuleView.bindView(newRoomView)
     )
 end
 
+function DFRuleView:saveRule()
+    logger.debug("DFRuleView:saveRule()")
+    local key = {}
+    -- 局数
+    key[1] = DFRuleView:getToggleIndex(DFRuleView.toggleRoundCount)
+    -- 支付
+    key[2] = DFRuleView:getToggleIndex(DFRuleView.togglePay)
+    -- 人数
+    key[3] = DFRuleView:getToggleIndex(DFRuleView.togglePlayerNum)
+    -- 封顶
+    key[4] = DFRuleView:getToggleIndex(DFRuleView.toggleFengDingType)
+    -- 墩子
+    key[5] = DFRuleView:getToggleIndex(DFRuleView.toggleDunziPointType)
+    -- 自摸加分
+    key[6] = DFRuleView.toggleZMJF.selected
+    -- 连庄加分
+    key[7] = DFRuleView.toggleLZJF.selected
+    -- 进院子
+    key[8] = DFRuleView.toggleJYZ.selected
+
+    local json = rapidJson.encode(key)
+    logger.debug("DFRuleView:saveRule() ,key = ", key)
+    local pp = CS.UnityEngine.PlayerPrefs
+    pp.SetString(RecordKey, json)
+end
+
 function DFRuleView:initAllView()
     local consume = self.unityViewNode:GetChild("consumeCom")
     self.consumeText = consume:GetChild("consumeText")
 
-    -- 支付
-    self.togglePay = {}
-    self.togglePay[1] = self.unityViewNode:GetChild("ownerPayButton")
-    self.togglePay[2] = self.unityViewNode:GetChild("aapPayButton")
-    self.togglePay[1].selected = true
-    self.togglePay[1].onClick:Set(
-        function()
-            self.togglePay[2].selected = false
-            self:updateComsumer()
-        end
-    )
-    self.togglePay[2].onClick:Set(
-        function()
-            self.togglePay[1].selected = false
-            self:updateComsumer()
-        end
-    )
+    local pp = _ENV.CS.UnityEngine.PlayerPrefs
+    local jsonStr = pp.GetString(RecordKey, "")
+    local key = rapidJson.decode(jsonStr)
 
     --局数
     self.toggleRoundCount = {}
     self.toggleRoundCount[1] = self.unityViewNode:GetChild("round4Button")
     self.toggleRoundCount[2] = self.unityViewNode:GetChild("round8Button")
     self.toggleRoundCount[3] = self.unityViewNode:GetChild("round16Button")
-    self.toggleRoundCount[1].selected = true
+    self.toggleRoundCount[key[1]].selected = true
     self.toggleRoundCount[1].onClick:Set(
         function()
             self:updateComsumer()
@@ -139,12 +158,30 @@ function DFRuleView:initAllView()
         end
     )
 
+    -- 支付
+    self.togglePay = {}
+    self.togglePay[1] = self.unityViewNode:GetChild("ownerPayButton")
+    self.togglePay[2] = self.unityViewNode:GetChild("aapPayButton")
+    self.togglePay[key[2]].selected = true
+    self.togglePay[1].onClick:Set(
+        function()
+            self.togglePay[2].selected = false
+            self:updateComsumer()
+        end
+    )
+    self.togglePay[2].onClick:Set(
+        function()
+            self.togglePay[1].selected = false
+            self:updateComsumer()
+        end
+    )
+
     -- 人数
     self.togglePlayerNum = {}
     self.togglePlayerNum[1] = self.unityViewNode:GetChild("2Player")
     self.togglePlayerNum[2] = self.unityViewNode:GetChild("3Player")
     self.togglePlayerNum[3] = self.unityViewNode:GetChild("4Player")
-    self.togglePlayerNum[1].selected = true
+    self.togglePlayerNum[key[3]].selected = true
     self.togglePlayerNum[1].onClick:Set(
         function()
             self:updateComsumer()
@@ -166,60 +203,24 @@ function DFRuleView:initAllView()
     self.toggleFengDingType[1] = self.unityViewNode:GetChild("fengding1")
     self.toggleFengDingType[2] = self.unityViewNode:GetChild("fengding2")
     self.toggleFengDingType[3] = self.unityViewNode:GetChild("fengding3")
-    self.toggleFengDingType[1].selected = true
-    self.toggleFengDingType[1].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.toggleFengDingType[2].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.toggleFengDingType[3].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
+    self.toggleFengDingType[4] = self.unityViewNode:GetChild("fengding4")
+    self.toggleFengDingType[key[4]].selected = true
 
-    -- 封顶
-    self.toggleFengDingType = {}
-    self.toggleFengDingType[1] = self.unityViewNode:GetChild("fengding1")
-    self.toggleFengDingType[2] = self.unityViewNode:GetChild("fengding2")
-    self.toggleFengDingType[3] = self.unityViewNode:GetChild("fengding3")
-    self.toggleFengDingType[1].selected = true
-    self.toggleFengDingType[1].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.toggleFengDingType[2].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.toggleFengDingType[3].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-
-    -- 封顶
+    -- 墩子
     self.toggleDunziPointType = {}
     self.toggleDunziPointType[1] = self.unityViewNode:GetChild("dunzi1")
     self.toggleDunziPointType[2] = self.unityViewNode:GetChild("dunzi2")
-    self.toggleDunziPointType[1].selected = true
-    self.toggleDunziPointType[1].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.toggleDunziPointType[2].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
+    self.toggleDunziPointType[key[5]].selected = true
+
+    self.toggleZMJF = self.unityViewNode:GetChild("zimojiafen")
+
+    self.toggleZMJF.selected = key[6]
+
+    self.toggleLZJF = self.unityViewNode:GetChild("lianzhuangjiafen")
+    self.toggleLZJF.selected = key[7]
+
+    self.toggleJYZ = self.unityViewNode:GetChild("jinyuanzi")
+    self.toggleJYZ.selected = key[8]
 
     self:updateComsumer()
     -- self:updateCostDiamond()
@@ -266,7 +267,6 @@ function DFRuleView:getRules()
     return rules
 end
 
-
 function DFRuleView:getCost(payType, playerNum, handNum)
     -- logError("payType:"..payType..", playerNum:"..playerNum..", handNum"..handNum)
     local key = "ownerPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
@@ -279,7 +279,7 @@ function DFRuleView:getCost(payType, playerNum, handNum)
         return activityPriceCfg.discountCfg[key]
     end
 
-    if self.priceCfg.originalPriceCfg  ~= nil and type(self.priceCfg.originalPriceCfg) == "table" then
+    if self.priceCfg.originalPriceCfg ~= nil and type(self.priceCfg.originalPriceCfg) == "table" then
         return self.priceCfg.originalPriceCfg[key]
     end
 
@@ -300,13 +300,13 @@ function DFRuleView:updateComsumer()
     local cost = self:getCost(payType, playerNumAcquired, handNum)
 
     if cost == nil then
-        logger.error("No price cfg found, payType:"..payType..", playerNumAcquired:"
-        ..playerNumAcquired..", handNum:")
+        logger.error(
+            "No price cfg found, payType:" .. payType .. ", playerNumAcquired:" .. playerNumAcquired .. ", handNum:"
+        )
     end
 
-    logger.debug("cost:"..cost)
+    logger.debug("cost:" .. cost)
     self.consumeText.text = cost
-
 end
 
 function DFRuleView:ToggleDefault(status, default)
@@ -320,8 +320,6 @@ end
 function DFRuleView:createRoom()
     logger.debug("DFRuleView:createRoom")
     self.newRoomView:createRoom(self:getRules())
-
-
 end
 
 return DFRuleView

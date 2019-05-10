@@ -112,6 +112,7 @@ function SubrecordView:enterReplayRoom(record)
         modName = "game1"
     end
 
+    -- 不支持未知游戏
     if modName == nil then
         local msg = "未知游戏, roomType  = " .. recordCfg.recordRoomType
         dialog.showDialog(

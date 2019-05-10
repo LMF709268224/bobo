@@ -55,6 +55,7 @@ end
 
 -- 更新列表
 function RecordView:updateList(createRoomRsp)
+    logger.debug("createRoomRsp = ", createRoomRsp)
     self.dataMap = {}
     for i, replayRoom in ipairs(createRoomRsp.replayRooms) do
         local r = proto.decodeMessage("lobby.MsgReplayRoom", replayRoom.replayRoomBytes)
