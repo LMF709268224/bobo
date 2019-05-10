@@ -238,6 +238,8 @@ function PlayerView:getButtonListItemResource(index)
         return "ui://dafeng/peng_button"
     elseif name == player.ButtonDef.Ting then
         return "ui://dafeng/ting_button"
+    elseif name == player.ButtonDef.Zhua then
+        return "ui://dafeng/zhua_button"
     end
 end
 
@@ -269,6 +271,8 @@ function PlayerView:onClickBtn(name)
         player:onPongBtnClick()
     elseif name == player.ButtonDef.Ting then
         player:onReadyHandBtnClick()
+    elseif name == player.ButtonDef.Zhua then
+        player:onFinalDrawBtnClick()
     end
 end
 -------------------------------------------------
@@ -1407,31 +1411,14 @@ end
 --抓牌
 ----------------------------------------------------------
 function PlayerView:playZhuaPaiAnimation()
-    -- self:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_ZHUA)
+    self:playerOperationEffect("Effects_zi_zhua")
 end
 
 ----------------------------------------------------------
 --播放补花效果，并等待结束
 ----------------------------------------------------------
 function PlayerView:playDrawFlowerAnimation()
-    -- local waitCo = coroutine.running()
-    -- local effectObj = Animator.Play(dfConfig.PATH.EFFECTS .
-    --. dfConfig.EFF_DEFINE.SUB_ZI_BUHUA .. ".prefab", self.viewUnityNode.order)
-    -- effectObj:SetParent(self.operationTip)
-    -- effectObj.localPosition = Vector3(0, 0, 0)
-    -- self.player:playSound("operate", "hua")
-    -- self.viewUnityNode:DelayRun(
-    --     0.8,
-    --     function()
-    --         --修改 补花时长    1.5 --> 0.8
-    --         local flag, msg = coroutine.resume(waitCo)
-    --         if not flag then
-    --             logError(msg)
-    --             return
-    --         end
-    --     end
-    -- )
-    -- coroutine.yield()
+    self:playerOperationEffect("Effects_zi_buhua")
 end
 
 ----------------------------------------------------------

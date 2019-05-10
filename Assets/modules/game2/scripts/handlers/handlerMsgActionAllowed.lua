@@ -48,15 +48,16 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     player.isGuoHuTips = false
 
     local at = proto.mahjong.ActionType
+    local buttonMap = {}
     --如果可以抓牌
     if proto.actionsHasAction(actions, at.enumActionType_CustomB) then
         print("llwant, can zhua")
-    -- needShowOperationButtons = true
-    -- playerView.finalDrawBtn.visible = true
-    -- player.waitSkip = true
+        needShowOperationButtons = true
+        -- playerView.finalDrawBtn.visible = true
+        buttonMap[#buttonMap + 1] = player.ButtonDef.Zhua
+        player.waitSkip = true
     end
 
-    local buttonMap = {}
     --如果可以起手听牌
     if proto.actionsHasAction(actions, at.enumActionType_FirstReadyHand) then
         print("llwant, can ready hand")

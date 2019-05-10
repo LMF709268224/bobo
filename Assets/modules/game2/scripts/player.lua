@@ -30,7 +30,8 @@ Player.ButtonDef = {
     Kong = "gang",
     Ting = "ting",
     Skip = "guo",
-    Hu = "hu"
+    Hu = "hu",
+    Zhua = "zhua"
 }
 function Player.new(userID, chairID, room)
     local player = {userID = userID, chairID = chairID, room = room}
@@ -378,7 +379,6 @@ function Player:playZhuaPaiAnimation()
         self.playerView:hideHands()
         self.playerView:showHandsForMe(true)
     end
-    print("播放抓牌，。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。")
     --播放对应音效
     self:playOperationSound(SoundDef.DrawCard)
 
@@ -634,7 +634,7 @@ function Player:onFinalDrawBtnClick(_)
     if self.allowedActionMsg ~= nil then
         local actionMsg = {}
         actionMsg.qaIndex = self.allowedActionMsg.qaIndex
-        actionMsg.action = mjproto.ActionType.enumActionType_AccumulateWin
+        actionMsg.action = mjproto.ActionType.enumActionType_CustomB
         self:sendActionMsg(actionMsg)
     end
 
