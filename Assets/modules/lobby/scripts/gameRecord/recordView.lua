@@ -4,7 +4,7 @@
 --luacheck:no self
 local RecordView = {}
 
-local fairy = require "lobby/lcore/fairygui"
+--local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
 local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
 local httpHelper = require "lobby/lcore/httpHelper"
@@ -15,7 +15,7 @@ local errHelper = require "lobby/lcore/lobbyErrHelper"
 local subrecordView = require "lobby/scripts/gameRecord/subrecordView"
 local CS = _ENV.CS
 
-function RecordView.new()
+function RecordView.new(lobbyView)
     if RecordView.unityViewNode then
         logger.debug("RecordView ---------------------")
     else
@@ -23,23 +23,17 @@ function RecordView.new()
         local viewObj = _ENV.thisMod:CreateUIObject("lobby_game_record", "recordView")
 
         RecordView.unityViewNode = viewObj
+        lobbyView.viewNode:AddChild(RecordView.unityViewNode)
+        RecordView.lobbyView = lobbyView
 
-        local win = fairy.Window()
-        win.contentPane = RecordView.unityViewNode
-        RecordView.win = win
-
-        -- 由于win隐藏，而不是销毁，隐藏后和GRoot脱离了关系，因此需要
-        -- 特殊销毁
         _ENV.thisMod:RegisterCleanup(
             function()
-                win:Dispose()
+                viewObj:Dispose()
             end
         )
     end
 
     RecordView:initAllView()
-
-    RecordView.win:Show()
 end
 
 function RecordView:initAllView()
@@ -66,18 +60,11 @@ function RecordView:updateList(createRoomRsp)
         local r = proto.decodeMessage("lobby.MsgReplayRoom", replayRoom.replayRoomBytes)
         self.dataMap[i] = r
     end
-    -- self.list.onClickItem:Add(
-    --     function(onClickItem)
-    --         logger.debug("on game record item click", onClickItem.data:GetChild("roomNumber").text)
-    --         logger.debug("on game record item click", self.list:GetChildIndex())
-    --     end
-    -- )
-
     self.list.numItems = #self.dataMap
 end
 
 function RecordView:goSubrecordView(replayRoom)
-    subrecordView.new(replayRoom)
+    subrecordView.new(replayRoom, RecordView.lobbyView)
 end
 
 function RecordView:renderPhraseListItem(index, obj)
@@ -158,16 +145,18 @@ function RecordView:loadGameRecord()
     local loadGameRecordUrl = urlpathsCfg.rootURL .. urlpathsCfg.lrproom .. "?&rt=1&tk=" .. tk
     logger.debug("loadGameRecord loadGameRecordUrl:", loadGameRecordUrl)
     -- 加滚动条
+    dialog.showDialog("正在加载战绩......")
+    local win = dialog.win
     httpHelper.get(
-        self.unityViewNode,
+        win,
         loadGameRecordUrl,
         function(req, resp)
+            win:Hide()
             if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
                 local httpError = errHelper.dumpHttpRespError(resp)
                 if httpError == nil then
                     if resp.Data then
                         local gameRecords = proto.decodeMessage("lobby.MsgAccLoadReplayRoomsReply", resp.Data)
-                        --logger.debug("+++++++++++++++++++++++--------: ", gameRecords)
                         -- 初始化数据
                         self:updateList(gameRecords)
                     end
@@ -188,11 +177,11 @@ function RecordView:loadGameRecord()
     )
 end
 
+-- 将本身节点从大厅移除
 function RecordView:destroy()
-    self.win:Hide()
-    self.win:Dispose()
+    self.lobbyView.viewNode:RemoveChild(self.unityViewNode)
+    self.unityViewNode:Dispose()
     self.unityViewNode = nil
-    self.win = nil
 end
 
 return RecordView

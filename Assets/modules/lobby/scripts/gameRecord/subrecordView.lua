@@ -1,44 +1,37 @@
 --[[
     游戏子记录界面
 ]]
+--luacheck:no self
 local SubrecordView = {}
 
-local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
-local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
-local httpHelper = require "lobby/lcore/httpHelper"
-local errHelper = require "lobby/lcore/lobbyErrHelper"
-local proto = require "lobby/scripts/proto/proto"
 local dialog = require "lobby/lcore/dialog"
 local rapidJson = require("rapidjson")
-local CS = _ENV.CS
 
-function SubrecordView.new(replayRooms)
+function SubrecordView.new(replayRooms, lobbyView)
     if SubrecordView.unityViewNode then
         logger.debug("SubrecordView ---------------------")
     else
         _ENV.thisMod:AddUIPackage("lobby/fui_game_record/lobby_game_record")
         local viewObj = _ENV.thisMod:CreateUIObject("lobby_game_record", "subRecordView")
 
+        -- 播放战绩后退回大厅，需要保存战绩页面，将此页面加到大厅页面下面
         SubrecordView.unityViewNode = viewObj
+        lobbyView.viewNode:AddChild(SubrecordView.unityViewNode)
+        SubrecordView.lobbyView = lobbyView
 
-        local win = fairy.Window()
-        win.contentPane = SubrecordView.unityViewNode
-        SubrecordView.win = win
-
-        -- 由于win隐藏，而不是销毁，隐藏后和GRoot脱离了关系，因此需要
-        -- 特殊销毁
         _ENV.thisMod:RegisterCleanup(
             function()
-                win:Dispose()
+                viewObj:Dispose()
             end
         )
     end
 
+    --保存记录
     SubrecordView.replayRooms = replayRooms
 
+    -- 初始界面
     SubrecordView:initAllView()
-    SubrecordView.win:Show()
 end
 
 function SubrecordView:initAllView()
@@ -85,6 +78,7 @@ function SubrecordView:updateList()
     self.list.numItems = #self.records
 end
 
+-- render item
 function SubrecordView:renderPhraseListItem(index, obj)
     local record = self.records[index + 1]
 
@@ -102,87 +96,47 @@ function SubrecordView:renderPhraseListItem(index, obj)
 
     playBtn.onClick:Set(
         function()
-            self:onLoadReplayRecord(record.recordUUID)
+            self:enterReplayRoom(record)
         end
     )
 end
 
-function SubrecordView:onLoadReplayRecord(recordUUID)
-    -- 拉取战绩
-    if SubrecordView.replayLocked then
+function SubrecordView:enterReplayRoom(record)
+    local recordCfg = SubrecordView.replayRooms
+    local modName
+    if recordCfg.recordRoomType == 1 then
+        -- 大丰麻将
+        modName = "game2"
+    elseif recordCfg.recordRoomType == 8 then
+        -- 关张
+        modName = "game1"
+    end
+
+    if modName == nil then
+        local msg = "未知游戏, roomType  = " .. recordCfg.recordRoomType
         dialog.showDialog(
-            "上一个请求尚未完成，请稍后再试",
+            msg,
             function()
             end
         )
         return
     end
 
-    SubrecordView.replayLocked = true
-
-    local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
-    local loadGameRecordUrl =
-        urlpathsCfg.rootURL .. urlpathsCfg.lrprecord .. "?&rt=1&tk=" .. tk .. "&rid=" .. recordUUID
-
-    logger.debug("onLoadReplayRecord loadGameRecordUrl:", loadGameRecordUrl)
-    -- 加滚动条
-    httpHelper.get(
-        self.unityViewNode,
-        loadGameRecordUrl,
-        function(req, resp)
-            if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
-                local httpError = errHelper.dumpHttpRespError(resp)
-                if httpError == nil then
-                    if resp.Data then
-                        local record = proto.decodeMessage("lobby.MsgAccLoadReplayRecord", resp.Data)
-                        self:enterGame(record)
-                    --local roomConfig = Json.decode(msgAccLoadReplayRecord.roomJSONConfig)
-                    -- 初始化数据
-
-                    --local replayRecordBytes
-                    --self:updateList(gameRecords)
-                    end
-                end
-                resp:Dispose()
-            else
-                local err = errHelper.dumpHttpReqError(req)
-                if err then
-                    dialog.showDialog(
-                        err.msg,
-                        function()
-                        end
-                    )
-                end
-            end
-            req:Dispose()
-        end
-    )
-    self.replayLocked = false
-end
-
-function SubrecordView:enterGame(record)
-    --logger.debug(" SubrecordView:enterGame record : ", record)
-    local mylobbyView = fairy.GRoot.inst:GetChildAt(0)
-    fairy.GRoot.inst:RemoveChild(mylobbyView)
-    fairy.GRoot.inst:CleanupChildren()
-
     local parameters = {
+        -- 回拨入口
         gameType = "3",
-        record = record
+        -- 回拨ID
+        rid = record.recordUUID
     }
     local jsonString = rapidJson.encode(parameters)
-    --local roomConfig = rapidJson.decode(record.roomJSONConfig)
-
-    _ENV.thisMod:LaunchGameModule("game1", jsonString)
-
-    self:destroy()
+    self.lobbyView:enterRoom(modName, jsonString)
 end
 
+-- 将本身节点从大厅移除
 function SubrecordView:destroy()
-    self.win:Hide()
-    self.win:Dispose()
+    self.lobbyView.viewNode:RemoveChild(self.unityViewNode)
+    self.unityViewNode:Dispose()
     self.unityViewNode = nil
-    self.win = nil
 end
 
 return SubrecordView

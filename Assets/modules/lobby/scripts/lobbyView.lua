@@ -177,8 +177,14 @@ function LobbyView:onCreateRoom()
 end
 
 function LobbyView:openRecordView()
-    recordView.new()
-    -- body
+    recordView.new(self)
+end
+
+function LobbyView:enterRoom(modName, jsonString)
+    local mylobbyView = fairy.GRoot.inst:GetChildAt(0)
+    fairy.GRoot.inst:RemoveChild(mylobbyView)
+    fairy.GRoot.inst:CleanupChildren()
+    _ENV.thisMod:LaunchGameModule(modName, jsonString)
 end
 
 return LobbyView
