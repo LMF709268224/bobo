@@ -36,9 +36,22 @@ local function createGameObject(prefabName)
 	wrapper:SetSize(0, 0)
 	holder:SetNativeObject(wrapper)
 
-	local animator = go:GetComponent(typeof(CS.UnityEngine.Animator))
+	-- local animator = go:GetComponent(typeof(CS.UnityEngine.Animator))
+	local animator = CS.UIHelper.GetComponent(go, typeof(CS.UnityEngine.Animator))
 	local particles = CS.UIHelper.GetAllParticle(go)
-	return {holder = holder, go = go, wrapper = wrapper, animator = animator, particles = particles}
+	local g = {
+		holder = holder,
+		go = go,
+		wrapper = wrapper,
+		animator = animator,
+		particles = particles,
+		setVisible = function(v)
+			wrapper.visible = v
+			go:SetActive(v)
+		end
+	}
+
+	return g
 end
 
 local function playGameObject(goCached, ctx)
@@ -64,10 +77,12 @@ local function playGameObject(goCached, ctx)
 		0,
 		function()
 			local animator = goCached.animator
-			local stateInfo = animator:GetCurrentAnimatorStateInfo(0)
-			--logger.debug('playGameObject timer callback:', stateInfo.normalizedTime)
-			if stateInfo.normalizedTime < 1 then
-				return
+			if animator then
+				local stateInfo = animator:GetCurrentAnimatorStateInfo(0)
+				--logger.debug('playGameObject timer callback:', stateInfo.normalizedTime)
+				if stateInfo and stateInfo.normalizedTime < 1 then
+					return
+				end
 			end
 
 			particleLoopKilled = particleLoopKilled + 1
@@ -79,8 +94,9 @@ local function playGameObject(goCached, ctx)
 
 			-- 动画已经结束
 			parentComponent:StopTimer(goCached.prefabName)
-			goCached.wrapper.visible = false
-			goCached.go:SetActive(false)
+			goCached.setVisible(false)
+			-- goCached.wrapper.visible = false
+			-- goCached.go:SetActive(false)
 
 			-- 如果需要唤醒coroutine
 			if coYield then
