@@ -21,6 +21,7 @@ local rules = {
     --游戏模块
     ["modName"] = "game2"
 }
+
 local configTable = {
     ["playerNumAcquired"] = {
         [1] = 2,
@@ -32,18 +33,6 @@ local configTable = {
         [2] = 36,
         [3] = 66
     },
-    ["dunziPointType"] = {
-        [1] = 0,
-        [2] = 1
-        --[3] = 2,
-        --[4] = 3
-    },
-    ["dunziPointTypeBig"] = {
-        [1] = 2,
-        [2] = 3
-        --[3] = 5,
-        --[4] = 30
-    },
     ["payType"] = {
         [1] = 0,
         [2] = 1
@@ -53,30 +42,7 @@ local configTable = {
         [2] = 8,
         [3] = 16
         --[4] = 32
-    },
-    ["fengDingType"] = {
-        [1] = 0,
-        [2] = 1,
-        [3] = 2,
-        [4] = 3
-    },
-    ["neededDiamond"] = {
-        [1] = 32,
-        [2] = 48,
-        [3] = 88
-        --[4] = 3
-    },
-    ["neededDiamond4ThreePlayers"] = {
-        [1] = 24,
-        [2] = 36,
-        [3] = 66
-    },
-    ["neededDiamond4TwoPlayers"] = {
-        [1] = 16,
-        [2] = 24,
-        [3] = 44
     }
-
     -- 剩下还有些没对应上的配置
 }
 
@@ -85,7 +51,7 @@ function DFRuleView.bindView(newRoomView)
     DFRuleView.newRoomView = newRoomView
     DFRuleView.priceCfg = newRoomView.priceCfgs[tostring(rules.roomType)]
 
-    DFRuleView:initAllView()
+    -- DFRuleView:initAllView()
 
     local createBtn = DFRuleView.unityViewNode:GetChild("createRoomButton")
     createBtn.onClick:Set(
@@ -118,105 +84,29 @@ function DFRuleView:initAllView()
     )
 
     --局数
-    self.toggleRoundCount = {}
-    self.toggleRoundCount[1] = self.unityViewNode:GetChild("round4Button")
-    self.toggleRoundCount[2] = self.unityViewNode:GetChild("round8Button")
-    self.toggleRoundCount[3] = self.unityViewNode:GetChild("round16Button")
-    self.toggleRoundCount[1].selected = true
-    self.toggleRoundCount[1].onClick:Set(
+    self.toggleCount = {}
+    self.toggleCount[1] = self.unityViewNode:GetChild("round4Button")
+    self.toggleCount[2] = self.unityViewNode:GetChild("round8Button")
+    self.toggleCount[3] = self.unityViewNode:GetChild("round16Button")
+    self.toggleCount[1].selected = true
+    self.toggleCount[1].onClick:Set(
         function()
+            self.toggleCount[2].selected = false
+            self.toggleCount[3].selected = false
             self:updateComsumer()
         end
     )
-    self.toggleRoundCount[2].onClick:Set(
+    self.toggleCount[2].onClick:Set(
         function()
+            self.toggleCount[1].selected = false
+            self.toggleCount[3].selected = false
             self:updateComsumer()
         end
     )
-    self.toggleRoundCount[3].onClick:Set(
+    self.toggleCount[3].onClick:Set(
         function()
-            self:updateComsumer()
-        end
-    )
-
-    -- 人数
-    self.togglePlayerNum = {}
-    self.togglePlayerNum[1] = self.unityViewNode:GetChild("2Player")
-    self.togglePlayerNum[2] = self.unityViewNode:GetChild("3Player")
-    self.togglePlayerNum[3] = self.unityViewNode:GetChild("4Player")
-    self.togglePlayerNum[1].selected = true
-    self.togglePlayerNum[1].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.togglePlayerNum[2].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.togglePlayerNum[3].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-
-    -- 封顶
-    self.toggleFengDingType = {}
-    self.toggleFengDingType[1] = self.unityViewNode:GetChild("fengding1")
-    self.toggleFengDingType[2] = self.unityViewNode:GetChild("fengding2")
-    self.toggleFengDingType[3] = self.unityViewNode:GetChild("fengding3")
-    self.toggleFengDingType[1].selected = true
-    self.toggleFengDingType[1].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.toggleFengDingType[2].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.toggleFengDingType[3].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-
-    -- 封顶
-    self.toggleFengDingType = {}
-    self.toggleFengDingType[1] = self.unityViewNode:GetChild("fengding1")
-    self.toggleFengDingType[2] = self.unityViewNode:GetChild("fengding2")
-    self.toggleFengDingType[3] = self.unityViewNode:GetChild("fengding3")
-    self.toggleFengDingType[1].selected = true
-    self.toggleFengDingType[1].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.toggleFengDingType[2].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.toggleFengDingType[3].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-
-    -- 封顶
-    self.toggleDunziPointType = {}
-    self.toggleDunziPointType[1] = self.unityViewNode:GetChild("dunzi1")
-    self.toggleDunziPointType[2] = self.unityViewNode:GetChild("dunzi2")
-    self.toggleDunziPointType[1].selected = true
-    self.toggleDunziPointType[1].onClick:Set(
-        function()
-            self:updateComsumer()
-        end
-    )
-    self.toggleDunziPointType[2].onClick:Set(
-        function()
+            self.toggleCount[1].selected = false
+            self.toggleCount[2].selected = false
             self:updateComsumer()
         end
     )
@@ -247,17 +137,12 @@ end
 
 --获取房间规则
 function DFRuleView:getRules()
-    local roundIndex = self:getToggleIndex(self.toggleRoundCount)
-    rules["handNum"] = configTable["handNum"][roundIndex]
+    -- local playCountIndex = self:getToggleIndex(self.toggleCount)
+    -- rules["handNum"] = configTable["handNum"][playCountIndex]
 
-    local payIndex = self:getToggleIndex(self.togglePay)
-    rules["payType"] = configTable["payType"][payIndex]
+    -- local payIndex = self:getToggleIndex(self.togglePay)
+    -- rules["payType"] = configTable["payType"][payIndex]
 
-    local playerNumIndex = self:getToggleIndex(self.togglePlayerNum)
-    rules["playerNumAcquired"] = configTable["playerNumAcquired"][playerNumIndex]
-
-    local fengdingIndex = self:getToggleIndex(self.toggleFengDingType)
-    rules["fengDingType"] = configTable["fengDingType"][fengdingIndex]
     -- 暂时不知道什么配置
     -- rules["doubleScoreWhenSelfDrawn"] = self.toggleKX[1].isOn
 
@@ -291,11 +176,11 @@ function DFRuleView:updateComsumer()
     local payIndex = self:getToggleIndex(self.togglePay)
     local payType = configTable["payType"][payIndex]
 
-    local roundIndex = self:getToggleIndex(self.toggleRoundCount)
-    local handNum = configTable["handNum"][roundIndex]
+    local playCountIndex = self:getToggleIndex(self.toggleCount)
+    local handNum = configTable["handNum"][playCountIndex]
 
-    local playerNumIndex = self:getToggleIndex(self.togglePlayerNum)
-    local playerNumAcquired = configTable["playerNumAcquired"][playerNumIndex]
+    -- 0 是不配置或者无限用户个数
+    local playerNumAcquired = 0
 
     local cost = self:getCost(payType, playerNumAcquired, handNum)
 

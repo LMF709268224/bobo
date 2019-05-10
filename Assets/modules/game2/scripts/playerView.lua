@@ -8,7 +8,7 @@ local mt = {__index = PlayerView}
 --local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
--- local animation = require "lobby/lcore/animations"
+local animation = require "lobby/lcore/animations"
 local tileMounter = require("scripts/tileImageMounter")
 
 -----------------------------------------------
@@ -38,6 +38,7 @@ function PlayerView.new(viewUnityNode, viewChairID)
     playerView.viewChairID = viewChairID
     playerView.viewUnityNode = viewUnityNode
     playerView.myView = view
+    playerView.aniPos = view:GetChild("aniPos")
 
     -- 先找到牌相关的节点
     -- 现在的牌相关是在一个独立的prefab里面
@@ -220,63 +221,126 @@ function PlayerView:initMeldsPanel()
 
     self.multiOpsObj = meldMap
 end
+
+function PlayerView:getButtonListItemResource(index)
+    local name = self.buttonDataList[index + 1]
+    local player = self.player
+    -- logger.debug("button name ------------------ ", name)
+    if name == player.ButtonDef.Chow then
+        return "ui://dafeng/chi_button"
+    elseif name == player.ButtonDef.Kong then
+        return "ui://dafeng/gang_button"
+    elseif name == player.ButtonDef.Skip then
+        return "ui://dafeng/guo_button"
+    elseif name == player.ButtonDef.Hu then
+        return "ui://dafeng/hu_button"
+    elseif name == player.ButtonDef.Pong then
+        return "ui://dafeng/peng_button"
+    elseif name == player.ButtonDef.Ting then
+        return "ui://dafeng/ting_button"
+    end
+end
+
+function PlayerView:renderButtonListItem(index, obj)
+    local name = self.buttonDataList[index + 1]
+    obj.name = name
+    obj.visible = true
+end
+
+function PlayerView:showButton(map)
+    -- logger.debug("show Button ------------------ ", map)
+    self.buttonDataList = map
+    self.buttonList.numItems = #map
+    self.buttonList:ResizeToFit(#map)
+    self.operationButtonsRoot.visible = true
+end
+
+function PlayerView:onClickBtn(name)
+    local player = self.player
+    if name == player.ButtonDef.Chow then
+        player:onChowBtnClick()
+    elseif name == player.ButtonDef.Kong then
+        player:onKongBtnClick()
+    elseif name == player.ButtonDef.Skip then
+        player:onSkipBtnClick()
+    elseif name == player.ButtonDef.Hu then
+        player:onWinBtnClick()
+    elseif name == player.ButtonDef.Pong then
+        player:onPongBtnClick()
+    elseif name == player.ButtonDef.Ting then
+        player:onReadyHandBtnClick()
+    end
+end
 -------------------------------------------------
 --保存操作按钮
 -------------------------------------------------
 function PlayerView:initOperationButtons()
+    self.buttonList = self.operationPanel:GetChild("buttonList").asList
+    self.buttonList.itemRenderer = function(index, obj)
+        self:renderButtonListItem(index, obj)
+    end
+    self.buttonList.itemProvider = function(index)
+        return self:getButtonListItemResource(index)
+    end
+    self.buttonList.onClickItem:Add(
+        function(onClickItem)
+            self:onClickBtn(onClickItem.data.name)
+        end
+    )
+    -- self.buttonList:SetVirtual()
+
     -- local operationButtonsRoot = viewUnityNode.transform:Find("TsBtnGroup/BgImg")
     self.operationButtonsRoot = self.operationPanel
 
-    local pv = self
+    -- local pv = self
 
-    self.skipBtn = self.operationPanel:GetChild("guoBtn")
-    self.skipBtn.onClick:Set(
-        function(obj)
-            local player = pv.player
-            player:onSkipBtnClick(obj)
-        end
-    )
+    -- self.skipBtn = self.operationPanel:GetChild("guoBtn")
+    -- self.skipBtn.onClick:Set(
+    --     function(obj)
+    --         local player = pv.player
+    --         player:onSkipBtnClick(obj)
+    --     end
+    -- )
 
-    self.winBtn = self.operationPanel:GetChild("huBtn")
-    self.winBtn.onClick:Set(
-        function(obj)
-            local player = pv.player
-            player:onWinBtnClick(obj)
-        end
-    )
-    --self:huBtnOrderAdd(self.winBtn)
+    -- self.winBtn = self.operationPanel:GetChild("huBtn")
+    -- self.winBtn.onClick:Set(
+    --     function(obj)
+    --         local player = pv.player
+    --         player:onWinBtnClick(obj)
+    --     end
+    -- )
 
-    self.kongBtn = self.operationPanel:GetChild("gangBtn")
-    self.kongBtn.onClick:Set(
-        function(obj)
-            local player = pv.player
-            player:onKongBtnClick(obj)
-        end
-    )
+    -- self.kongBtn = self.operationPanel:GetChild("gangBtn")
+    -- self.kongBtn.onClick:Set(
+    --     function(obj)
+    --         local player = pv.player
+    --         player:onKongBtnClick(obj)
+    --     end
+    -- )
 
-    self.pongBtn = self.operationPanel:GetChild("pengBtn")
-    self.pongBtn.onClick:Set(
-        function(obj)
-            local player = pv.player
-            player:onPongBtnClick(obj)
-        end
-    )
+    -- self.pongBtn = self.operationPanel:GetChild("pengBtn")
+    -- self.pongBtn.onClick:Set(
+    --     function(obj)
+    --         local player = pv.player
+    --         player:onPongBtnClick(obj)
+    --     end
+    -- )
 
-    self.chowBtn = self.operationPanel:GetChild("chiBtn")
-    self.chowBtn.onClick:Set(
-        function(obj)
-            local player = pv.player
-            player:onChowBtnClick(obj)
-        end
-    )
+    -- self.chowBtn = self.operationPanel:GetChild("chiBtn")
+    -- self.chowBtn.onClick:Set(
+    --     function(obj)
+    --         local player = pv.player
+    --         player:onChowBtnClick(obj)
+    --     end
+    -- )
 
-    self.readyHandBtn = self.operationPanel:GetChild("tingBtn")
-    self.readyHandBtn.onClick:Set(
-        function(obj)
-            local player = pv.player
-            player:onReadyHandBtnClick(obj)
-        end
-    )
+    -- self.readyHandBtn = self.operationPanel:GetChild("tingBtn")
+    -- self.readyHandBtn.onClick:Set(
+    --     function(obj)
+    --         local player = pv.player
+    --         player:onReadyHandBtnClick(obj)
+    --     end
+    -- )
 
     -- self.finalDrawBtn = viewUnityNode:GetChild("TsBtnGroup/BgImg/ZhuaBtn")
     -- viewUnityNode:AddClick(
@@ -287,7 +351,7 @@ function PlayerView:initOperationButtons()
     --     end
     -- )
 
-    self.operationButtons = {self.skipBtn, self.winBtn, self.kongBtn, self.pongBtn, self.chowBtn, self.readyHandBtn}
+    -- self.operationButtons = {self.skipBtn, self.winBtn, self.kongBtn, self.pongBtn, self.chowBtn, self.readyHandBtn}
 
     -- self.checkReadyHandBtn = viewUnityNode.transform:Find("Ting")
     -- viewUnityNode:AddClick(
@@ -318,11 +382,11 @@ end
 -------------------------------------------------
 function PlayerView:hideOperationButtons()
     -- 先隐藏掉所有按钮
-    local buttons = self.operationButtons
-    for _, b in pairs(buttons) do
-        b.visible = false
-    end
-
+    -- local buttons = self.operationButtons
+    -- for _, b in pairs(buttons) do
+    --     b.visible = false
+    -- end
+    self:showButton({})
     -- 隐藏根节点
     self.operationButtonsRoot.visible = false
 end
@@ -1302,7 +1366,7 @@ end
 function PlayerView:playChowResultAnimation()
     -- local player = self.player
     -- --播放特效
-    -- self:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_CHI)
+    self:playerOperationEffect("Effects_zi_chi")
 end
 
 ----------------------------------------------------------
@@ -1311,7 +1375,7 @@ end
 function PlayerView:playPongResultAnimation()
     -- local player = self.player
     -- --播放特效
-    -- self:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_PENG)
+    self:playerOperationEffect("Effects_zi_peng")
 end
 
 ----------------------------------------------------------
@@ -1320,7 +1384,7 @@ end
 function PlayerView:playExposedKongResultAnimation()
     -- local player = self.player
     -- --播放特效
-    -- self:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_GANG)
+    self:playerOperationEffect("Effects_zi_gang")
 end
 
 ----------------------------------------------------------
@@ -1329,7 +1393,7 @@ end
 function PlayerView:playConcealedKongResultAnimation()
     -- local player = self.player
     -- --播放特效
-    -- self:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_GANG)
+    self:playerOperationEffect("Effects_zi_gang")
 end
 
 ----------------------------------------------------------
@@ -1373,10 +1437,11 @@ end
 ----------------------------------------------------------
 --特效播放
 ----------------------------------------------------------
-function PlayerView:playerOperationEffect(_, _)
+function PlayerView:playerOperationEffect(effectName)
     -- local effectObj = Animator.Play(dfConfig.PATH.EFFECTS .. effectName .. ".prefab", self.viewUnityNode.order)
     -- effectObj:SetParent(self.operationTip)
     -- effectObj.localPosition = Vector3(0, 0, 0)
+    animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
 end
 
 ----------------------------------------------------------

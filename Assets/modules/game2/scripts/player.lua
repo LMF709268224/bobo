@@ -23,6 +23,15 @@ local SoundDef = {
     Common = "effect_common"
 }
 
+--按钮定义
+Player.ButtonDef = {
+    Chow = "chi",
+    Pong = "peng",
+    Kong = "gang",
+    Ting = "ting",
+    Skip = "guo",
+    Hu = "hu"
+}
 function Player.new(userID, chairID, room)
     local player = {userID = userID, chairID = chairID, room = room}
     setmetatable(player, mt)
@@ -101,7 +110,7 @@ function Player:sortHands(excludeLast)
 end
 
 function Player:addDicardedTile(tileID)
-    print("llwant, add discard:" .. tileID .. ",chairID:" .. self.chairID)
+    -- print("llwant, add discard:" .. tileID .. ",chairID:" .. self.chairID)
     table.insert(self.tilesDiscarded, tileID)
 end
 
@@ -387,7 +396,7 @@ function Player:playZiMoAnimation()
     -- if self.playerView.viewChairID == 2 or self.playerView.viewChairID == 4 then
     --     effect = dfConfig.EFF_DEFINE.SUB_ZI_ZIMO .. "2"
     -- end
-    -- self.playerView:playerOperationEffect(effect)
+    self.playerView:playerOperationEffect("Effects_zi_zimo")
 end
 
 ------------------------------------
@@ -396,7 +405,7 @@ end
 function Player:playDianPaoAnimation()
     --播放对应音效
     self:playOperationSound(SoundDef.WinChuck)
-    -- self.playerView:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_DIANPAO)
+    self.playerView:playerOperationEffect("Effrcts_zi_dianpao")
 end
 
 ------------------------------------
@@ -841,7 +850,7 @@ function Player:showMultiOps(datas, actionMsg2, exp)
             function(_)
                 -- local curOpIndex = tonumber(obj.name)
                 self:sendActionMsg(actionMsg)
-                self.playerView.operationButtonsRoot.visible = false
+                self.playerView.hideOperationButtons()
                 self.playerView.meldOpsPanel.visible = false
             end
         )
