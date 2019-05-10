@@ -63,14 +63,14 @@ onGameEnter()
 _ENV.gameServerScheme = function()
 	-- 以后这个host也统一到某个lua文件中，由它结合防DDOS流程来给出
 	--测试 大丰3003 关张3001
-	return "ws://172.18.3.126:3001"
+	return "ws://121.196.210.106:30001"
 	-- return "ws://localhost:3001"
 end
 
 _ENV.gameServerSchemeFD = function()
 	-- 以后这个host也统一到某个lua文件中，由它结合防DDOS流程来给出
 	--测试 大丰3003 关张3001
-	return "ws://172.18.3.126:3003"
+	return "ws://121.196.210.106:30003"
 	-- return "ws://localhost:3001"
 end
 
