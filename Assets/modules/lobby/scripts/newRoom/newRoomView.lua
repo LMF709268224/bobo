@@ -16,6 +16,8 @@ local errHelper = require "lobby/lcore/lobbyErrHelper"
 local lobbyError = require "lobby/scripts/lobbyError"
 local CS = _ENV.CS
 
+local RecordKey = "GameIndex"
+
 function NewRoomView.new()
     if NewRoomView.unityViewNode then
         logger.debug("NewRoomView ---------------------")
@@ -38,9 +40,29 @@ function NewRoomView.new()
             end
         )
     end
+
+    local pp = _ENV.CS.UnityEngine.PlayerPrefs
+
+    if pp.HasKey(RecordKey) then
+        local gameIndex = pp.GetString(RecordKey)
+        if gameIndex and #gameIndex > 0 then
+            local gameList = NewRoomView.unityViewNode:GetChild("gamelist")
+            gameList.selectedIndex = gameIndex
+        end
+    end
+
     NewRoomView.progressBar = NewRoomView.unityViewNode:GetChild("downloadProgress")
     NewRoomView.progressBar.visible = false
 
+    local runFastRuleView = require "lobby/scripts/newRoom/runFastRuleView"
+    runFastRuleView.bindView(NewRoomView)
+
+    local dfRuleView = require "lobby/scripts/newRoom/dfRuleView"
+    dfRuleView.bindView(NewRoomView)
+
+    NewRoomView.runFastRuleView = runFastRuleView
+    NewRoomView.dfRuleView = dfRuleView
+    NewRoomView.win:Show()
     -- 拉取价格配置后，再初始化界面
     NewRoomView:loadPriceCfgs(
         function(priceCfgs)
@@ -48,8 +70,6 @@ function NewRoomView.new()
             NewRoomView:initAllView()
         end
     )
-
-    NewRoomView.win:Show()
 end
 
 function NewRoomView:initAllView()
@@ -60,24 +80,22 @@ function NewRoomView:initAllView()
         end
     )
 
-    local runFastRuleView = require "lobby/scripts/newRoom/runFastRuleView"
-    runFastRuleView.bindView(self)
-
-    local dfRuleView = require "lobby/scripts/newRoom/dfRuleView"
-    dfRuleView.bindView(self)
-
-    self.runFastRuleView = runFastRuleView
-    self.dfRuleView = dfRuleView
+    self.runFastRuleView:updateComsumer(self.priceCfgs)
+    self.dfRuleView:updateComsumer(self.priceCfgs)
 end
 
 function NewRoomView:loadPriceCfgs(cb)
     -- 拉取价格配置表
     local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
     local loadRoomPriceCfgsURL = urlpathsCfg.rootURL .. urlpathsCfg.loadRoomPriceCfgs .. "?&tk=" .. tk
+    -- 加滚动条
+    dialog.showDialog("正在加载价格配置......")
+    local win = dialog.win
     httpHelper.get(
-        self.unityViewNode,
+        win,
         loadRoomPriceCfgsURL,
         function(req, resp)
+            win:Hide()
             if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
                 local httpError = errHelper.dumpHttpRespError(resp)
                 if httpError == nil then
@@ -208,7 +226,15 @@ function NewRoomView:createRoom(ruleJson)
     )
 end
 
+function NewRoomView:saveRule()
+    local pp = CS.UnityEngine.PlayerPrefs
+    local gameList = NewRoomView.unityViewNode:GetChild("gamelist")
+    local gameIndex = gameList.selectedIndex
+    pp.SetString(RecordKey, gameIndex)
+end
+
 function NewRoomView:destroy()
+    self:saveRule()
     self.runFastRuleView:saveRule()
     self.dfRuleView:saveRule()
     self.win:Hide()

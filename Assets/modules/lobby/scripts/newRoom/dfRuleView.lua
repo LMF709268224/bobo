@@ -85,7 +85,6 @@ local configTable = {
 function DFRuleView.bindView(newRoomView)
     DFRuleView.unityViewNode = newRoomView.unityViewNode:GetChild("damjRule")
     DFRuleView.newRoomView = newRoomView
-    DFRuleView.priceCfg = newRoomView.priceCfgs[tostring(rules.roomType)]
 
     DFRuleView:initAllView()
 
@@ -132,16 +131,11 @@ function DFRuleView:initAllView()
     local consume = self.unityViewNode:GetChild("consumeCom")
     self.consumeText = consume:GetChild("consumeText")
 
-    local pp = _ENV.CS.UnityEngine.PlayerPrefs
-    local jsonStr = pp.GetString(RecordKey, "")
-    local key = rapidJson.decode(jsonStr)
-
     --局数
     self.toggleRoundCount = {}
     self.toggleRoundCount[1] = self.unityViewNode:GetChild("round4Button")
     self.toggleRoundCount[2] = self.unityViewNode:GetChild("round8Button")
     self.toggleRoundCount[3] = self.unityViewNode:GetChild("round16Button")
-    self.toggleRoundCount[key[1]].selected = true
     self.toggleRoundCount[1].onClick:Set(
         function()
             self:updateComsumer()
@@ -162,7 +156,7 @@ function DFRuleView:initAllView()
     self.togglePay = {}
     self.togglePay[1] = self.unityViewNode:GetChild("ownerPayButton")
     self.togglePay[2] = self.unityViewNode:GetChild("aapPayButton")
-    self.togglePay[key[2]].selected = true
+
     self.togglePay[1].onClick:Set(
         function()
             self.togglePay[2].selected = false
@@ -181,7 +175,7 @@ function DFRuleView:initAllView()
     self.togglePlayerNum[1] = self.unityViewNode:GetChild("2Player")
     self.togglePlayerNum[2] = self.unityViewNode:GetChild("3Player")
     self.togglePlayerNum[3] = self.unityViewNode:GetChild("4Player")
-    self.togglePlayerNum[key[3]].selected = true
+
     self.togglePlayerNum[1].onClick:Set(
         function()
             self:updateComsumer()
@@ -204,25 +198,37 @@ function DFRuleView:initAllView()
     self.toggleFengDingType[2] = self.unityViewNode:GetChild("fengding2")
     self.toggleFengDingType[3] = self.unityViewNode:GetChild("fengding3")
     self.toggleFengDingType[4] = self.unityViewNode:GetChild("fengding4")
-    self.toggleFengDingType[key[4]].selected = true
 
     -- 墩子
     self.toggleDunziPointType = {}
     self.toggleDunziPointType[1] = self.unityViewNode:GetChild("dunzi1")
     self.toggleDunziPointType[2] = self.unityViewNode:GetChild("dunzi2")
-    self.toggleDunziPointType[key[5]].selected = true
 
     self.toggleZMJF = self.unityViewNode:GetChild("zimojiafen")
 
-    self.toggleZMJF.selected = key[6]
-
     self.toggleLZJF = self.unityViewNode:GetChild("lianzhuangjiafen")
-    self.toggleLZJF.selected = key[7]
 
     self.toggleJYZ = self.unityViewNode:GetChild("jinyuanzi")
-    self.toggleJYZ.selected = key[8]
 
-    self:updateComsumer()
+    local pp = _ENV.CS.UnityEngine.PlayerPrefs
+
+    if pp.HasKey(RecordKey) then
+        local jsonStr = pp.GetString(RecordKey)
+        if jsonStr and #jsonStr > 0 then
+            local key = rapidJson.decode(jsonStr)
+
+            self.toggleRoundCount[key[1]].selected = true
+            self.togglePay[key[2]].selected = true
+            self.togglePlayerNum[key[3]].selected = true
+            self.toggleFengDingType[key[4]].selected = true
+            self.toggleDunziPointType[key[5]].selected = true
+            self.toggleZMJF.selected = key[6]
+            self.toggleLZJF.selected = key[7]
+            self.toggleJYZ.selected = key[8]
+        end
+    end
+
+    -- self:updateComsumer()
     -- self:updateCostDiamond()
 end
 
@@ -287,7 +293,10 @@ function DFRuleView:getCost(payType, playerNum, handNum)
 end
 
 --更新消耗数量
-function DFRuleView:updateComsumer()
+function DFRuleView:updateComsumer(priceCfgs)
+    if priceCfgs ~= nil then
+        self.priceCfg = priceCfgs[tostring(rules.roomType)]
+    end
     local payIndex = self:getToggleIndex(self.togglePay)
     local payType = configTable["payType"][payIndex]
 
