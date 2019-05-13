@@ -159,13 +159,11 @@ function DFRuleView:initAllView()
 
     self.togglePay[1].onClick:Set(
         function()
-            self.togglePay[2].selected = false
             self:updateComsumer()
         end
     )
     self.togglePay[2].onClick:Set(
         function()
-            self.togglePay[1].selected = false
             self:updateComsumer()
         end
     )
