@@ -787,8 +787,8 @@ end
 --如果是别人的暗杠，则全部暗牌显示
 ------------------------------------------
 function PlayerView:mountMeldImage(meldView, msgMeld)
-    -- local player = self.player
-    -- local view = player.room:getPlayerViewByChairID(msgMeld.contributor)
+    local player = self.player
+    local view = player.room:getPlayerViewByChairID(msgMeld.contributor)
     -- local mm = self.meldsMap[self.viewChairID]
     -- local direction = mm[view.viewChairID]
     -- -- self.viewChairID 吃碰杠者
@@ -801,69 +801,52 @@ function PlayerView:mountMeldImage(meldView, msgMeld)
     local meldType = msgMeld.meldType
     local mtProto = mjproto.MeldType
     if meldType == mtProto.enumMeldTypeSequence then
+        local chowTile = t1
+        if msgMeld.tile1 == msgMeld.chowTile then
+            chowTile = t1
+        elseif (msgMeld.tile1 + 1) == msgMeld.chowTile then
+            chowTile = t2
+        elseif (msgMeld.tile1 + 2) == msgMeld.chowTile then
+            chowTile = t3
+        end
         tileMounter:mountMeldEnableImage(t1, msgMeld.tile1, self.viewChairID)
         tileMounter:mountMeldEnableImage(t2, msgMeld.tile1 + 1, self.viewChairID)
         tileMounter:mountMeldEnableImage(t3, msgMeld.tile1 + 2, self.viewChairID)
+        self:setMeldTileDirection(true, chowTile, view.viewChairID, self.viewChairID)
     elseif meldType == mtProto.enumMeldTypeTriplet then
         tileMounter:mountMeldEnableImage(t1, msgMeld.tile1, self.viewChairID, meldView.direction)
         tileMounter:mountMeldEnableImage(t2, msgMeld.tile1, self.viewChairID)
         tileMounter:mountMeldEnableImage(t3, msgMeld.tile1, self.viewChairID)
+        self:setMeldTileDirection(false, t2, view.viewChairID, self.viewChairID)
     elseif meldType == mtProto.enumMeldTypeExposedKong or meldType == mtProto.enumMeldTypeTriplet2Kong then
         tileMounter:mountMeldEnableImage(t1, msgMeld.tile1, self.viewChairID)
         tileMounter:mountMeldEnableImage(t2, msgMeld.tile1, self.viewChairID)
         tileMounter:mountMeldEnableImage(t3, msgMeld.tile1, self.viewChairID)
         tileMounter:mountMeldEnableImage(t4, msgMeld.tile1, self.viewChairID)
+        self:setMeldTileDirection(false, t4, view.viewChairID, self.viewChairID)
     end
 end
 
---单独用于结算界面的面子牌组显示
-function PlayerView:mountResultMeldImage(_, _)
-    -- local player = self.player
-    -- local view = player.room:getPlayerViewByChairID(msgMeld.contributor)
-    -- -- self.viewChairID 吃碰杠者
-    -- -- view.viewChairID 被吃碰杠者
-    -- local mm = self.meldsMap[self.viewChairID]
-    -- local direction = mm[view.viewChairID]
-    -- local ischi = false
-    -- if msgMeld.meldType == mjproto.enumMeldTypeSequence then
-    --     --对于吃牌组，第一个牌为被吃的牌，其他是玩家自身的牌
-    --     tileMounter:mountTileImage(meldView.t1, msgMeld.chowTile)
-    --     local chowTile = meldView.t1
-    --     if msgMeld.tile1 == msgMeld.chowTile then
-    --         chowTile = meldView.t1
-    --     elseif (msgMeld.tile1 + 1) == msgMeld.chowTile then
-    --         chowTile = meldView.t2
-    --     elseif (msgMeld.tile1 + 2) == msgMeld.chowTile then
-    --         chowTile = meldView.t3
-    --     end
-    --     local ischi = true
-    --     tileMounter:mountMeldEnableImage(meldView.t1, msgMeld.tile1, self.viewChairID)
-    --     tileMounter:mountMeldEnableImage(meldView.t2, msgMeld.tile1 + 1, self.viewChairID)
-    --     tileMounter:mountMeldEnableImage(meldView.t3, msgMeld.tile1 + 2, self.viewChairID)
-    --     self:setMeldTileDirection(ischi, chowTile, view.viewChairID, self.viewChairID)
-    --     meldView.t4.visible = false
-    -- elseif msgMeld.meldType == mjproto.enumMeldTypeTriplet then
-    --     tileMounter:mountTileImage(meldView.t1, msgMeld.tile1)
-    --     tileMounter:mountTileImage(meldView.t2, msgMeld.tile1)
-    --     tileMounter:mountTileImage(meldView.t3, msgMeld.tile1)
-    --     self:setMeldTileDirection(ischi, meldView.t2, view.viewChairID, self.viewChairID)
-    --     meldView.t4.visible = false
-    -- elseif msgMeld.meldType == mjproto.enumMeldTypeExposedKong or msgMeld.meldType
-    -- == mjproto.enumMeldTypeTriplet2Kong then
-    --     tileMounter:mountTileImage(meldView.t1, msgMeld.tile1)
-    --     tileMounter:mountTileImage(meldView.t2, msgMeld.tile1)
-    --     tileMounter:mountTileImage(meldView.t3, msgMeld.tile1)
-    --     tileMounter:mountTileImage(meldView.t4, msgMeld.tile1)
-    --     self:setMeldTileDirection(ischi, meldView.t4, view.viewChairID, self.viewChairID)
-    --     meldView.t4.visible = true
-    -- elseif msgMeld.meldType == mjproto.enumMeldTypeConcealedKong then
-    --     tileMounter:mountMeldDisableImage(meldView.t1, msgMeld.tile1, self.viewChairID)
-    --     tileMounter:mountMeldDisableImage(meldView.t2, msgMeld.tile1, self.viewChairID)
-    --     tileMounter:mountMeldDisableImage(meldView.t3, msgMeld.tile1, self.viewChairID)
-    --     --使用对家的资源
-    --     tileMounter:mountMeldEnableImage(meldView.t4, msgMeld.tile1, 3)
-    --     meldView.t4.visible = true
-    -- end
+--设置面子牌的方向
+function PlayerView:setMeldTileDirection(ischi, tileObj, dir, viewChairID)
+    if dir > 0 and viewChairID > 0 then
+        local image = tileObj:GetChild("ts")
+        if image then
+            if ischi then
+                image.url = "ui://dafeng/ts_chi"
+            else
+                local x = dir - viewChairID
+                if x == 1 or x == -3 then
+                    image.url = "ui://dafeng/ts_xia"
+                elseif x == 2 or x == -2 then
+                    image.url = "ui://dafeng/ts_dui"
+                elseif x == 3 or x == -1 then
+                    image.url = "ui://dafeng/ts_shang"
+                end
+            end
+            image.visible = true
+        end
+    end
 end
 
 function PlayerView:mountConcealedKongTileImage(t, tileID)
@@ -1456,59 +1439,6 @@ function PlayerView:playInfoGroupAnimation()
     -- actionMgr:MoveTo(self.infoGroup, targetPos, 1, function()
     --     --不等待动画完成
     -- end)
-end
-
---设置面子牌的方向
-function PlayerView:setMeldTileDirection(_, _, _, _)
-    -- print("llwant,PlayerView:setMeldTileDirection:viewChairID is " .. viewChairID)
-    -- print("llwant,PlayerView:setMeldTileDirection:dir is : " .. dir)
-    -- if dir > 0 and viewChairID > 0 then
-    --     local image = tileObj.transform:Find("direction")
-    --     if image then
-    --         if ischi then
-    --             image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_chi.png")
-    --         else
-    --             if viewChairID == 1 then
-    --                 if dir == 1 then
-    --                 elseif dir == 2 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_xia.png")
-    --                 elseif dir == 3 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_dui.png")
-    --                 elseif dir == 4 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_shang.png")
-    --                 end
-    --             elseif viewChairID == 2 then
-    --                 if dir == 1 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_shang.png")
-    --                 elseif dir == 2 then
-    --                 elseif dir == 3 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_xia.png")
-    --                 elseif dir == 4 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_dui.png")
-    --                 end
-    --             elseif viewChairID == 3 then
-    --                 if dir == 1 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_dui.png")
-    --                 elseif dir == 2 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_shang.png")
-    --                 elseif dir == 3 then
-    --                 elseif dir == 4 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_xia.png")
-    --                 end
-    --             else
-    --                 if dir == 1 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_xia.png")
-    --                 elseif dir == 2 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_dui.png")
-    --                 elseif dir == 3 then
-    --                     image:SetImage("GameModule/DaFengMaJiang/_AssetsBundleRes/image/ts_shang.png")
-    --                 elseif dir == 4 then
-    --                 end
-    --             end
-    --         end
-    --         image.visible = true
-    --     end
-    -- end
 end
 
 return PlayerView
