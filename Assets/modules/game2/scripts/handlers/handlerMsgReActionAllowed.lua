@@ -41,23 +41,20 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
     -- 过胡牌提示只有在胡和过同时存在才是true，任何情况都为false
     player.isGuoHuTips = false
 
-    local buttonMap = {}
     --如果可以吃
     local mjproto = proto.mahjong.ActionType
     if proto.actionsHasAction(actions, mjproto.enumActionType_CHOW) then
         print("llwant, can chow")
         needShowOperationButtons = true
-        -- playerView.chowBtn.visible = true
-        buttonMap[#buttonMap + 1] = player.ButtonDef.Chow
+        playerView.chowBtn.visible = true
     end
 
     --如果可以碰
     if proto.actionsHasAction(actions, mjproto.enumActionType_PONG) then
-        print("llwant, can peng")
+        print("llwant, can pong")
         needShowOperationButtons = true
 
-        -- playerView.pongBtn.visible = true
-        buttonMap[#buttonMap + 1] = player.ButtonDef.Pong
+        playerView.pongBtn.visible = true
     end
 
     --如果可以明杠
@@ -65,8 +62,7 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
         print("llwant, can concealed kong")
         needShowOperationButtons = true
 
-        -- playerView.kongBtn.visible = true
-        buttonMap[#buttonMap + 1] = player.ButtonDef.Kong
+        playerView.kongBtn.visible = true
     end
 
     --如果可以吃铳胡牌
@@ -74,16 +70,14 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
         print("llwant, can win chuck")
         needShowOperationButtons = true
 
-        -- playerView.winBtn.visible = true
-        buttonMap[#buttonMap + 1] = player.ButtonDef.Hu
+        playerView.winBtn.visible = true
     end
 
     --如果可以过
     if proto.actionsHasAction(actions, mjproto.enumActionType_SKIP) then
         print("llwant, can skip")
         needShowOperationButtons = true
-        -- playerView.skipBtn.visible = true
-        buttonMap[#buttonMap + 1] = player.ButtonDef.Skip
+        playerView.skipBtn.visible = true
     end
 
     -- 可胡牌时，需要点击2次过才可过牌。
@@ -95,7 +89,7 @@ function Handler.processMyAllowedReActions(allowedReActionMsg, player)
     end
 
     if needShowOperationButtons then
-        playerView:showButton(buttonMap)
+        playerView.operationButtonsRoot.visible = true
     end
 end
 

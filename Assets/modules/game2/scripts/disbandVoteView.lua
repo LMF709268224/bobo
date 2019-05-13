@@ -45,7 +45,7 @@ function DisbandVoteView.new(room, viewObj)
 
     disbandVoteView.playerList = {}
     --以下代码从DissolveVoteView2.lua中拷贝过来
-    for i = 1, 4 do
+    for i = 1, 3 do
         local _playeri = viewObj:GetChild("player" .. i)
         local _NameText = _playeri:GetChild("name")
         local _SpState_Refuse = _playeri:GetChild("unagree")
@@ -119,7 +119,7 @@ function DisbandVoteView:updateTexts(msgDisbandNotify)
     self.title.text = title
 
     --先全部隐藏
-    for i = 1, 4 do
+    for i = 1, 3 do
         local p = self.playerList[i]
         p.root.visible = false
         p.spState_Agree.visible = false
