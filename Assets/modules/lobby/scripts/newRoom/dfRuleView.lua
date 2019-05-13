@@ -136,6 +136,11 @@ function DFRuleView:initAllView()
     self.toggleRoundCount[1] = self.unityViewNode:GetChild("round4Button")
     self.toggleRoundCount[2] = self.unityViewNode:GetChild("round8Button")
     self.toggleRoundCount[3] = self.unityViewNode:GetChild("round16Button")
+
+    self.toggleRoundCount[1]:GetChild("title").text = "4局"
+    self.toggleRoundCount[2]:GetChild("title").text = "8局"
+    self.toggleRoundCount[3]:GetChild("title").text = "16局"
+
     self.toggleRoundCount[1].onClick:Set(
         function()
             self:updateComsumer()
@@ -157,6 +162,9 @@ function DFRuleView:initAllView()
     self.togglePay[1] = self.unityViewNode:GetChild("ownerPayButton")
     self.togglePay[2] = self.unityViewNode:GetChild("aapPayButton")
 
+    self.togglePay[1]:GetChild("title").text = "房主支付"
+    self.togglePay[2]:GetChild("title").text = "AA支付"
+
     self.togglePay[1].onClick:Set(
         function()
             self:updateComsumer()
@@ -173,6 +181,10 @@ function DFRuleView:initAllView()
     self.togglePlayerNum[1] = self.unityViewNode:GetChild("2Player")
     self.togglePlayerNum[2] = self.unityViewNode:GetChild("3Player")
     self.togglePlayerNum[3] = self.unityViewNode:GetChild("4Player")
+
+    self.togglePlayerNum[1]:GetChild("title").text = "2人"
+    self.togglePlayerNum[2]:GetChild("title").text = "3人"
+    self.togglePlayerNum[3]:GetChild("title").text = "4人"
 
     self.togglePlayerNum[1].onClick:Set(
         function()
@@ -197,16 +209,26 @@ function DFRuleView:initAllView()
     self.toggleFengDingType[3] = self.unityViewNode:GetChild("fengding3")
     self.toggleFengDingType[4] = self.unityViewNode:GetChild("fengding4")
 
+    self.toggleFengDingType[1]:GetChild("title").text = "20/40"
+    self.toggleFengDingType[2]:GetChild("title").text = "30/60"
+    self.toggleFengDingType[3]:GetChild("title").text = "50/100/150"
+    self.toggleFengDingType[4]:GetChild("title").text = "100/200/300"
+
     -- 墩子
     self.toggleDunziPointType = {}
     self.toggleDunziPointType[1] = self.unityViewNode:GetChild("dunzi1")
     self.toggleDunziPointType[2] = self.unityViewNode:GetChild("dunzi2")
 
+    self.toggleDunziPointType[1]:GetChild("title").text = "1分/两分"
+    self.toggleDunziPointType[2]:GetChild("title").text = "10分/20分/30分"
+
     self.toggleZMJF = self.unityViewNode:GetChild("zimojiafen")
-
     self.toggleLZJF = self.unityViewNode:GetChild("lianzhuangjiafen")
-
     self.toggleJYZ = self.unityViewNode:GetChild("jinyuanzi")
+
+    self.toggleZMJF:GetChild("title").text = "自摸加分"
+    self.toggleLZJF:GetChild("title").text = "连庄加分"
+    self.toggleJYZ:GetChild("title").text = "进园子"
 
     local pp = _ENV.CS.UnityEngine.PlayerPrefs
 

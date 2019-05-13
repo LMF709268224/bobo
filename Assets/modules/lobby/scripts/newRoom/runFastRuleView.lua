@@ -61,7 +61,7 @@ function RunFastRuleView:saveRule()
     logger.debug("RunFastRuleView:saveRule()")
     local key = {}
     -- 局数
-    key[1] = RunFastRuleView:getToggleIndex(RunFastRuleView.toggleCount)
+    key[1] = RunFastRuleView:getToggleIndex(RunFastRuleView.toggleRoundCount)
     -- 支付
     key[2] = RunFastRuleView:getToggleIndex(RunFastRuleView.togglePay)
 
@@ -76,29 +76,27 @@ function RunFastRuleView:initAllView()
     self.consumeText = consume:GetChild("consumeText")
 
     --局数
-    self.toggleCount = {}
-    self.toggleCount[1] = self.unityViewNode:GetChild("round4Button")
-    self.toggleCount[2] = self.unityViewNode:GetChild("round8Button")
-    self.toggleCount[3] = self.unityViewNode:GetChild("round16Button")
+    self.toggleRoundCount = {}
+    self.toggleRoundCount[1] = self.unityViewNode:GetChild("round4Button")
+    self.toggleRoundCount[2] = self.unityViewNode:GetChild("round8Button")
+    self.toggleRoundCount[3] = self.unityViewNode:GetChild("round16Button")
 
-    self.toggleCount[1].onClick:Set(
+    self.toggleRoundCount[1]:GetChild("title").text = "4局"
+    self.toggleRoundCount[2]:GetChild("title").text = "8局"
+    self.toggleRoundCount[3]:GetChild("title").text = "16局"
+
+    self.toggleRoundCount[1].onClick:Set(
         function()
-            self.toggleCount[2].selected = false
-            self.toggleCount[3].selected = false
             self:updateComsumer()
         end
     )
-    self.toggleCount[2].onClick:Set(
+    self.toggleRoundCount[2].onClick:Set(
         function()
-            self.toggleCount[1].selected = false
-            self.toggleCount[3].selected = false
             self:updateComsumer()
         end
     )
-    self.toggleCount[3].onClick:Set(
+    self.toggleRoundCount[3].onClick:Set(
         function()
-            self.toggleCount[1].selected = false
-            self.toggleCount[2].selected = false
             self:updateComsumer()
         end
     )
@@ -107,6 +105,9 @@ function RunFastRuleView:initAllView()
     self.togglePay = {}
     self.togglePay[1] = self.unityViewNode:GetChild("ownerPayButton")
     self.togglePay[2] = self.unityViewNode:GetChild("aapPayButton")
+
+    self.togglePay[1]:GetChild("title").text = "房主支付"
+    self.togglePay[2]:GetChild("title").text = "AA支付"
 
     self.togglePay[1].onClick:Set(
         function()
@@ -128,7 +129,7 @@ function RunFastRuleView:initAllView()
         if jsonStr and #jsonStr > 0 then
             local key = rapidJson.decode(jsonStr)
 
-            self.toggleCount[key[1]].selected = true
+            self.toggleRoundCount[key[1]].selected = true
             self.togglePay[key[2]].selected = true
         end
     end
@@ -159,7 +160,7 @@ end
 
 --获取房间规则
 function RunFastRuleView:getRules()
-    local playCountIndex = self:getToggleIndex(self.toggleCount)
+    local playCountIndex = self:getToggleIndex(self.toggleRoundCount)
     rules["handNum"] = configTable["handNum"][playCountIndex]
 
     local payIndex = self:getToggleIndex(self.togglePay)
@@ -201,7 +202,7 @@ function RunFastRuleView:updateComsumer(priceCfgs)
     local payIndex = self:getToggleIndex(self.togglePay)
     local payType = configTable["payType"][payIndex]
 
-    local playCountIndex = self:getToggleIndex(self.toggleCount)
+    local playCountIndex = self:getToggleIndex(self.toggleRoundCount)
     local handNum = configTable["handNum"][playCountIndex]
 
     -- 0 是不配置或者无限用户个数
