@@ -403,6 +403,7 @@ function PlayerView:initHeadView()
 
     head.headBox = self.myView:GetChild("head")
     head.headBox.visible = false
+    head.pos = head.headBox:GetChild("pos")
     -- ready状态指示
     head.readyIndicator = self.myView:GetChild("ready")
     head.readyIndicator.visible = false
@@ -501,13 +502,15 @@ function PlayerView:initPlayerStatus()
     status[proto.mahjong.PlayerState.PSPlaying] = onPlaying
     self.onUpdateStatus = status
 end
+
 ------------------------------------
 -- 设置头像特殊效果是否显示（当前出牌者则显示）
 -----------------------------------
 function PlayerView:setHeadEffectBox(isShow)
-    if self.head.effectBox ~= nil then
-        self.head.effectBox.visible = isShow
-    end
+    local x = self.head.pos.x
+    local y = self.head.pos.y
+    local ani = animation.play("animations/Effects_UI_touxiang.prefab", self.head.headBox, x, y, true)
+    ani.setVisible(isShow)
 end
 
 function PlayerView:hideMelds()
@@ -1418,17 +1421,21 @@ end
 --播放补花效果，并等待结束
 ----------------------------------------------------------
 function PlayerView:playDrawFlowerAnimation()
-    self:playerOperationEffect("Effects_zi_buhua")
+    self:playerOperationEffect("Effects_zi_buhua", true)
 end
 
 ----------------------------------------------------------
 --特效播放
 ----------------------------------------------------------
-function PlayerView:playerOperationEffect(effectName)
+function PlayerView:playerOperationEffect(effectName, coYield)
     -- local effectObj = Animator.Play(dfConfig.PATH.EFFECTS .. effectName .. ".prefab", self.viewUnityNode.order)
     -- effectObj:SetParent(self.operationTip)
     -- effectObj.localPosition = Vector3(0, 0, 0)
-    animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
+    if coYield then
+        animation.coplay("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
+    else
+        animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
+    end
 end
 
 ----------------------------------------------------------

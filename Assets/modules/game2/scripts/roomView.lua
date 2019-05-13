@@ -12,6 +12,7 @@ local dialog = require "lobby/lcore/dialog"
 local chatView = require "lobby/scripts/chat/chatView"
 local prompt = require "lobby/lcore/prompt"
 local tileMounter = require("scripts/tileImageMounter")
+local animation = require "lobby/lcore/animations"
 
 local mt = {__index = RoomView}
 -- local dfPath = "GuanZhang/Script/"
@@ -1268,7 +1269,13 @@ end
 --------------------------------------
 --显示出牌提示箭头
 --------------------------------------
-function RoomView:setArrowByParent(_)
+function RoomView:setArrowByParent(btn)
+    local pos = btn:GetChild("pos")
+    local x = pos.x
+    local y = pos.y
+    self.arrowObj = animation.play("animations/Effects_UI_jiantou.prefab", btn, x, y, true)
+    self.arrowObj.wrapper.scale = pos.scale
+    self.arrowObj.setVisible(true)
     -- if self.arrowObj then
     --     self.arrowObj:SetParent(parentObj, false)
     --     --self.arrowObj.localPosition = Vector3(0, 0, 0)
@@ -1284,9 +1291,9 @@ end
 --隐藏出牌提示箭头
 --------------------------------------
 function RoomView:setArrowHide()
-    -- if self.arrowObj then
-    --     self.arrowObj:Hide()
-    -- end
+    if self.arrowObj then
+        self.arrowObj.setVisible(false)
+    end
 end
 
 --------------------------------------
