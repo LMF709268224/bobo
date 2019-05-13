@@ -28,8 +28,12 @@ local UrlPaths = {
 
 	--战绩
 	lrproom = "/lobby/uuid/lrproom",
-	lrprecord = "/lobby/uuid/lrprecord"
+	lrprecord = "/lobby/uuid/lrprecord",
 
+	-- 邮件
+	loadMails = "/lobby/uuid/loadMails",
+	setMailRead = "/lobby/uuid/setMailRead",
+	deleteMail = "/lobby/deleteMail"
 }
 
 return UrlPaths
