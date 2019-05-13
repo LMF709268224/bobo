@@ -16,6 +16,7 @@ local msgCenter = require "lobby/scripts/msgCenter"
 local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
 local newRoomView = require "lobby/scripts/newRoom/newRoomView"
 local joinRoomView = require "lobby/scripts/newRoom/joinRoomView"
+local recordView = require "lobby/scripts/gameRecord/recordView"
 local CS = _ENV.CS
 
 function LobbyView:show()
@@ -87,11 +88,12 @@ function LobbyView:initView()
         end
     )
 
-    local listView = self.viewNode:GetChild("n29")
-    local dfTestBtn = listView:GetChild("n8")
+    --local listView = self.viewNode:GetChild("n29")
+    local dfTestBtn = self.viewNode:GetChild("n8")
+
     dfTestBtn.onClick:Set(
         function()
-            self:ondfTestClick()
+            self:openRecordView()
         end
     )
 
@@ -172,6 +174,11 @@ end
 
 function LobbyView:onCreateRoom()
     newRoomView.new()
+end
+
+function LobbyView:openRecordView()
+    recordView.new()
+    -- body
 end
 
 return LobbyView

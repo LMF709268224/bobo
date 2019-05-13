@@ -72,6 +72,27 @@ local function goTestGame()
 	end
 end
 
+-- local function goReplay(record)
+-- 	local singletonMod = require("scripts/singleton")
+-- 	local singleton = singletonMod.getSingleton()
+-- 	-- 启动cortouine
+-- 	local co =
+-- 		coroutine.create(
+-- 		function()
+-- 			local pp = _ENV.CS.UnityEngine.PlayerPrefs
+-- 			local userID = pp.GetString("userID", "")
+-- 			local loadReply = {replayRecordBytes = record}
+-- 			local chairID = 0
+-- 			singleton:tryEnterReplayRoom(userID, loadReply, chairID)
+-- 		end
+-- 	)
+
+-- 	local r, err = coroutine.resume(co)
+-- 	if not r then
+-- 		logger.error(debug.traceback(co, err))
+-- 	end
+-- end
+
 local function testReplay(replayData)
 	local singletonMod = require("scripts/singleton")
 	local singleton = singletonMod.getSingleton()
@@ -103,7 +124,6 @@ local function goTestReplay()
 	local recordID = "536c779e-0f5c-4b6a-9364-42da53817c1c"
 	local url = "http://localhost:3001/game/uuid/support/exportRR?account=linguohua&password=jFPwopNA&recordID="
 	url = url .. recordID
-
 	local CS = _ENV.CS
 	hh.get(
 		win,
@@ -149,6 +169,8 @@ local function main()
 		elseif json.gameType == "2" then
 			testCreateUI()
 		elseif json.gameType == "3" then
+			--goReplay(json.record)
+			--goTestReplay()
 			-- testRecordUI()
 			goTestReplay()
 		elseif json.gameType == "4" then
