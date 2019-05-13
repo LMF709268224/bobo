@@ -3,9 +3,11 @@
 local RunFastRuleView = {}
 
 local logger = require "lobby/lcore/logger"
+local rapidJson = require("rapidjson")
+local CS = _ENV.CS
 
 --记录键值
--- local RecordKey = "createRoomView"
+local RecordKey = "GZRule"
 local runFast = 8
 local rules = {
     ["roomType"] = runFast,
@@ -44,7 +46,6 @@ local configTable = {
 function RunFastRuleView.bindView(newRoomView)
     RunFastRuleView.unityViewNode = newRoomView.unityViewNode:GetChild("gzRule")
     RunFastRuleView.newRoomView = newRoomView
-    RunFastRuleView.priceCfg = newRoomView.priceCfgs[tostring(rules.roomType)]
 
     RunFastRuleView:initAllView()
 
@@ -56,34 +57,30 @@ function RunFastRuleView.bindView(newRoomView)
     )
 end
 
+function RunFastRuleView:saveRule()
+    logger.debug("RunFastRuleView:saveRule()")
+    local key = {}
+    -- 局数
+    key[1] = RunFastRuleView:getToggleIndex(RunFastRuleView.toggleCount)
+    -- 支付
+    key[2] = RunFastRuleView:getToggleIndex(RunFastRuleView.togglePay)
+
+    local json = rapidJson.encode(key)
+    logger.debug("RunFastRuleView:saveRule() ,key = ", key)
+    local pp = CS.UnityEngine.PlayerPrefs
+    pp.SetString(RecordKey, json)
+end
+
 function RunFastRuleView:initAllView()
     local consume = self.unityViewNode:GetChild("consumeCom")
     self.consumeText = consume:GetChild("consumeText")
-
-    -- 支付
-    self.togglePay = {}
-    self.togglePay[1] = self.unityViewNode:GetChild("ownerPayButton")
-    self.togglePay[2] = self.unityViewNode:GetChild("aapPayButton")
-    self.togglePay[1].selected = true
-    self.togglePay[1].onClick:Set(
-        function()
-            self.togglePay[2].selected = false
-            self:updateComsumer()
-        end
-    )
-    self.togglePay[2].onClick:Set(
-        function()
-            self.togglePay[1].selected = false
-            self:updateComsumer()
-        end
-    )
 
     --局数
     self.toggleCount = {}
     self.toggleCount[1] = self.unityViewNode:GetChild("round4Button")
     self.toggleCount[2] = self.unityViewNode:GetChild("round8Button")
     self.toggleCount[3] = self.unityViewNode:GetChild("round16Button")
-    self.toggleCount[1].selected = true
+
     self.toggleCount[1].onClick:Set(
         function()
             self.toggleCount[2].selected = false
@@ -106,7 +103,37 @@ function RunFastRuleView:initAllView()
         end
     )
 
-    self:updateComsumer()
+    -- 支付
+    self.togglePay = {}
+    self.togglePay[1] = self.unityViewNode:GetChild("ownerPayButton")
+    self.togglePay[2] = self.unityViewNode:GetChild("aapPayButton")
+
+    self.togglePay[1].onClick:Set(
+        function()
+            self.togglePay[2].selected = false
+            self:updateComsumer()
+        end
+    )
+    self.togglePay[2].onClick:Set(
+        function()
+            self.togglePay[1].selected = false
+            self:updateComsumer()
+        end
+    )
+
+    local pp = _ENV.CS.UnityEngine.PlayerPrefs
+
+    if pp.HasKey(RecordKey) then
+        local jsonStr = pp.GetString(RecordKey)
+        if jsonStr and #jsonStr > 0 then
+            local key = rapidJson.decode(jsonStr)
+
+            self.toggleCount[key[1]].selected = true
+            self.togglePay[key[2]].selected = true
+        end
+    end
+
+    -- self:updateComsumer()
     -- self:updateCostDiamond()
 end
 
@@ -146,7 +173,6 @@ function RunFastRuleView:getRules()
     return rules
 end
 
-
 function RunFastRuleView:getCost(payType, playerNum, handNum)
     -- logError("payType:"..payType..", playerNum:"..playerNum..", handNum"..handNum)
     local key = "ownerPay" .. ":" .. tostring(playerNum) .. ":" .. handNum
@@ -159,7 +185,7 @@ function RunFastRuleView:getCost(payType, playerNum, handNum)
         return activityPriceCfg.discountCfg[key]
     end
 
-    if self.priceCfg.originalPriceCfg  ~= nil and type(self.priceCfg.originalPriceCfg) == "table" then
+    if self.priceCfg.originalPriceCfg ~= nil and type(self.priceCfg.originalPriceCfg) == "table" then
         return self.priceCfg.originalPriceCfg[key]
     end
 
@@ -167,7 +193,11 @@ function RunFastRuleView:getCost(payType, playerNum, handNum)
 end
 
 --更新消耗数量
-function RunFastRuleView:updateComsumer()
+function RunFastRuleView:updateComsumer(priceCfgs)
+    if priceCfgs ~= nil then
+        self.priceCfg = priceCfgs[tostring(rules.roomType)]
+    end
+
     local payIndex = self:getToggleIndex(self.togglePay)
     local payType = configTable["payType"][payIndex]
 
@@ -180,13 +210,13 @@ function RunFastRuleView:updateComsumer()
     local cost = self:getCost(payType, playerNumAcquired, handNum)
 
     if cost == nil then
-        logger.error("No price cfg found, payType:"..payType..", playerNumAcquired:"
-        ..playerNumAcquired..", handNum:")
+        logger.error(
+            "No price cfg found, payType:" .. payType .. ", playerNumAcquired:" .. playerNumAcquired .. ", handNum:"
+        )
     end
 
-    logger.debug("cost:"..cost)
+    logger.debug("cost:" .. cost)
     self.consumeText.text = cost
-
 end
 
 function RunFastRuleView:ToggleDefault(status, default)
@@ -200,8 +230,6 @@ end
 function RunFastRuleView:createRoom()
     logger.debug("RunFastRuleView:createRoom")
     self.newRoomView:createRoom(self:getRules())
-
-
 end
 
 return RunFastRuleView

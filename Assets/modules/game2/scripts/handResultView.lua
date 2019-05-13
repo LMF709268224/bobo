@@ -100,17 +100,17 @@ end
 -------------------------------------------
 function HandResultView:updateRoomData()
     --背景（输还是赢）
-    local en
-    if self.msgHandOver.endType ~= proto.mahjong.HandOverType.enumHandOverType_None then
-        if self.room:me().score.score >= 0 then
-            en = "Effects_jiemian_ying"
-        else
-            en = "Effects_jiemian_shu"
-        end
-    else
-        en = "Effects_jiemian_huangzhuang"
-    end
-    self.ani = animation.play("animations/" .. en .. ".prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
+    -- local effectName = "Effects_JieMian_ShengLi"
+    -- if self.msgHandOver.endType ~= proto.mahjong.HandOverType.enumHandOverType_None then
+    --     if self.room:me().score.score >= 0 then
+    --         effectName = "Effects_JieMian_ShiBai"
+    --     else
+    --         effectName = "Effects_JieMian_ShiBai"
+    --     end
+    -- else
+    --     effectName = "Effects_JieMian_ShiBai"
+    -- end
+    -- animation.play("animations/" .. effectName .. ".prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
 
     --日期时间
     local date
@@ -577,9 +577,7 @@ function HandResultView:onAgainButtonClick()
     if not room:isReplayMode() then
         room.host.mq:unblockNormal()
     end
-    if self.ani then
-        self.ani.setVisible(false)
-    end
+
     self.win:Hide()
     if self.msgHandOver.continueAble then
         self.room.host:sendPlayerReadyMsg()

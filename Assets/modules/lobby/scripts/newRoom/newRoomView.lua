@@ -16,6 +16,8 @@ local errHelper = require "lobby/lcore/lobbyErrHelper"
 local lobbyError = require "lobby/scripts/lobbyError"
 local CS = _ENV.CS
 
+local RecordKey = "GameIndex"
+
 function NewRoomView.new()
     if NewRoomView.unityViewNode then
         logger.debug("NewRoomView ---------------------")
@@ -38,9 +40,29 @@ function NewRoomView.new()
             end
         )
     end
+
+    local pp = _ENV.CS.UnityEngine.PlayerPrefs
+
+    if pp.HasKey(RecordKey) then
+        local gameIndex = pp.GetString(RecordKey)
+        if gameIndex and #gameIndex > 0 then
+            local gameList = NewRoomView.unityViewNode:GetChild("gamelist")
+            gameList.selectedIndex = gameIndex
+        end
+    end
+
     NewRoomView.progressBar = NewRoomView.unityViewNode:GetChild("downloadProgress")
     NewRoomView.progressBar.visible = false
 
+    local runFastRuleView = require "lobby/scripts/newRoom/runFastRuleView"
+    runFastRuleView.bindView(NewRoomView)
+
+    local dfRuleView = require "lobby/scripts/newRoom/dfRuleView"
+    dfRuleView.bindView(NewRoomView)
+
+    NewRoomView.runFastRuleView = runFastRuleView
+    NewRoomView.dfRuleView = dfRuleView
+    NewRoomView.win:Show()
     -- 拉取价格配置后，再初始化界面
     NewRoomView:loadPriceCfgs(
         function(priceCfgs)
@@ -48,8 +70,6 @@ function NewRoomView.new()
             NewRoomView:initAllView()
         end
     )
-
-    NewRoomView.win:Show()
 end
 
 function NewRoomView:initAllView()
@@ -60,45 +80,46 @@ function NewRoomView:initAllView()
         end
     )
 
-    local runFastRuleView = require "lobby/scripts/newRoom/runFastRuleView"
-    runFastRuleView.bindView(self)
-
-    local dfRuleView = require "lobby/scripts/newRoom/dfRuleView"
-    dfRuleView.bindView(self)
+    self.runFastRuleView:updateComsumer(self.priceCfgs)
+    self.dfRuleView:updateComsumer(self.priceCfgs)
 end
 
 function NewRoomView:loadPriceCfgs(cb)
-        -- 拉取价格配置表
-        local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
-        local loadRoomPriceCfgsURL = urlpathsCfg.rootURL .. urlpathsCfg.loadRoomPriceCfgs .. "?&tk=" .. tk
-        httpHelper.get(
-            self.unityViewNode,
-            loadRoomPriceCfgsURL,
-            function(req, resp)
-                if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
-                    local httpError = errHelper.dumpHttpRespError(resp)
-                    if httpError == nil then
-                        local rapidjson = require("rapidjson")
-                        local priceCfgs = rapidjson.decode(resp.Data)
-                        logger.debug("priceCfgs:", priceCfgs)
-                        if cb ~= nil then
-                            cb(priceCfgs)
-                        end
-
+    -- 拉取价格配置表
+    local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
+    local loadRoomPriceCfgsURL = urlpathsCfg.rootURL .. urlpathsCfg.loadRoomPriceCfgs .. "?&tk=" .. tk
+    -- 加滚动条
+    dialog.showDialog("正在加载价格配置......")
+    local win = dialog.win
+    httpHelper.get(
+        win,
+        loadRoomPriceCfgsURL,
+        function(req, resp)
+            win:Hide()
+            if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
+                local httpError = errHelper.dumpHttpRespError(resp)
+                if httpError == nil then
+                    local rapidjson = require("rapidjson")
+                    local priceCfgs = rapidjson.decode(resp.Data)
+                    logger.debug("priceCfgs:", priceCfgs)
+                    if cb ~= nil then
+                        cb(priceCfgs)
                     end
-                    resp:Dispose()
-                else
-                   local err = errHelper.dumpHttpReqError(req)
-                   if err then
-                       dialog.showDialog(err.msg,
-                            function()
-                            end
-                        )
-                   end
                 end
-                req:Dispose()
+                resp:Dispose()
+            else
+                local err = errHelper.dumpHttpReqError(req)
+                if err then
+                    dialog.showDialog(
+                        err.msg,
+                        function()
+                        end
+                    )
+                end
             end
-        )
+            req:Dispose()
+        end
+    )
 end
 
 function NewRoomView:enterGame(roomInfo)
@@ -129,7 +150,11 @@ function NewRoomView:doUpgrade(ruleJson)
         if err == nil then
             self:createRoom(ruleJson)
         else
-            dialog.showDialog(err.msg,function() end)
+            dialog.showDialog(
+                err.msg,
+                function()
+                end
+            )
         end
     end
 
@@ -141,29 +166,30 @@ function NewRoomView:constructQueryString(ruleJson)
     local modName = ruleJson.modName
     local lobbyVersion = require "lobby/version"
     local modVersionStr = CS.NetHelper.GetModVersion(modName)
-    logger.debug("modVersionStr:"..modVersionStr)
-	local qs = "qMod=" .. urlEncoder.encode(modName) -- current module name
-	qs = qs .. "&modV=" .. urlEncoder.encode(modVersionStr) -- current module version
-	qs = qs .. "&csVer=" .. urlEncoder.encode(CS.Version.VER_STR) -- csharp core version
-	qs = qs .. "&lobbyVer=" .. urlEncoder.encode(lobbyVersion.VER_STR) -- lobby version
-	qs = qs .. "&operatingSystem=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.operatingSystem) -- system name
-	qs = qs .. "&operatingSystemFamily=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.operatingSystemFamily:ToString())
-	-- system family
-	qs = qs .. "&deviceUniqueIdentifier=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.deviceUniqueIdentifier)
-	-- mobile device id
-	qs = qs .. "&deviceName=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.deviceName) -- device name
-	qs = qs .. "&deviceModel=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.deviceModel) -- device mode
+    logger.debug("modVersionStr:" .. modVersionStr)
+    local qs = "qMod=" .. urlEncoder.encode(modName) -- current module name
+    qs = qs .. "&modV=" .. urlEncoder.encode(modVersionStr) -- current module version
+    qs = qs .. "&csVer=" .. urlEncoder.encode(CS.Version.VER_STR) -- csharp core version
+    qs = qs .. "&lobbyVer=" .. urlEncoder.encode(lobbyVersion.VER_STR) -- lobby version
+    qs = qs .. "&operatingSystem=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.operatingSystem) -- system name
+    qs =
+        qs .. "&operatingSystemFamily=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.operatingSystemFamily:ToString())
+    -- system family
+    qs = qs .. "&deviceUniqueIdentifier=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.deviceUniqueIdentifier)
+    -- mobile device id
+    qs = qs .. "&deviceName=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.deviceName) -- device name
+    qs = qs .. "&deviceModel=" .. urlEncoder.encode(CS.UnityEngine.SystemInfo.deviceModel) -- device mode
     qs = qs .. "&network=" .. urlEncoder.encode(CS.NetHelper.NetworkTypeString()) -- device network type
-    qs = qs .. "&forceUpgrade="..urlEncoder.encode(tostring(lenv.forceUseUpgrade)) -- if force upgrade
-    qs = qs .. "&tk=".. urlEncoder.encode(CS.UnityEngine.PlayerPrefs.GetString("token", ""))  -- tk
-	return qs
+    qs = qs .. "&forceUpgrade=" .. urlEncoder.encode(tostring(lenv.forceUseUpgrade)) -- if force upgrade
+    qs = qs .. "&tk=" .. urlEncoder.encode(CS.UnityEngine.PlayerPrefs.GetString("token", "")) -- tk
+    return qs
 end
 
 function NewRoomView:createRoom(ruleJson)
     logger.debug("NewRoomView:createRoom, ruleJson:", ruleJson)
     -- local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
     local queryString = self:constructQueryString(ruleJson)
-    local url = urlpathsCfg.rootURL .. urlpathsCfg.createRoom .. "?"..queryString
+    local url = urlpathsCfg.rootURL .. urlpathsCfg.createRoom .. "?" .. queryString
     local jsonString = rapidJson.encode(ruleJson)
     local createRoomReq = {
         config = jsonString
@@ -184,13 +210,14 @@ function NewRoomView:createRoom(ruleJson)
                 elseif createRoomRsp.result == proto.lobby.MsgError.ErrIsNeedUpdate then
                     self:doUpgrade(ruleJson)
                 else
-                   local errMsg = lobbyError[createRoomRsp.result]
-                   if errMsg ~= nil then
-                      dialog.showDialog(errMsg,
-                        function()
-                        end
-                      )
-                   end
+                    local errMsg = lobbyError[createRoomRsp.result]
+                    if errMsg ~= nil then
+                        dialog.showDialog(
+                            errMsg,
+                            function()
+                            end
+                        )
+                    end
                 end
             else
                 logger.debug("create room error : ", req.State)
@@ -199,7 +226,17 @@ function NewRoomView:createRoom(ruleJson)
     )
 end
 
+function NewRoomView:saveRule()
+    local pp = CS.UnityEngine.PlayerPrefs
+    local gameList = NewRoomView.unityViewNode:GetChild("gamelist")
+    local gameIndex = gameList.selectedIndex
+    pp.SetString(RecordKey, gameIndex)
+end
+
 function NewRoomView:destroy()
+    self:saveRule()
+    self.runFastRuleView:saveRule()
+    self.dfRuleView:saveRule()
     self.win:Hide()
     self.win:Dispose()
     self.unityViewNode = nil

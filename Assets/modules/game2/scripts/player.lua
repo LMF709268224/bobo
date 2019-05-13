@@ -23,16 +23,6 @@ local SoundDef = {
     Common = "effect_common"
 }
 
---按钮定义
-Player.ButtonDef = {
-    Chow = "chi",
-    Pong = "peng",
-    Kong = "gang",
-    Ting = "ting",
-    Skip = "guo",
-    Hu = "hu",
-    Zhua = "zhua"
-}
 function Player.new(userID, chairID, room)
     local player = {userID = userID, chairID = chairID, room = room}
     setmetatable(player, mt)
@@ -111,7 +101,7 @@ function Player:sortHands(excludeLast)
 end
 
 function Player:addDicardedTile(tileID)
-    -- print("llwant, add discard:" .. tileID .. ",chairID:" .. self.chairID)
+    print("llwant, add discard:" .. tileID .. ",chairID:" .. self.chairID)
     table.insert(self.tilesDiscarded, tileID)
 end
 
@@ -379,6 +369,7 @@ function Player:playZhuaPaiAnimation()
         self.playerView:hideHands()
         self.playerView:showHandsForMe(true)
     end
+    print("播放抓牌，。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。")
     --播放对应音效
     self:playOperationSound(SoundDef.DrawCard)
 
@@ -396,7 +387,7 @@ function Player:playZiMoAnimation()
     -- if self.playerView.viewChairID == 2 or self.playerView.viewChairID == 4 then
     --     effect = dfConfig.EFF_DEFINE.SUB_ZI_ZIMO .. "2"
     -- end
-    self.playerView:playerOperationEffect("Effects_zi_zimo")
+    -- self.playerView:playerOperationEffect(effect)
 end
 
 ------------------------------------
@@ -405,7 +396,7 @@ end
 function Player:playDianPaoAnimation()
     --播放对应音效
     self:playOperationSound(SoundDef.WinChuck)
-    self.playerView:playerOperationEffect("Effrcts_zi_dianpao")
+    -- self.playerView:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_DIANPAO)
 end
 
 ------------------------------------
@@ -634,7 +625,7 @@ function Player:onFinalDrawBtnClick(_)
     if self.allowedActionMsg ~= nil then
         local actionMsg = {}
         actionMsg.qaIndex = self.allowedActionMsg.qaIndex
-        actionMsg.action = mjproto.ActionType.enumActionType_CustomB
+        actionMsg.action = mjproto.ActionType.enumActionType_AccumulateWin
         self:sendActionMsg(actionMsg)
     end
 
@@ -850,7 +841,7 @@ function Player:showMultiOps(datas, actionMsg2, exp)
             function(_)
                 -- local curOpIndex = tonumber(obj.name)
                 self:sendActionMsg(actionMsg)
-                self.playerView.hideOperationButtons()
+                self.playerView.operationButtonsRoot.visible = false
                 self.playerView.meldOpsPanel.visible = false
             end
         )

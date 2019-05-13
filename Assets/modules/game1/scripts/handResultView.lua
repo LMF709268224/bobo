@@ -98,11 +98,11 @@ function HandResultView:updateRoomData()
     --背景（输还是赢）
     --endType == enumHandOverType_None 表示流局 也就是没有人胡牌
     --if self.msgHandOver.endType ~= pokerfacerf.enumHandOverType_None then
-    local en = "Effects_JieMian_ShiBai"
+    local effectName = "Effects_JieMian_ShiBai"
     if self.room:me().score.score > 0 then
-        en = "Effects_JieMian_ShengLi"
+        effectName = "Effects_JieMian_ShengLi"
     end
-    self.ani = animation.play("animations/" .. en .. ".prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
+    animation.play("animations/" .. effectName .. ".prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
 
     --日期时间
     local date
@@ -348,9 +348,7 @@ function HandResultView:onAgainButtonClick()
     if not room:isReplayMode() then
         room.host.mq:unblockNormal()
     end
-    if self.ani then
-        self.ani.setVisible(false)
-    end
+
     self.win:Hide()
     if self.msgHandOver.continueAble then
         self.room.host:sendPlayerReadyMsg()

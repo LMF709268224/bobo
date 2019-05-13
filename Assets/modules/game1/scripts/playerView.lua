@@ -333,11 +333,9 @@ end
 --从根节点上隐藏所有
 ------------------------------------
 function PlayerView:hideAll()
-    -- logger.debug("从根节点上隐藏所有----- : ", self.head)
-    -- for _, v in ipairs(self.head) do
-    --     logger.debug("从根节点上隐藏所有 : ", v)
-    --     v.visible = false
-    -- end
+    for _, v in ipairs(self.head) do
+        v.visible = false
+    end
     if self.handsNumber then
         self.handsNumber.text = ""
     end
