@@ -20,14 +20,8 @@ local mjproto = proto.mahjong
 function PlayerView.new(viewUnityNode, viewChairID)
     local playerView = {}
     setmetatable(playerView, mt)
-    -- 先找到牌相关的节点
-    -- 现在的牌相关是在一个独立的prefab里面
-    -- 这个prefab在roomView构造是已经加载进来
-    -- 此处找到该节点
     -- 这里需要把player的chairID转换为游戏视图中的chairID，这是因为，无论当前玩家本人
     -- 的chair ID是多少，他都是居于正中下方，左手是上家，右手是下家，正中上方是对家
-    -- 根据prefab中的位置，正中下方是Cards/1，左手是Cards/4，右手是Cards/2，正中上方是Cards/3
-    -- local myTilesNode = viewUnityNode.transform:Find("Cards/" .. viewChairID)
     local view = viewUnityNode:GetChild("player" .. viewChairID)
     if (viewChairID == 1) then
         playerView.operationPanel = viewUnityNode:GetChild("operationPanel")
@@ -41,30 +35,9 @@ function PlayerView.new(viewUnityNode, viewChairID)
     playerView.myView = view
     playerView.aniPos = view:GetChild("aniPos")
 
-    -- 先找到牌相关的节点
-    -- 现在的牌相关是在一个独立的prefab里面
-    -- 这个prefab在roomView构造是已经加载进来
-    -- 此处找到该节点
-    -- 这里需要把player的chairID转换为游戏视图中的chairID，这是因为，无论当前玩家本人
-    -- 的chair ID是多少，他都是居于正中下方，左手是上家，右手是下家，正中上方是对家
-    -- 根据prefab中的位置，正中下方是Cards/1，左手是Cards/4，右手是Cards/2，正中上方是Cards/3
-    -- local myTilesNode = viewUnityNode.transform:Find("Cards/" .. viewChairID)
-    -- playerView.tilesRoot = myTilesNode
     -- 打出的牌放大显示
     playerView.discardTips = view:GetChild("discardTip")
     playerView.discardTipsTile = playerView.discardTips:GetChild("card")
-    -- playerView.discardTipsYellow = playerView.discardTips:Find("Card/Image")
-
-    --特效提示位置
-    -- playerView.operationTip = viewUnityNode.transform:Find("OpTips/" .. viewChairID)
-
-    --拖动效果
-    -- playerView.dragEffect = viewUnityNode.transform:Find("Effects_tuodong")
-
-    --头像信息
-    -- playerView.infoGroup = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID)
-    -- playerView.infoGroupEmpty = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID .. "empty")
-    -- playerView.infoGroupPos = viewUnityNode.transform:Find("PlayInfoGroup/" .. viewChairID .. "pos")
 
     -- 头像相关
     playerView:initHeadView()
@@ -75,50 +48,6 @@ function PlayerView.new(viewUnityNode, viewChairID)
     -- playerView:initHeadPopup()
 
     return playerView
-end
-
-function PlayerView:initMeld()
-    -- meld面子牌组，一共4组，最多也是4组，因为每一组3个牌，4组已经12个，剩下2张是雀头
-    local meldsMap = {
-        --自己，左中右
-        {1, 4, 3, 2},
-        {2, 1, 4, 3},
-        {3, 2, 1, 4},
-        {4, 3, 2, 1}
-    }
-    self.meldsMap = meldsMap
-
-    -- local meldViews = {}
-    -- local myMeldsNode = self.myView:GetChild("hands")
-    -- self.meldsRoot = myMeldsNode
-    -- for i = 1, 4 do
-    -- local h = myMeldsNode.transform:Find(tostring(i))
-    -- local meldView = {root = nil}
-    -- -- meld内其他节点
-    -- meld.t1 = h.transform:Find("1")
-    -- meld.t2 = h.transform:Find("2")
-    -- meld.t3 = h.transform:Find("3")
-    -- meld.t4 = h.transform:Find("4")
-
-    --位置
-    -- local pos2 = myMeldsNode.transform:Find(tostring(i) .. "pos")
-    -- meldView.localPosition = pos2.localPosition
-    -- meldView.mountNode = pos2
-
-    -- meldView.prefabItems = myMeldsNode.transform:Find("kong")
-    -- meldView.prefabItems = {}
-    -- local mm = meldsMap[viewChairID]
-    -- --杠
-    -- meldView.prefabItems[mm[1]] = myMeldsNode.transform:Find("kong")
-    -- --左边
-    -- meldView.prefabItems[mm[2]] = myMeldsNode.transform:Find("left")
-    -- --右边
-    -- meldView.prefabItems[mm[4]] = myMeldsNode.transform:Find("right")
-    -- --对家
-    -- meldView.prefabItems[mm[3]] = myMeldsNode.transform:Find("front")
-    --     meldViews[i] = meldView
-    -- end
-    -- self.meldViews = meldViews
 end
 
 function PlayerView:initFlowers()
@@ -186,8 +115,8 @@ function PlayerView:initHands()
                     self:onHandTileBtnClick(obj, i)
                 end
             )
+            self:onDrag(card, i)
         end
-        -- self:onDrag(h, i)
     end
 
     self.hands = hands
@@ -789,11 +718,7 @@ end
 function PlayerView:mountMeldImage(meldView, msgMeld)
     local player = self.player
     local view = player.room:getPlayerViewByChairID(msgMeld.contributor)
-    -- local mm = self.meldsMap[self.viewChairID]
-    -- local direction = mm[view.viewChairID]
-    -- -- self.viewChairID 吃碰杠者
-    -- -- view.viewChairID 被吃碰杠者
-    -- local ischi = false
+
     local t1 = meldView:GetChild("n1")
     local t2 = meldView:GetChild("n2")
     local t3 = meldView:GetChild("n3")
@@ -1081,11 +1006,17 @@ end
 --拖动出牌事件
 -------------------------------------------------
 function PlayerView:onDrag(dragGo, index)
-    local rect
-    local startPos
-    local enable
+    local startPos = {x = dragGo.x, y = dragGo.y}
+    local enable = false
     local clickCtrl
-    local siblingIndex
+    -- local siblingIndex
+    dragGo.draggable = true
+
+    local x1 = dragGo.x - dragGo.width * 0.5
+    local x2 = dragGo.x + dragGo.width * 0.5
+    local y1 = dragGo.y - dragGo.height * 0.5
+    local y2 = dragGo.y + dragGo.height * 0.5
+    local rect = {x1, x2, y1, y2}
 
     --可否拖动
     local function dragable()
@@ -1101,12 +1032,12 @@ function PlayerView:onDrag(dragGo, index)
     end
 
     --检测拖动范围时候合法
-    local function pointIsInRect(pos)
+    local function pointIsInRect(x, y)
         if rect == nil then
             return false
         end
 
-        if pos.x > rect[1] and pos.x < rect[2] and pos.y > rect[3] and pos.y < rect[4] then
+        if x > rect[1] and x < rect[2] and y > rect[3] and y < rect[4] then
             return true
         else
             return false
@@ -1114,83 +1045,68 @@ function PlayerView:onDrag(dragGo, index)
     end
 
     --附加拖动效果
-    local function attachEffect(obj)
-        self.dragEffect:SetParent(obj)
+    local function attachEffect(_)
+        -- self.dragEffect:SetParent(obj)
         -- self.dragEffect.localPosition = Vector3(0, 0, 0)
-        self.dragEffect.visible = true
+        -- self.dragEffect.visible = true
     end
 
     --去掉拖动效果
     local function detachEffect()
-        self.dragEffect.visible = false
+        -- self.dragEffect.visible = false
     end
 
-    dragGo.onBeginDrag = function(obj, _)
-        --print("llwant, darg onbegindrag")
-        if not enable then
-            return
+    dragGo.onDragStart:Set(
+        function(_)
+            enable = dragable()
+            --关闭拖动特效
+            detachEffect()
+
+            if not enable then
+                return
+            end
+            self:restoreHandPositionAndClickCount(index)
+            attachEffect(dragGo)
         end
+    )
 
-        self:restoreHandPositionAndClickCount(index)
-        attachEffect(obj)
-    end
-
-    dragGo.onDown = function(_, _)
-        enable = dragable()
-        --关闭拖动特效
-        detachEffect()
-
-        if not enable then
-            startPos = dragGo.localPosition
-            return
+    dragGo.onDragMove:Set(
+        function(_)
+            if not enable then
+                dragGo.x = startPos.x
+                dragGo.y = startPos.y
+                return
+            end
+            -- obj.position = pos
         end
-        siblingIndex = dragGo:GetSiblingIndex()
+    )
 
-        --print("llwant, drag ondown")
-        local x1 = dragGo.localPosition.x - dragGo.sizeDelta.x * 0.5
-        local x2 = dragGo.localPosition.x + dragGo.sizeDelta.x * 0.5
-        local y1 = dragGo.localPosition.y - dragGo.sizeDelta.y * 0.5
-        local y2 = dragGo.localPosition.y + dragGo.sizeDelta.y * 0.5
-        rect = {x1, x2, y1, y2}
+    dragGo.onDragEnd:Set(
+        function(_)
+            if not enable then
+                return
+            end
 
-        startPos = dragGo.localPosition
-        dragGo:SetAsLastSibling()
-    end
-
-    dragGo.onMove = function(_, _, _)
-        if not enable then
-            dragGo.localPosition = startPos
-            return
-        end
-        -- obj.position = pos
-    end
-
-    dragGo.onEndDrag = function(_, _)
-        if not enable then
-            return
-        end
-
-        --拖牌结束立即不显示
-        dragGo.visible = false
-
-        dragGo:SetSiblingIndex(siblingIndex)
-        --print("llwant, darg onenddrag")
-        detachEffect()
-        if pointIsInRect(dragGo.localPosition) then
-            dragGo.visible = true
-            dragGo.localPosition = startPos
-        else
-            --重置打出的牌位置（TODO：需要测试当网络不好的情况下onPlayerDiscardTile发送数据失败，界面刷新情况）
+            --拖牌结束立即不显示
             dragGo.visible = false
-            dragGo.localPosition = startPos
-
-            --判断可否出牌
-            if not self.player.waitSkip then
-                self.player:onPlayerDiscardTile(clickCtrl.tileID)
-                self:clearAllowedActionsView()
+            detachEffect()
+            if pointIsInRect(dragGo.x, dragGo.y) then
+                dragGo.visible = true
+                dragGo.x = startPos.x
+                dragGo.y = startPos.y
+            else
+                --重置打出的牌位置（TODO：需要测试当网络不好的情况下onPlayerDiscardTile发送数据失败，界面刷新情况）
+                dragGo.visible = false
+                dragGo.x = startPos.x
+                dragGo.y = startPos.y
+                --判断可否出牌
+                if not self.player.waitSkip then
+                    self.player:onPlayerDiscardTile(clickCtrl.tileID)
+                    self:clearAllowedActionsView()
+                end
             end
         end
-    end
+    )
 end
 
 -------------------------------------------------

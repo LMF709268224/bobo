@@ -13,17 +13,9 @@ local chatView = require "lobby/scripts/chat/chatView"
 local prompt = require "lobby/lcore/prompt"
 local tileMounter = require("scripts/tileImageMounter")
 local animation = require "lobby/lcore/animations"
+local CS = _ENV.CS
 
 local mt = {__index = RoomView}
--- local dfPath = "GuanZhang/Script/"
--- local tileMounter = require(dfPath .. "dfMahjong/tileImageMounter")
--- local dfConfig = require(dfPath .. "dfMahjong/dfConfig")
--- local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
--- local userDataModule = g_ModuleMgr:GetModule(ModuleName.DATASTORAGE_MODULE)
--- local viewModule = g_ModuleMgr:GetModule(ModuleName.VIEW_MODULE)
--- local dispatcher = g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE)
--- local configModule = g_ModuleMgr:GetModule("ConfigModule")
--- local dfCompatibleAPI = require(dfPath .. "dfMahjong/dfCompatibleAPI")
 
 function RoomView.new(room)
     local roomView = {}
@@ -81,17 +73,8 @@ function RoomView.new(room)
             roomView:onDissolveClick()
         end
     )
-    -- 聊天
-    -- roomView:iniChatButtons()
-    -- -- 语音
-    -- roomView:initVoiceButton()
     -- --房间号
     roomView:initRoomNumber()
-    -- --手机基本信息
-    -- roomView:initPhoneInfo()
-    -- --房间温馨提示
-    -- roomView:initRoomTip()
-
     --房间状态事件初始化
     roomView:initRoomStatus()
 
@@ -99,152 +82,6 @@ function RoomView.new(room)
 
     roomView:initTingData()
 
-    -- -- 房间规则
-    -- roomView:initRoomRule()
-
-    --注册消息通知
-    --notificationCenter:register(self, self.OnMessage, Notifications.OnInGameChatMessage)
-    --notificationCenter:register(self, OnPlayerChat, "PlayerChat") --收到聊天信息
-
-    -- if room:isReplayMode() then
-    --     local extendFunc = unityViewNode.transform:Find("ExtendFuc")
-    --     extendFunc.visible = false
-
-    --     --roomView.replayUnityViewNode = ViewManager.Open("LZVideoView")
-
-    --     local videoView =
-    --         viewModule:CreatePanel(
-    --         {
-    --             luaPath = dfPath .. "View/LZVideoView",
-    --             resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/LZVideoView.prefab",
-    --             parentNode = unityViewNode.transform,
-    --             superClass = unityViewNode
-    --         }
-    --     )
-    --     local uiDepth = videoView:GetComponent("UIDepth")
-    --     if not uiDepth then
-    --         uiDepth = videoView:AddComponent(UIDepth)
-    --     end
-    --     uiDepth.canvasOrder = unityViewNode.order + 3
-    --     roomView.replayUnityViewNode = unityViewNode
-
-    --     local exitBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ExitButt")
-    --     local ruleBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/RuleBtn")
-    --     local resumeBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/PlayButt")
-    --     local pauseBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/StopButt")
-    --     local speedUPBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/SpeedUp")
-    --     local speedDownBtn = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs/SpeedDown")
-    --     local ButtObjsObj = roomView.replayUnityViewNode.transform:Find("LZVideoView/ButtObjs")
-
-    --     roomView.replayUnityViewNode:AddClick(
-    --         "LZVideoView/BackGround/bg00",
-    --         function()
-    --             ButtObjsObj:SetActive(not ButtObjsObj.activeSelf)
-    --         end
-    --     )
-
-    --     roomView.resumeBtn = resumeBtn
-    --     roomView.pauseBtn = pauseBtn
-    --     resumeBtn.visible = false
-    --     pauseBtn.visible = false
-
-    --     local dfReplay = room.dfReplay
-    --     roomView.replayUnityViewNode:AddClick(
-    --         exitBtn,
-    --         function()
-    --             dfReplay:onExitReplay()
-    --         end
-    --     )
-    --     roomView.replayUnityViewNode:AddClick(
-    --         ruleBtn,
-    --         function()
-    --             -- 回播的时候,放在messagebox 里面
-    --             -- roomView:showRuleView()
-    --             viewModule:OpenMsgBox(
-    --                 {
-    --                     luaPath = "GuanZhang.Script.View.RoomRuleMsgBox",
-    --                     resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/RoomRuleMsgBox.prefab"
-    --                 },
-    --                 room:getRoomConfig()
-    --             )
-    --             -- local rule = require("RuleComponent.Script.RuleModule")
-    --             -- local ruleModule = g_ModuleMgr:GetModule(rule.moduleName)
-    --             -- if not ruleModule then
-    --             --     g_ModuleMgr:AddModule(rule.moduleName, rule)
-    --             -- end
-    --             -- local dispatcher = g_ModuleMgr:GetModule(ModuleName.DISPATCH_MODULE)
-    --             -- dispatcher:dispatch("OPEN_RULE_VIEW")
-    --         end
-    --     )
-    --     roomView.replayUnityViewNode:AddClick(
-    --         pauseBtn,
-    --         function()
-    --             dfReplay:onPause()
-    --         end
-    --     )
-    --     roomView.replayUnityViewNode:AddClick(
-    --         resumeBtn,
-    --         function()
-    --             dfReplay:onPauseResume()
-    --         end
-    --     )
-    --     roomView.replayUnityViewNode:AddClick(
-    --         speedUPBtn,
-    --         function()
-    --             dfReplay:increaseSpeed()
-    --         end
-    --     )
-    --     roomView.replayUnityViewNode:AddClick(
-    --         speedDownBtn,
-    --         function()
-    --             dfReplay:decreaseSpeed()
-    --         end
-    --     )
-
-    --     -- 战绩播放恢复界面
-    --     roomView.replayUnityViewNode.OnResume = function()
-    --         --g_commonModule:ShowTip("roomView.replayUnityViewNode.OnResume")
-    --         local WeixinInvitedContent = Native.GetWeixinInvitedContent()
-    --         if (WeixinInvitedContent and #WeixinInvitedContent > 0) then
-    --             local userData = g_dataModule:GetUserData()
-    --             local isWeixinInvited = userData:getWeixinInvited()
-    --             if isWeixinInvited == false then
-    --                 isWeixinInvited = true
-    --                 userData:setWeixinInvited(isWeixinInvited)
-    --             end
-    --             dfReplay:onExitReplay()
-    --         end
-    --     end
-    -- end
-
-    -- roomView:handleOnbackPress()
-
-    -- if NeedHideForIos then
-    --     roomView.roomNumberObject.localPosition = Vector3(0, 42, 0)
-    -- end
-
-    -- local function ruleViewCountdown()
-    --     --打开页面
-    --     roomView:showRuleView()
-    --     --重置定时器
-    --     unityViewNode:CancelDelayRun(self.ruleViewDelay)
-    --     self.ruleViewDelay = unityViewNode:DelayRun(2,
-    --         function()
-    --             roomView:closeRuleView()
-    --         end
-    --     )
-    -- end
-
-    -- if not room:isReplayMode() then
-    --     unityViewNode:DelayRun(
-    --         0.8,
-    --         function(...)
-    --             ruleViewCountdown()
-    --         end
-    --     )
-    -- end
-
-    -- logger.debug("进入子游戏关张房间完成，当前系统时间：", os.time())
     return roomView
 end
 
@@ -284,44 +121,9 @@ function RoomView:hide2ReadyButton()
 end
 
 function RoomView:openChatView()
-    -- local singleton = require(dfPath .. "dfMahjong/dfSingleton")
-    -- local instance = singleton:getSingleton()
-    -- local layer =
-    --     viewModule:CreatePanel(
-    --     {
-    --         luaPath = "ChatComponent.Script.ChatView",
-    --         resPath = "Component/ChatComponent/Bundle/prefab/ChatPanelInGame.prefab",
-    --         superClass = self.unityViewNode,
-    --         parentNode = self.unityViewNode.transform
-    --     },
-    --     instance,
-    --     dfConfig.CommonLanguage
-    -- )
-    -- local uiDepth = layer:GetComponent("UIDepth")
-    -- if not uiDepth then
-    --     uiDepth = layer:AddComponent(UIDepth)
-    -- end
-    -- uiDepth.canvasOrder = self.unityViewNode.order + 2
-    -- return layer
 end
 
 function RoomView:iniChatButtons()
-    -- self.chatTextBtn = self.unityViewNode.transform:Find("ExtendFuc/RightBtns/chat_text_btn")
-    -- --self.PengBtn.visible = false
-    -- -- initChatPanelInGame()
-    -- self.chatView = self:openChatView()
-    -- self.chatView:Hide()
-    -- self.unityViewNode:AddClick(
-    --     self.chatTextBtn,
-    --     function()
-    --         if not self.chatView then
-    --             self.chatView = self:openChatView()
-    --         else
-    --             self.chatView:Show()
-    --         end
-    --         --ShowInGameChatPanel(self.unityViewNode)
-    --     end
-    -- )
 end
 
 --隐藏游戏内聊天面板
@@ -354,36 +156,12 @@ function RoomView:onExitButtonClicked()
 end
 
 function RoomView:showRuleView()
-    -- if self.room.disbandVoteView then
-    --     return
-    -- end
-    -- Util.SaveToPlayerPrefs("isOpenRuleMsgBox", "1")
-    -- self.ruleTipNode.visible = false
-    -- self.unityViewNode:StopAction(self.fingerMoveAction1)
-    -- self.RoomRuleMsgBox =
-    --     viewModule:OpenMsgBox(
-    --     {
-    --         luaPath = "GuanZhang.Script.View.RoomRuleMsgBox",
-    --         resPath = "GameModule/GuanZhang/_AssetsBundleRes/prefab/bund2/RoomRuleMsgBox.prefab"
-    --     },
-    --     self.room:getRoomConfig()
-    -- )
 end
 
 function RoomView:closeRuleView()
     if self.RoomRuleMsgBox then
         self.RoomRuleMsgBox:Close()
     end
-end
-
-function RoomView:ShowGameRuleView()
-    -- viewModule:OpenMsgBox(
-    --     {
-    --         luaPath = "RuleComponent.Script.RuleView",
-    --         resPath = "Component/RuleComponent/Bundle/prefab/RuleView.prefab"
-    --     },
-    --     10045
-    -- )
 end
 
 ----------------------------------------------
@@ -420,33 +198,11 @@ end
 -- 播放牌局开始动画
 ----------------------------------------------
 function RoomView:gameStartAnimation()
-    --开始骰子动画 关闭所有的弹窗
-    -- if not self.room.disbandVoteView then
-    --     viewModule:CloseAllMsgBox()
-    -- end
-    -- local waitCo = coroutine.running()
-    -- dfCompatibleAPI:soundPlay("effect/effect_paijukaishi")
-    --开局头像动画播放
-    --self:playInfoGroupAnimation()
-    -- local ani = Animator.Play(
-    --     dfConfig.PATH.EFFECTS .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_DUIJUKAISHI .. ".prefab",
-    --     self.unityViewNode.order,
-    --     nil
-    -- )
-    -- self.unityViewNode:DelayRun(
-    --     0.2,
-    --     function()
-    --         -- ani.visible = false
-    --         local flag, msg = coroutine.resume(waitCo)
-    --         if not flag then
-    --             msg = debug.traceback(waitCo, msg)
-    --             --error(msg)
-    --             logger.error(msg)
-    --             return
-    --         end
-    --     end
-    -- )
-    -- coroutine.yield()
+    local screenWidth = CS.UnityEngine.Screen.width
+    local screenHeight = CS.UnityEngine.Screen.height
+    local x = screenWidth / 2
+    local y = screenHeight / 2
+    animation.coplay("animations/Effects_jiemian_duijukaishi.prefab", self.unityViewNode, x, y)
 end
 
 ----------------------------------------------
@@ -459,17 +215,6 @@ function RoomView:handOverAnimation()
     self.unityViewNode:DelayRun(
         1.2,
         function()
-            -- Sound.Play("effect_paijukaishi")
-            -- Animator.Play(EFF_DEFINE.SUB_PAIJUJIESHU, nil, function()
-            --     local flag, msg = coroutine.resume(waitCo)
-            --     if not flag then
-            --         msg = debug.traceback(waitCo, msg)
-            --         --error(msg)
-            --         logger.error(msg)
-            --         return
-            --     end
-            -- end)
-
             local flag, msg = coroutine.resume(waitCo)
             if not flag then
                 msg = debug.traceback(waitCo, msg)
@@ -1029,80 +774,7 @@ function RoomView:handleOnbackPress()
     end
 end
 
-----------------------------------------------------------
---初始化房间规则显示
-----------------------------------------------------------
-function RoomView:initRoomRule()
-    local textRoomID = self.unityViewNode:SubGet("RuleTop/RoomID", "Text")
-    if self.room.roomInfo ~= nil and self.room.roomInfo.roomNumber ~= nil then
-        textRoomID.text = "房号:" .. self.room.roomInfo.roomNumber
-    end
-
-    local textRule = self.unityViewNode:SubGet("RuleTop/Rule", "Text")
-    local isLoadDouble = false
-    textRule.text = self:getRule(isLoadDouble)
-
-    self.addedRule = self.unityViewNode.transform:Find("RuleTop/RuleNode")
-    self.addedRuleText = self.unityViewNode:SubGet("RuleTop/RuleNode/RuleAdd", "Text")
-    self.addedRule.visible = false
-
-    -- 点击房间顶部信息事件
-    self.unityViewNode:AddClick(
-        "RuleTop",
-        function()
-            self:ruleTopDisplayEvent()
-        end
-    )
-    -- 点击房间顶部小箭头事件
-    self.unityViewNode:AddClick(
-        "RuleTop/Arrow",
-        function()
-            self:ruleTopDisplayEvent()
-        end
-    )
-    local room = self.room
-    if room:isReplayMode() then
-        self:showRoomNumber()
-    end
-end
-
 function RoomView:ruleTopDisplayEvent()
-    local config = self.room:getRoomConfig()
-
-    local isdDoubleScoreWhenSelfDrawn = config.doubleScoreWhenSelfDrawn ~= nil and config.doubleScoreWhenSelfDrawn
-    local dscb = config.doubleScoreWhenContinuousBanker ~= nil and config.doubleScoreWhenContinuousBanker
-    local isDoubleScoreWhenContinuousBanker = dscb
-
-    local isDoubleScoreWhenZuoYuanZi = config.doubleScoreWhenZuoYuanZi ~= nil and config.doubleScoreWhenZuoYuanZi
-    local isAA = config.payType
-
-    if self.addedRule.activeSelf == false then
-        local rules = ""
-
-        if isAA == 1 then
-            rules = rules .. "钻石平摊"
-        else
-            rules = rules .. "房主支付"
-        end
-
-        if isdDoubleScoreWhenSelfDrawn then
-            rules = rules .. " 自摸加双"
-        end
-
-        if isDoubleScoreWhenContinuousBanker then
-            rules = rules .. " 连庄"
-        end
-
-        -- 坐园子
-        if isDoubleScoreWhenZuoYuanZi then
-            rules = rules .. " 坐园子"
-        end
-
-        self.addedRuleText.text = rules
-        self.addedRule.visible = true
-    else
-        self.addedRule.visible = false
-    end
 end
 
 -- --------------------------------------------------------
@@ -1203,67 +875,7 @@ end
 ----------------------------------------------------------
 --获取房间规则
 ----------------------------------------------------------
-function RoomView:getRule(isLoadDouble)
-    local rule = ""
-    local config = self.room:getRoomConfig()
-
-    if config ~= nil then
-        -- if config.playerNumAcquired ~= nil then
-        --     rule = rule ..tostring(config.playerNumAcquired).."人场"
-        -- end
-
-        if config.handNum ~= nil then
-            rule = rule .. tostring(config.handNum) .. "局"
-            self.room.handNum = config.handNum
-        end
-
-        if config.fengDingType ~= nil then
-            local s = "封顶100/200/300"
-            if config.fengDingType == 0 then
-                s = "封顶20/40"
-            elseif config.fengDingType == 1 then
-                s = "封顶30/60"
-            elseif config.fengDingType == 2 then
-                s = "封顶50/100/150"
-            end
-            rule = rule .. " " .. s
-        end
-
-        if config.dunziPointType ~= nil then
-            local s = "墩子1/2"
-            if config.dunziPointType == 1 then
-                s = "墩子2/4"
-            elseif config.dunziPointType == 2 then
-                s = "墩子5/10/15"
-            elseif config.dunziPointType == 3 then
-                s = "墩子10/20/30"
-            end
-            rule = rule .. " " .. s
-        end
-
-        if isLoadDouble then
-            if config.payType ~= nil then
-                local s = " 房主支付"
-                if config.payType == 1 then
-                    s = " 钻石平摊"
-                end
-                rule = rule .. s
-            end
-
-            if config.doubleScoreWhenSelfDrawn ~= nil and config.doubleScoreWhenSelfDrawn then
-                rule = rule .. " 自摸加双"
-            end
-            if config.doubleScoreWhenContinuousBanker ~= nil and config.doubleScoreWhenContinuousBanker then
-                rule = rule .. " 连庄"
-            end
-
-            if config.doubleScoreWhenZuoYuanZi ~= nil and config.doubleScoreWhenZuoYuanZi then
-                rule = rule .. " 坐园子"
-            end
-        end
-    end
-
-    return rule
+function RoomView:getRule(_)
 end
 
 --------------------------------------
@@ -1276,15 +888,6 @@ function RoomView:setArrowByParent(btn)
     self.arrowObj = animation.play("animations/Effects_UI_jiantou.prefab", btn, x, y, true)
     self.arrowObj.wrapper.scale = pos.scale
     self.arrowObj.setVisible(true)
-    -- if self.arrowObj then
-    --     self.arrowObj:SetParent(parentObj, false)
-    --     --self.arrowObj.localPosition = Vector3(0, 0, 0)
-    --     self.arrowObj.localPosition = Vector3(0, 40, 0)
-    --     -- 这里不需要设置显不显示，因为会在SetOneOutCardShowByID中调用SetOutCardAni时让它显示出来的
-    --     self.arrowObj:Show()
-    -- -- 这里主要用来判断自摸的时候，隐藏上一家的打牌的箭头，如果是打牌出去，会在之后的代码中被显示出来。
-    -- --self.arrowObj:Hide()
-    -- end
 end
 
 --------------------------------------
