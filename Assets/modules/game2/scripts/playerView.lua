@@ -10,6 +10,7 @@ local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local animation = require "lobby/lcore/animations"
 local tileMounter = require("scripts/tileImageMounter")
+local mjproto = proto.mahjong
 
 -----------------------------------------------
 -- 新建一个player view
@@ -205,42 +206,94 @@ function PlayerView:initCardLists()
     self:initLights()
 end
 
+function PlayerView:renderMultiOpsListItem(index, obj)
+    local data = self.multiOpsDataList[index + 1]
+    obj.name = index
+    -- local actionMsg = {}
+    -- actionMsg.qaIndex = data.actionMsg.qaIndex
+    -- actionMsg.action = data.actionMsg.action
+    -- actionMsg.tile = data.actionMsg.tile
+    -- actionMsg.meldType = data.meldType
+    -- actionMsg.meldTile1 = data.tile1
+    -- if data.meldType == mjproto.ActionType.enumMeldTypeConcealedKong then
+    --     actionMsg.tile = data.tile1
+    --     actionMsg.action = mjproto.ActionType.enumActionType_KONG_Concealed
+    -- elseif data.meldType == mjproto.ActionType.enumMeldTypeTriplet2Kong then
+    --     actionMsg.tile = data.tile1
+    --     actionMsg.action = mjproto.ActionType.enumActionType_KONG_Triplet2
+    -- end
+    local MJ  --用来显示可选择的牌
+    if data.meldType == mjproto.MeldType.enumMeldTypeSequence then
+        --吃的时候exp是3，所以第4个牌可以隐藏起来
+        obj:GetChild("n4").visible = false
+        MJ = {data.tile1, data.tile1 + 1, data.tile1 + 2}
+    else
+        MJ = {data.tile1, data.tile1, data.tile1, data.tile1}
+    end
+    for j, v in ipairs(MJ) do
+        local oCurCard = obj:GetChild("n" .. j)
+        tileMounter:mountTileImage(oCurCard, v)
+        oCurCard.visible = true
+    end
+    -- oCurOpsObj.onClick:Set(
+    --     function(_)
+    --         -- local curOpIndex = tonumber(obj.name)
+    --         self:sendActionMsg(actionMsg)
+    --         self.playerView:hideOperationButtons()
+    --         self.playerView.meldOpsPanel.visible = false
+    --     end
+    -- )
+
+    obj.visible = true
+end
+
+function PlayerView:showOrHideMeldsOpsPanel(map)
+    -- logger.debug("show Button ------------------ ", map)
+    local size = #map
+    self.multiOpsDataList = map
+    self.multiOpsObj.numItems = size
+    self.multiOpsObj:ResizeToFit(#map)
+    self.meldOpsPanel.visible = size > 0
+end
+
+function PlayerView:onMeldOpsClick(index)
+    local data = self.multiOpsDataList[index + 1]
+    local actionMsg = {}
+    actionMsg.qaIndex = data.actionMsg.qaIndex
+    actionMsg.action = data.actionMsg.action
+    actionMsg.tile = data.actionMsg.tile
+    actionMsg.meldType = data.meldType
+    actionMsg.meldTile1 = data.tile1
+    if data.meldType == mjproto.MeldType.enumMeldTypeConcealedKong then
+        actionMsg.tile = data.tile1
+        actionMsg.action = mjproto.ActionType.enumActionType_KONG_Concealed
+    elseif data.meldType == mjproto.MeldType.enumMeldTypeTriplet2Kong then
+        actionMsg.tile = data.tile1
+        actionMsg.action = mjproto.ActionType.enumActionType_KONG_Triplet2
+    end
+
+    self.player:sendActionMsg(actionMsg)
+    self:hideOperationButtons()
+    self.meldOpsPanel.visible = false
+end
 -------------------------------------------------
 --面子牌选择面板
 -------------------------------------------------
 function PlayerView:initMeldsPanel()
-    local meldMap = {}
-    meldMap[1] = self.meldOpsPanel:GetChild("n1")
-    meldMap[2] = self.meldOpsPanel:GetChild("n2")
-    meldMap[3] = self.meldOpsPanel:GetChild("n3")
-    meldMap[4] = self.meldOpsPanel:GetChild("bg")
-
-    meldMap[1].visible = false
-    meldMap[2].visible = false
-    meldMap[3].visible = false
-
-    self.multiOpsObj = meldMap
-end
-
-function PlayerView:getButtonListItemResource(index)
-    local name = self.buttonDataList[index + 1]
-    local player = self.player
-    -- logger.debug("button name ------------------ ", name)
-    if name == player.ButtonDef.Chow then
-        return "ui://dafeng/chi_button"
-    elseif name == player.ButtonDef.Kong then
-        return "ui://dafeng/gang_button"
-    elseif name == player.ButtonDef.Skip then
-        return "ui://dafeng/guo_button"
-    elseif name == player.ButtonDef.Hu then
-        return "ui://dafeng/hu_button"
-    elseif name == player.ButtonDef.Pong then
-        return "ui://dafeng/peng_button"
-    elseif name == player.ButtonDef.Ting then
-        return "ui://dafeng/ting_button"
-    elseif name == player.ButtonDef.Zhua then
-        return "ui://dafeng/zhua_button"
+    -- local meldMap = {}
+    self.multiOpsObj = self.meldOpsPanel:GetChild("list").asList
+    self.multiOpsObj.itemRenderer = function(index, obj)
+        self:renderMultiOpsListItem(index, obj)
     end
+    self.multiOpsObj.onClickItem:Add(
+        function(onClickItem)
+            self:onMeldOpsClick(onClickItem.data.name)
+        end
+    )
+    -- self.operationButtonsRoot = self.operationPanel
+    -- self:hideOperationButtons()
+
+    -- self.multiOpsObj = meldMap
 end
 
 function PlayerView:renderButtonListItem(index, obj)
@@ -284,86 +337,14 @@ function PlayerView:initOperationButtons()
         self:renderButtonListItem(index, obj)
     end
     self.buttonList.itemProvider = function(index)
-        return self:getButtonListItemResource(index)
+        return self.buttonDataList[index + 1]
     end
     self.buttonList.onClickItem:Add(
         function(onClickItem)
             self:onClickBtn(onClickItem.data.name)
         end
     )
-    -- self.buttonList:SetVirtual()
-
-    -- local operationButtonsRoot = viewUnityNode.transform:Find("TsBtnGroup/BgImg")
     self.operationButtonsRoot = self.operationPanel
-
-    -- local pv = self
-
-    -- self.skipBtn = self.operationPanel:GetChild("guoBtn")
-    -- self.skipBtn.onClick:Set(
-    --     function(obj)
-    --         local player = pv.player
-    --         player:onSkipBtnClick(obj)
-    --     end
-    -- )
-
-    -- self.winBtn = self.operationPanel:GetChild("huBtn")
-    -- self.winBtn.onClick:Set(
-    --     function(obj)
-    --         local player = pv.player
-    --         player:onWinBtnClick(obj)
-    --     end
-    -- )
-
-    -- self.kongBtn = self.operationPanel:GetChild("gangBtn")
-    -- self.kongBtn.onClick:Set(
-    --     function(obj)
-    --         local player = pv.player
-    --         player:onKongBtnClick(obj)
-    --     end
-    -- )
-
-    -- self.pongBtn = self.operationPanel:GetChild("pengBtn")
-    -- self.pongBtn.onClick:Set(
-    --     function(obj)
-    --         local player = pv.player
-    --         player:onPongBtnClick(obj)
-    --     end
-    -- )
-
-    -- self.chowBtn = self.operationPanel:GetChild("chiBtn")
-    -- self.chowBtn.onClick:Set(
-    --     function(obj)
-    --         local player = pv.player
-    --         player:onChowBtnClick(obj)
-    --     end
-    -- )
-
-    -- self.readyHandBtn = self.operationPanel:GetChild("tingBtn")
-    -- self.readyHandBtn.onClick:Set(
-    --     function(obj)
-    --         local player = pv.player
-    --         player:onReadyHandBtnClick(obj)
-    --     end
-    -- )
-
-    -- self.finalDrawBtn = viewUnityNode:GetChild("TsBtnGroup/BgImg/ZhuaBtn")
-    -- viewUnityNode:AddClick(
-    --     self.finalDrawBtn,
-    --     function(obj)
-    --         local player = pv.player
-    --         player:onFinalDrawBtnClick(obj)
-    --     end
-    -- )
-
-    -- self.operationButtons = {self.skipBtn, self.winBtn, self.kongBtn, self.pongBtn, self.chowBtn, self.readyHandBtn}
-
-    -- self.checkReadyHandBtn = viewUnityNode.transform:Find("Ting")
-    -- viewUnityNode:AddClick(
-    --     self.checkReadyHandBtn,
-    --     function(obj)
-    --         pv:onCheckReadyHandBtnClick(obj)
-    --     end
-    -- )
 
     self:hideOperationButtons()
 end
@@ -496,10 +477,10 @@ function PlayerView:initPlayerStatus()
     end
 
     local status = {}
-    status[proto.mahjong.PlayerState.PSNone] = onStart
-    status[proto.mahjong.PlayerState.PSReady] = onReady
-    status[proto.mahjong.PlayerState.PSOffline] = onLeave
-    status[proto.mahjong.PlayerState.PSPlaying] = onPlaying
+    status[mjproto.PlayerState.PSNone] = onStart
+    status[mjproto.PlayerState.PSReady] = onReady
+    status[mjproto.PlayerState.PSOffline] = onLeave
+    status[mjproto.PlayerState.PSPlaying] = onPlaying
     self.onUpdateStatus = status
 end
 
@@ -776,19 +757,19 @@ function PlayerView:showMelds()
         --TODO:根据面子牌挂载牌的图片
         local meldData = melds[i]
         local resName = ""
-        if meldData.meldType == proto.mahjong.MeldType.enumMeldTypeTriplet2Kong then
+        if meldData.meldType == mjproto.MeldType.enumMeldTypeTriplet2Kong then
             -- 如果是加杠，需要检查之前的碰的牌组是否存在，是的话需要删除
             resName = rm .. "gang1"
-        elseif meldData.meldType == proto.mahjong.MeldType.enumMeldTypeExposedKong then
+        elseif meldData.meldType == mjproto.MeldType.enumMeldTypeExposedKong then
             --明杠
             resName = rm .. "gang1"
-        elseif meldData.meldType == proto.mahjong.MeldType.enumMeldTypeConcealedKong then
+        elseif meldData.meldType == mjproto.MeldType.enumMeldTypeConcealedKong then
             --暗杠
             resName = rm .. "gang2"
-        elseif meldData.meldType == proto.mahjong.MeldType.enumMeldTypeSequence then
+        elseif meldData.meldType == mjproto.MeldType.enumMeldTypeSequence then
             --吃
             resName = rm .. "chipeng"
-        elseif meldData.meldType == proto.mahjong.MeldType.enumMeldTypeTriplet then
+        elseif meldData.meldType == mjproto.MeldType.enumMeldTypeTriplet then
             --碰
             resName = rm .. "chipeng"
         end
@@ -813,21 +794,21 @@ function PlayerView:mountMeldImage(meldView, msgMeld)
     -- -- self.viewChairID 吃碰杠者
     -- -- view.viewChairID 被吃碰杠者
     -- local ischi = false
-    local mjproto = proto.mahjong.MeldType
     local t1 = meldView:GetChild("n1")
     local t2 = meldView:GetChild("n2")
     local t3 = meldView:GetChild("n3")
     local t4 = meldView:GetChild("n4")
     local meldType = msgMeld.meldType
-    if meldType == mjproto.enumMeldTypeSequence then
+    local mtProto = mjproto.MeldType
+    if meldType == mtProto.enumMeldTypeSequence then
         tileMounter:mountMeldEnableImage(t1, msgMeld.tile1, self.viewChairID)
         tileMounter:mountMeldEnableImage(t2, msgMeld.tile1 + 1, self.viewChairID)
         tileMounter:mountMeldEnableImage(t3, msgMeld.tile1 + 2, self.viewChairID)
-    elseif meldType == mjproto.enumMeldTypeTriplet then
+    elseif meldType == mtProto.enumMeldTypeTriplet then
         tileMounter:mountMeldEnableImage(t1, msgMeld.tile1, self.viewChairID, meldView.direction)
         tileMounter:mountMeldEnableImage(t2, msgMeld.tile1, self.viewChairID)
         tileMounter:mountMeldEnableImage(t3, msgMeld.tile1, self.viewChairID)
-    elseif meldType == mjproto.enumMeldTypeExposedKong or meldType == mjproto.enumMeldTypeTriplet2Kong then
+    elseif meldType == mtProto.enumMeldTypeExposedKong or meldType == mtProto.enumMeldTypeTriplet2Kong then
         tileMounter:mountMeldEnableImage(t1, msgMeld.tile1, self.viewChairID)
         tileMounter:mountMeldEnableImage(t2, msgMeld.tile1, self.viewChairID)
         tileMounter:mountMeldEnableImage(t3, msgMeld.tile1, self.viewChairID)
@@ -888,7 +869,7 @@ end
 function PlayerView:mountConcealedKongTileImage(t, tileID)
     --local player = self.player
     --tileID == mjproto.mjproto.enumTid_MAX表示该牌需要暗牌显示
-    if tileID == proto.mahjong.TileID.enumTid_MAX then
+    if tileID == mjproto.TileID.enumTid_MAX then
         tileMounter:mountMeldDisableImage(t, tileID, self.viewChairID)
     else
         tileMounter:mountMeldEnableImage(t, tileID, self.viewChairID)
