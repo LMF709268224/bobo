@@ -210,13 +210,15 @@ function HandResultView:updatePlayerTileData(player, c)
 
     --吃碰杠牌
     local rm = "mahjong_mine_meld_"
-    --摆放牌
-    for i, meldData in ipairs(meldDatas) do
-        local mv = c.melds:GetChild("meld" .. i)
+    for i = 1, 4 do
         local mm = c.melds:GetChild("myMeld" .. i)
         if mm then
             c.melds:RemoveChild(mm, true)
         end
+    end
+    --摆放牌
+    for i, meldData in ipairs(meldDatas) do
+        local mv = c.melds:GetChild("meld" .. i)
         local resName = ""
         if meldData.meldType == proto.mahjong.MeldType.enumMeldTypeTriplet2Kong then
             -- 如果是加杠，需要检查之前的碰的牌组是否存在，是的话需要删除
@@ -246,6 +248,10 @@ function HandResultView:updatePlayerTileData(player, c)
     local meldCount = #meldDatas
     local tileCountInHand = #tilesHand
     local isHu = (3 * meldCount + tileCountInHand) > 13
+    for i = 1, 14 do
+        local oCardObj = c.cards[i]
+        oCardObj.visible = false
+    end
     for i = 1, tileCountInHand do
         local tiles = tilesHand[i]
         --因为玩家有可能有两张一样的牌，所以要加一个变量来判断是否已处理
