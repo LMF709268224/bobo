@@ -50,8 +50,8 @@ function PlayerView.new(viewUnityNode, viewChairID)
     -- local myTilesNode = viewUnityNode.transform:Find("Cards/" .. viewChairID)
     -- playerView.tilesRoot = myTilesNode
     -- 打出的牌放大显示
-    -- playerView.discardTips = viewUnityNode.transform:Find("OneOuts/" .. viewChairID)
-    -- playerView.discardTipsTile = playerView.discardTips:Find("Card")
+    playerView.discardTips = view:GetChild("discardTip")
+    playerView.discardTipsTile = playerView.discardTips:GetChild("card")
     -- playerView.discardTipsYellow = playerView.discardTips:Find("Card/Image")
 
     --特效提示位置
@@ -704,27 +704,27 @@ end
 ------------------------------------
 --把打出的牌放大显示
 ------------------------------------
-function PlayerView:enlargeDiscarded(_, _)
-    -- local discardTips = self.discardTips
-    -- local discardTipsTile = self.discardTipsTile
+function PlayerView:enlargeDiscarded(discardTileId, waitDiscardReAction)
+    local discardTips = self.discardTips
+    local discardTipsTile = self.discardTipsTile
     -- local discardTipsYellow = self.discardTipsYellow
-    -- tileMounter:mountTileImage(discardTipsTile, discardTileId)
+    tileMounter:mountTileImage(discardTipsTile, discardTileId)
     -- discardTipsTile.visible = true
-    -- discardTips.visible = true
-    -- if waitDiscardReAction then
-    --     self.player.waitDiscardReAction = true
-    --     discardTipsYellow.visible = true
-    -- else
-    --     discardTipsYellow.visible = false
-    --     --ANITIME_DEFINE.OUTCARDTIPSHOWTIME --> 0.7
-    --     self.viewUnityNode:DelayRun(
-    --         0.1,
-    --         function()
-    --             discardTipsTile.visible = false
-    --             discardTips.visible = false
-    --         end
-    --     )
-    -- end
+    discardTips.visible = true
+    if waitDiscardReAction then
+        -- discardTipsYellow.visible = true
+        self.player.waitDiscardReAction = true
+    else
+        -- discardTipsYellow.visible = false
+        --ANITIME_DEFINE.OUTCARDTIPSHOWTIME --> 0.7
+        self.myView:DelayRun(
+            1,
+            function()
+                -- discardTipsTile.visible = false
+                discardTips.visible = false
+            end
+        )
+    end
 end
 
 ---------------------------------------------

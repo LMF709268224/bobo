@@ -272,14 +272,14 @@ end
 --隐藏打出的牌提示
 ------------------------------------
 function Player:hideDiscardedTips()
-    -- if not self.waitDiscardReAction then
-    --     return
-    -- end
-    -- self.waitDiscardReAction = false
-    -- local discardTips = self.playerView.discardTips
+    if not self.waitDiscardReAction then
+        return
+    end
+    self.waitDiscardReAction = false
+    local discardTips = self.playerView.discardTips
     -- local discardTipsTile = self.playerView.discardTipsTile
     -- discardTipsTile.visible = false
-    -- discardTips.visible = false
+    discardTips.visible = false
 end
 
 ------------------------------------
