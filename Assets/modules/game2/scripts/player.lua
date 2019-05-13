@@ -850,7 +850,7 @@ function Player:showMultiOps(datas, actionMsg2, exp)
             function(_)
                 -- local curOpIndex = tonumber(obj.name)
                 self:sendActionMsg(actionMsg)
-                self.playerView.hideOperationButtons()
+                self.playerView:hideOperationButtons()
                 self.playerView.meldOpsPanel.visible = false
             end
         )
