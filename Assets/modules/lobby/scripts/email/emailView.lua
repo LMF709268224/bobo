@@ -35,14 +35,6 @@ function EmailView.new()
                 win:Dispose()
             end
         )
-
-        _ENV.thisMod:SetMsgListener(
-            "loadEmail",
-            function(str)
-                logger.debug("SetMsgListener : ", str)
-                EmailView:loadEmail()
-            end
-        )
     end
 
     EmailView:initView()
