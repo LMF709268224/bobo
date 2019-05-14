@@ -18,6 +18,7 @@ local newRoomView = require "lobby/scripts/newRoom/newRoomView"
 local joinRoomView = require "lobby/scripts/newRoom/joinRoomView"
 local recordView = require "lobby/scripts/gameRecord/recordView"
 local emailView = require "lobby/scripts/email/emailView"
+local proto = require "lobby/scripts/proto/proto"
 local CS = _ENV.CS
 
 function LobbyView:show()
@@ -71,7 +72,7 @@ end
 
 function LobbyView:registerMsgHandler(ops, handler)
     if self.msgHandler[ops] ~= nil then
-        logger.Error("handler aready exist, ops:", ops)
+        logger.error("handler aready exist, ops:", ops)
         return
     end
 
@@ -199,7 +200,9 @@ function LobbyView:openRecordView()
 end
 
 function LobbyView:openEmailView()
-    emailView.new()
+    local view = emailView.new()
+    local msgCodeEnum = proto.lobby.MessageCode
+    self:registerMsgHandler(msgCodeEnum.OPMail, view)
 end
 
 function LobbyView:enterRoom(modName, jsonString)
