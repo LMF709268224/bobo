@@ -4,14 +4,12 @@
 --luacheck:no self
 local fairy = require "lobby/lcore/fairygui"
 local logger = require "lobby/lcore/logger"
--- local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
--- local httpHelper = require "lobby/lcore/httpHelper"
--- local proto = require "lobby/scripts/proto/proto"
--- local dialog = require "lobby/lcore/dialog"
--- local errHelper = require "lobby/lcore/lobbyErrHelper"
-
--- local subrecordView = require "lobby/scripts/gameRecord/subrecordView"
--- local CS = _ENV.CS
+local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
+local httpHelper = require "lobby/lcore/httpHelper"
+local proto = require "lobby/scripts/proto/proto"
+local dialog = require "lobby/lcore/dialog"
+local errHelper = require "lobby/lcore/lobbyErrHelper"
+local CS = _ENV.CS
 
 local EmailView = {}
 
@@ -39,10 +37,10 @@ function EmailView.new()
         )
     end
 
-    EmailView:EmailView()
+    EmailView:initView()
 end
 
-function EmailView:EmailView()
+function EmailView:initView()
     -- body
     local clostBtn = self.unityViewNode:GetChild("closeBtn")
     clostBtn.onClick:Set(
@@ -56,22 +54,68 @@ function EmailView:EmailView()
         self:renderPhraseListItem(index, obj)
     end
     self.list:SetVirtual()
+    --self.list.numItems = 50
+    self:loadEmail()
+end
 
-    self.list.numItems = 1000
+-- 更新列表
+function EmailView:updateList(emailRsp)
+    logger.debug("emailRsp = ", emailRsp)
+    self.dataMap = {}
+    for i, email in ipairs(emailRsp) do
+        local r = proto.decodeMessage("lobby.MsgReplayRoom", email.replayRoomBytes)
+        self.dataMap[i] = r
+    end
+    self.list.numItems = #self.dataMap
 end
 
 function EmailView:renderPhraseListItem(index, obj)
-    local title = obj:GetChild("title")
-    local timeText = obj:GetChild("timeText")
+    --local email = self.dataMap[index + 1]
 
-    title.text = "item " .. index
-    timeText.text = "5 Nov 2015 16:24:33"
+    local btn = obj:GetChild("spaceBtn")
+    btn.onClick:Set(
+        function()
+            logger.debug("renderPhraseListItem index:", index)
+        end
+    )
+end
 
-    -- obj.onClick:Set(
-    --     function()
-    --         logger.debug("click dex  = ", index)
-    --     end
-    -- )
+function EmailView:loadEmail()
+    -- 拉取邮件
+    local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
+    local loadEmailUrl = urlpathsCfg.rootURL .. urlpathsCfg.loadMails .. "?&rt=1&tk=" .. tk
+    logger.debug("loadGameRecord loadEmailUrl:", loadEmailUrl)
+    -- 加滚动条
+    dialog.showDialog("正在拉取邮件......")
+    local win = dialog.win
+    httpHelper.get(
+        win,
+        loadEmailUrl,
+        function(req, resp)
+            win:Hide()
+            if req.State == CS.BestHTTP.HTTPRequestStates.Finished then
+                local httpError = errHelper.dumpHttpRespError(resp)
+                if httpError == nil then
+                    if resp.Data then
+                        local gameRecords = proto.decodeMessage("lobby.MsgAccLoadReplayRoomsReply", resp.Data)
+                        -- 初始化数据
+                        self:updateList(gameRecords)
+                    end
+                end
+                resp:Dispose()
+            else
+                local err = errHelper.dumpHttpReqError(req)
+                if err then
+                    dialog.showDialog(
+                        err.msg,
+                        function()
+                        end
+                    )
+                end
+            end
+            req:Dispose()
+        end
+    )
 end
 
 function EmailView:destroy()
