@@ -13,8 +13,8 @@ local proto = require "scripts/proto/proto"
 local dialog = require "lobby/lcore/dialog"
 local coroutingExt = require "lobby/lcore/coroutineExt"
 
-function MsgCenter:new(url, component)
-    local msgCenter = {url = url, component = component}
+function MsgCenter:new(url, lobbyView)
+    local msgCenter = {url = url, lobbyView = lobbyView}
 
     msgCenter.connectErrorCount = 0
 
@@ -40,7 +40,7 @@ function MsgCenter:start()
         else
             logger.trace("Wait 3 seconds to retry, connectErrorCount:"..self.connectErrorCount)
           --等待重连
-          coroutingExt.waitSecond(self.component, 3)
+          coroutingExt.waitSecond(self.lobbyView.viewNode, 3)
         end
     end
 end
@@ -48,7 +48,7 @@ end
 function MsgCenter:connectServer()
     logger.debug("connectServer:", self.url)
     local mq = msgQueue.new()
-    local ws = websocket.new(self.url, mq, self.component)
+    local ws = websocket.new(self.url, mq, self.lobbyView.viewNode)
 
     self.mq = mq
     self.ws = ws
@@ -139,33 +139,8 @@ function MsgCenter:dispatchWeboscketMessage(lobbyMessage)
         _ENV.thisMod:SendMsgToSubModule("lobby_chat", tostring(lobbyMessage.Data))
         return
     end
-    local handler = self.Handlers[op]
-    if handler == nil then
-        logger.debug("MsgCenter:dispatchWeboscketMessage, no handler for:", op)
-        return
-    end
 
-    local msgData = lobbyMessage.Data
-    logger.debug("MsgCenter:dispatchWeboscketMessage, op:", lobbyMessage.Ops, ",data size:", #msgData)
-    -- 调用handler的onMsg
-    handler.onMsg(msgData, self)
+    self.lobbyView:dispatchMessage(lobbyMessage)
 end
-
------------------------------------------------------------
---初始化大厅消息响应handlers
------------------------------------------------------------
-local function initMsgHandler()
-    local msgHandlers = {}
-    -- local msgCodeEnum = proto.lobby.MessageCode
-
-    -- local h = require("scripts/chat/chatView")
-    -- msgHandlers[msgCodeEnum.OPActionAllowed] = h
-    -- 添加消息相应
-
-    return msgHandlers
-end
-
---handlers属于整个Room
-MsgCenter.Handlers = initMsgHandler()
 
 return MsgCenter

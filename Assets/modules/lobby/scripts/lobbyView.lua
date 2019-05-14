@@ -26,6 +26,8 @@ function LobbyView:show()
     fairy.GRoot.inst:AddChild(view)
     LobbyView.viewNode = view
 
+    LobbyView.msgHandler = {}
+
     LobbyView:initView()
 
     logger.debug("_ENV.thisMod.backToLobby")
@@ -47,7 +49,7 @@ function LobbyView:show()
 
     logger.debug("lobby websocket url:", url)
 
-    local lobbyMsgCenter = msgCenter:new(urlpathsCfg.lobbyWebsocket .. "?tk=" .. tk, LobbyView.viewNode)
+    local lobbyMsgCenter = msgCenter:new(urlpathsCfg.lobbyWebsocket .. "?tk=" .. tk, LobbyView)
     LobbyView.msgCenter = lobbyMsgCenter
 
     logger.debug("msgCenter errCount:", lobbyMsgCenter.connectErrorCount)
@@ -65,6 +67,15 @@ function LobbyView:show()
     end
 
     -- LobbyView.win:Show()
+end
+
+function LobbyView:registerMsgHandler(ops, handler)
+    if self.msgHandler[ops] ~= nil then
+        logger.Error("handler aready exist, ops:", ops)
+        return
+    end
+
+    self.msgHandler[ops] = handler
 end
 
 function LobbyView:initView()
@@ -196,6 +207,14 @@ function LobbyView:enterRoom(modName, jsonString)
     fairy.GRoot.inst:RemoveChild(mylobbyView)
     fairy.GRoot.inst:CleanupChildren()
     _ENV.thisMod:LaunchGameModule(modName, jsonString)
+end
+
+function LobbyView:dispatchMessage(lobbyMessage)
+    local ops = lobbyMessage.Ops
+    local handler = self.msgHandler[ops]
+    if handler ~= nil then
+        handler:onMsg(lobbyMessage.Data)
+    end
 end
 
 return LobbyView
