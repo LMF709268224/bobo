@@ -17,7 +17,7 @@ function Handler.onMsg(actionResultMsg, room)
     --并显示出来
     if tilesFlower ~= nil and #tilesFlower > 0 then
         player:addFlowerTiles(tilesFlower)
-        --player.playerView:playDrawFlowerAnimation()
+        player.playerView:playDrawFlowerAnimation()
         player:flower2UI()
         player:waitSecond(0.5)
         for _, flower in ipairs(tilesFlower) do

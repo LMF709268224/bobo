@@ -100,17 +100,17 @@ end
 -------------------------------------------
 function HandResultView:updateRoomData()
     --背景（输还是赢）
-    -- local effectName = "Effects_JieMian_ShengLi"
-    -- if self.msgHandOver.endType ~= proto.mahjong.HandOverType.enumHandOverType_None then
-    --     if self.room:me().score.score >= 0 then
-    --         effectName = "Effects_JieMian_ShiBai"
-    --     else
-    --         effectName = "Effects_JieMian_ShiBai"
-    --     end
-    -- else
-    --     effectName = "Effects_JieMian_ShiBai"
-    -- end
-    -- animation.play("animations/" .. effectName .. ".prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
+    local en
+    if self.msgHandOver.endType ~= proto.mahjong.HandOverType.enumHandOverType_None then
+        if self.room:me().score.score >= 0 then
+            en = "Effects_jiemian_ying"
+        else
+            en = "Effects_jiemian_shu"
+        end
+    else
+        en = "Effects_jiemian_huangzhuang"
+    end
+    self.ani = animation.play("animations/" .. en .. ".prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
 
     --日期时间
     local date
@@ -455,16 +455,6 @@ function HandResultView:processGreatWin(greatWin)
     return textScore
 end
 
---显示赢标志
-function HandResultView:showWin(c)
-    animation.play("animations/Effects_jiemian_huosheng.prefab", c.group, c.aniPos.x, c.aniPos.y, true)
-
-    -- local prefabName = dfConfig.PATH.EFFECTS_GZ .. dfConfig.EFF_DEFINE.SUB_JIEMIAN_WIN .. ".prefab"
-    -- local effobj = Animator.PlayLoop(prefabName, self.canvasOrder)
-    -- effobj:SetParent(c.group.transform, false)
-    -- effobj.localPosition = c.winImagePos.localPosition --Vector3(1.6, 0.8, 0)
-end
-
 -------------------------------------------
 --处理小胡数据
 -------------------------------------------
@@ -583,7 +573,9 @@ function HandResultView:onAgainButtonClick()
     if not room:isReplayMode() then
         room.host.mq:unblockNormal()
     end
-
+    if self.ani then
+        self.ani.setVisible(false)
+    end
     self.win:Hide()
     if self.msgHandOver.continueAble then
         self.room.host:sendPlayerReadyMsg()
