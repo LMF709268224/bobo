@@ -7,9 +7,6 @@ local Player = {}
 
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
--- local logger = require "lobby/lcore/logger"
--- local agariIndex = require("scripts/AgariIndex")
--- local tileMounter = require("scripts/tileImageMounter")
 local mjproto = proto.mahjong
 
 --音效文件定义
@@ -21,6 +18,17 @@ local SoundDef = {
     WinChuck = "hu", --被点炮
     WinDraw = "zimo", --自摸
     Common = "effect_common"
+}
+
+--特效文件定义
+local EffectsDef = {
+    Chow = "Effects_zi_chi",
+    Pong = "Effects_zi_peng",
+    Kong = "Effects_zi_gang",
+    Ting = "ting",
+    WinChuck = "Effrcts_zi_dianpao", --被点炮
+    WinDraw = "Effects_zi_zimo", --自摸
+    DrawCard = "Effects_zi_zhua"
 }
 
 --按钮定义
@@ -277,8 +285,6 @@ function Player:hideDiscardedTips()
     end
     self.waitDiscardReAction = false
     local discardTips = self.playerView.discardTips
-    -- local discardTipsTile = self.playerView.discardTipsTile
-    -- discardTipsTile.visible = false
     discardTips.visible = false
 end
 
@@ -302,8 +308,7 @@ function Player:chowResultAnimation()
 
     --播放对应音效
     self:playOperationSound(SoundDef.Chow)
-
-    self.playerView:playChowResultAnimation()
+    self.playerView:playerOperationEffect(EffectsDef.Chow)
 end
 
 ------------------------------------
@@ -318,8 +323,7 @@ function Player:pongResultAnimation()
 
     --播放对应音效
     self:playOperationSound(SoundDef.Pong)
-
-    self.playerView:playPongResultAnimation()
+    self.playerView:playerOperationEffect(EffectsDef.Pong)
 end
 
 ------------------------------------
@@ -334,8 +338,7 @@ function Player:exposedKongResultAnimation()
 
     --播放对应音效
     self:playOperationSound(SoundDef.Kong)
-
-    self.playerView:playExposedKongResultAnimation()
+    self.playerView:playerOperationEffect(EffectsDef.Kong)
 end
 
 ------------------------------------
@@ -350,8 +353,7 @@ function Player:concealedKongResultAnimation()
 
     --播放对应音效
     self:playOperationSound(SoundDef.Kong)
-
-    self.playerView:playConcealedKongResultAnimation()
+    self.playerView:playerOperationEffect(EffectsDef.Kong)
 end
 
 ------------------------------------
@@ -366,8 +368,7 @@ function Player:triplet2KongResultAnimation()
 
     --播放对应音效
     self:playOperationSound(SoundDef.Kong)
-
-    self.playerView:playTriplet2KongResultAnimation()
+    self.playerView:playerOperationEffect(EffectsDef.Kong)
 end
 
 ------------------------------------
@@ -381,8 +382,7 @@ function Player:playZhuaPaiAnimation()
     end
     --播放对应音效
     self:playOperationSound(SoundDef.DrawCard)
-
-    self.playerView:playZhuaPaiAnimation()
+    self.playerView:playerOperationEffect(EffectsDef.DrawCard)
 end
 
 ------------------------------------
@@ -396,7 +396,7 @@ function Player:playZiMoAnimation()
     -- if self.playerView.viewChairID == 2 or self.playerView.viewChairID == 4 then
     --     effect = dfConfig.EFF_DEFINE.SUB_ZI_ZIMO .. "2"
     -- end
-    self.playerView:playerOperationEffect("Effects_zi_zimo")
+    self.playerView:playerOperationEffect(EffectsDef.WinDraw)
 end
 
 ------------------------------------
@@ -405,7 +405,7 @@ end
 function Player:playDianPaoAnimation()
     --播放对应音效
     self:playOperationSound(SoundDef.WinChuck)
-    self.playerView:playerOperationEffect("Effrcts_zi_dianpao")
+    self.playerView:playerOperationEffect(EffectsDef.WinChuck)
 end
 
 ------------------------------------
@@ -415,19 +415,6 @@ function Player:playChiChongAnimation()
     --播放对应音效
     --self:playOperationSound(SoundDef.WinChuck)
     -- self.playerView:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_HU)
-end
-
-------------------------------------
---播放音效
-------------------------------------
-function Player:playSound(_, _)
-    -- local soundName = ""
-    -- if self.sex == 1 then
-    --     soundName = directory .. "/boy/" .. effectName
-    -- else
-    --     soundName = directory .. "/girl/" .. effectName
-    -- end
-    -- dfCompatibleAPI:soundPlay(soundName)
 end
 
 ------------------------------------
@@ -464,8 +451,14 @@ end
 ------------------------------------
 --播放吃碰杠胡听音效
 ------------------------------------
-function Player:playOperationSound(effectName)
-    self:playSound("operate", effectName)
+function Player:playOperationSound(_)
+    -- local soundName = ""
+    -- if self.sex == 1 then
+    --     soundName = directory .. "/boy/" .. effectName
+    -- else
+    --     soundName = directory .. "/girl/" .. effectName
+    -- end
+    -- dfCompatibleAPI:soundPlay(soundName)
     --执行音效
     -- dfCompatibleAPI:soundPlay("effect/" .. SoundDef.Common)
 end
@@ -689,7 +682,7 @@ function Player:onChowBtnClick(_)
         -- logger.debug("chowMelds : ", chowMelds)
         actionMsg.tile = self.allowedReActionMsg.victimTileID
         if #chowMelds > 1 then
-            self:showMultiOps(chowMelds, 3)
+            self.playerView:showOrHideMeldsOpsPanel(chowMelds)
         else
             actionMsg.meldType = chowMelds[1].meldType
             actionMsg.meldTile1 = chowMelds[1].tile1
@@ -757,7 +750,7 @@ function Player:onKongBtnClick(_)
         end
 
         if #kongs > 1 then
-            self:showMultiOps(kongs, 4)
+            self.playerView:showOrHideMeldsOpsPanel(kongs)
         else
             actionMsg.action = action
             --无论是加杠，或者暗杠，肯定只有一个面子牌组
@@ -796,57 +789,6 @@ function Player:selectMeldFromMeldsForAction(meldsForAction, ty, actionMsg)
     return r
 end
 
-----------------------------------------
--- 选择如何吃牌，杠牌界面  exp:吃的时候是3，杠的时候是4
-----------------------------------------
-function Player:showMultiOps(datas)
-    self.playerView:showOrHideMeldsOpsPanel(datas)
-
-    -- for i, data in pairs(datas) do
-    --     local oCurOpsObj = self.playerView.multiOpsObj[i]
-    --     oCurOpsObj.name = tostring(data.meldType)
-    --     local actionMsg = {}
-    --     actionMsg.qaIndex = actionMsg2.qaIndex
-    --     actionMsg.action = actionMsg2.action
-    --     actionMsg.tile = actionMsg2.tile
-    --     actionMsg.meldType = data.meldType
-    --     actionMsg.meldTile1 = data.tile1
-    --     if data.meldType == mjproto.MeldType.enumMeldTypeConcealedKong then
-    --         actionMsg.tile = data.tile1
-    --         actionMsg.action = mjproto.ActionType.enumActionType_KONG_Concealed
-    --     elseif data.meldType == mjproto.MeldType.enumMeldTypeTriplet2Kong then
-    --         actionMsg.tile = data.tile1
-    --         actionMsg.action = mjproto.ActionType.enumActionType_KONG_Triplet2
-    --     end
-    --     local MJ = {} --用来显示可选择的牌
-    --     -- local addW = 0 --多选框背景的大小偏移值（杠的背景需要大一点）
-    --     -- local addX = 0 --多选框位置的便宜值（吃的背景比较小，所以往右偏移值要大点）
-    --     if exp == 3 then
-    --         -- addX = 82
-    --         --吃的时候exp是3，所以第4个牌可以隐藏起来
-    --         oCurOpsObj:GetChild("n4").visible = false
-    --         MJ = {data.tile1, data.tile1 + 1, data.tile1 + 2}
-    --     elseif exp == 4 then
-    --         MJ = {data.tile1, data.tile1, data.tile1, data.tile1}
-    --     -- addW = 200
-    --     end
-    --     for j, v in ipairs(MJ) do
-    --         local oCurCard = oCurOpsObj:GetChild("n" .. j)
-    --         tileMounter:mountTileImage(oCurCard, v)
-    --         oCurCard.visible = true
-    --     end
-    --     oCurOpsObj.visible = true
-    --     oCurOpsObj.onClick:Set(
-    --         function(_)
-    --             -- local curOpIndex = tonumber(obj.name)
-    --             self:sendActionMsg(actionMsg)
-    --             self.playerView:hideOperationButtons()
-    --             self.playerView.meldOpsPanel.visible = false
-    --         end
-    --     )
-    -- end
-    -- self.playerView.meldOpsPanel.visible = true
-end
 ----------------------------------------
 -- 玩家选择了胡牌
 -- 当上下文是allowedActionMsg时，表示自摸胡牌
@@ -934,29 +876,9 @@ function Player:sendActionMsg(actionMsg)
 end
 
 -----------------------------------------------------------
---线程等待
------------------------------------------------------------
-function Player:waitSecond(_)
-    -- local waitCo = coroutine.running()
-    -- StartTimer(
-    --     someSecond,
-    --     function()
-    --         local flag, msg = coroutine.resume(waitCo)
-    --         if not flag then
-    --             logError(msg)
-    --             return
-    --         end
-    --     end,
-    --     1,
-    --     true
-    -- )
-    -- coroutine.yield()
-end
------------------------------------------------------------
 --执行自动打牌操作
 -----------------------------------------------------------
 function Player:autoDiscard()
-    self:waitSecond(1)
     if self.allowedActionMsg ~= nil then
         --自己摸牌的情况下
         local actions = self.allowedActionMsg.allowedActions

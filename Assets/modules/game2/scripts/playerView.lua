@@ -12,6 +12,22 @@ local animation = require "lobby/lcore/animations"
 local tileMounter = require("scripts/tileImageMounter")
 local mjproto = proto.mahjong
 
+--面子牌组资源 前缀
+local MeldComponentPrefix = {
+    [1] = "mahjong_mine_meld_",
+    [2] = "mahjong_right_meld_",
+    [3] = "mahjong_dui_meld_",
+    [4] = "mahjong_left_meld_"
+}
+
+--面子牌组资源 后缀
+local MeldComponentSuffix = {
+    [mjproto.MeldType.enumMeldTypeTriplet2Kong] = "gang1",
+    [mjproto.MeldType.enumMeldTypeExposedKong] = "gang1",
+    [mjproto.MeldType.enumMeldTypeConcealedKong] = "gang2",
+    [mjproto.MeldType.enumMeldTypeSequence] = "chipeng",
+    [mjproto.MeldType.enumMeldTypeTriplet] = "chipeng"
+}
 -----------------------------------------------
 -- 新建一个player view
 -- @param viewUnityNode 根据viewUnityNode获得playerView需要控制
@@ -43,9 +59,6 @@ function PlayerView.new(viewUnityNode, viewChairID)
     playerView:initHeadView()
     -- 玩家状态
     playerView:initPlayerStatus()
-
-    -- 头像弹框
-    -- playerView:initHeadPopup()
 
     return playerView
 end
@@ -135,22 +148,29 @@ function PlayerView:initCardLists()
     self:initLights()
 end
 
+-------------------------------------------------
+--面子牌选择面板
+-------------------------------------------------
+function PlayerView:initMeldsPanel()
+    -- local meldMap = {}
+    self.multiOpsObj = self.meldOpsPanel:GetChild("list").asList
+    self.multiOpsObj.itemRenderer = function(index, obj)
+        self:renderMultiOpsListItem(index, obj)
+    end
+    self.multiOpsObj.onClickItem:Add(
+        function(onClickItem)
+            self:onMeldOpsClick(onClickItem.data.name)
+        end
+    )
+    -- self.operationButtonsRoot = self.operationPanel
+    -- self:hideOperationButtons()
+
+    -- self.multiOpsObj = meldMap
+end
+
 function PlayerView:renderMultiOpsListItem(index, obj)
     local data = self.multiOpsDataList[index + 1]
     obj.name = index
-    -- local actionMsg = {}
-    -- actionMsg.qaIndex = data.actionMsg.qaIndex
-    -- actionMsg.action = data.actionMsg.action
-    -- actionMsg.tile = data.actionMsg.tile
-    -- actionMsg.meldType = data.meldType
-    -- actionMsg.meldTile1 = data.tile1
-    -- if data.meldType == mjproto.ActionType.enumMeldTypeConcealedKong then
-    --     actionMsg.tile = data.tile1
-    --     actionMsg.action = mjproto.ActionType.enumActionType_KONG_Concealed
-    -- elseif data.meldType == mjproto.ActionType.enumMeldTypeTriplet2Kong then
-    --     actionMsg.tile = data.tile1
-    --     actionMsg.action = mjproto.ActionType.enumActionType_KONG_Triplet2
-    -- end
     local MJ  --用来显示可选择的牌
     if data.meldType == mjproto.MeldType.enumMeldTypeSequence then
         --吃的时候exp是3，所以第4个牌可以隐藏起来
@@ -164,20 +184,11 @@ function PlayerView:renderMultiOpsListItem(index, obj)
         tileMounter:mountTileImage(oCurCard, v)
         oCurCard.visible = true
     end
-    -- oCurOpsObj.onClick:Set(
-    --     function(_)
-    --         -- local curOpIndex = tonumber(obj.name)
-    --         self:sendActionMsg(actionMsg)
-    --         self.playerView:hideOperationButtons()
-    --         self.playerView.meldOpsPanel.visible = false
-    --     end
-    -- )
 
     obj.visible = true
 end
 
 function PlayerView:showOrHideMeldsOpsPanel(map)
-    -- logger.debug("show Button ------------------ ", map)
     local size = #map
     self.multiOpsDataList = map
     self.multiOpsObj.numItems = size
@@ -205,24 +216,26 @@ function PlayerView:onMeldOpsClick(index)
     self:hideOperationButtons()
     self.meldOpsPanel.visible = false
 end
+
 -------------------------------------------------
---面子牌选择面板
+--保存操作按钮
 -------------------------------------------------
-function PlayerView:initMeldsPanel()
-    -- local meldMap = {}
-    self.multiOpsObj = self.meldOpsPanel:GetChild("list").asList
-    self.multiOpsObj.itemRenderer = function(index, obj)
-        self:renderMultiOpsListItem(index, obj)
+function PlayerView:initOperationButtons()
+    self.buttonList = self.operationPanel:GetChild("buttonList").asList
+    self.buttonList.itemRenderer = function(index, obj)
+        self:renderButtonListItem(index, obj)
     end
-    self.multiOpsObj.onClickItem:Add(
+    self.buttonList.itemProvider = function(index)
+        return self.buttonDataList[index + 1]
+    end
+    self.buttonList.onClickItem:Add(
         function(onClickItem)
-            self:onMeldOpsClick(onClickItem.data.name)
+            self:onClickBtn(onClickItem.data.name)
         end
     )
-    -- self.operationButtonsRoot = self.operationPanel
-    -- self:hideOperationButtons()
+    self.operationButtonsRoot = self.operationPanel
 
-    -- self.multiOpsObj = meldMap
+    self:hideOperationButtons()
 end
 
 function PlayerView:renderButtonListItem(index, obj)
@@ -232,7 +245,6 @@ function PlayerView:renderButtonListItem(index, obj)
 end
 
 function PlayerView:showButton(map)
-    -- logger.debug("show Button ------------------ ", map)
     self.buttonDataList = map
     self.buttonList.numItems = #map
     self.buttonList:ResizeToFit(#map)
@@ -257,25 +269,13 @@ function PlayerView:onClickBtn(name)
         player:onFinalDrawBtnClick()
     end
 end
--------------------------------------------------
---保存操作按钮
--------------------------------------------------
-function PlayerView:initOperationButtons()
-    self.buttonList = self.operationPanel:GetChild("buttonList").asList
-    self.buttonList.itemRenderer = function(index, obj)
-        self:renderButtonListItem(index, obj)
-    end
-    self.buttonList.itemProvider = function(index)
-        return self.buttonDataList[index + 1]
-    end
-    self.buttonList.onClickItem:Add(
-        function(onClickItem)
-            self:onClickBtn(onClickItem.data.name)
-        end
-    )
-    self.operationButtonsRoot = self.operationPanel
 
-    self:hideOperationButtons()
+--隐藏所有操作按钮
+function PlayerView:hideOperationButtons()
+    -- 先隐藏掉所有按钮
+    self:showButton({})
+    -- 隐藏根节点
+    self.operationButtonsRoot.visible = false
 end
 ------------------------------------
 -- 设置金币数显示（目前是累计分数）
@@ -290,19 +290,6 @@ function PlayerView:setGold(_)
     --     self.head.goldText:Show()
     --     self.head.goldText.text = tostring(gold)
     -- end
-end
--------------------------------------------------
---隐藏所有操作按钮
--------------------------------------------------
-function PlayerView:hideOperationButtons()
-    -- 先隐藏掉所有按钮
-    -- local buttons = self.operationButtons
-    -- for _, b in pairs(buttons) do
-    --     b.visible = false
-    -- end
-    self:showButton({})
-    -- 隐藏根节点
-    self.operationButtonsRoot.visible = false
 end
 
 -------------------------------------------------
@@ -365,9 +352,6 @@ function PlayerView:initPlayerStatus()
     --起始
     local onStart = function()
         print("llwant ,test onstart ")
-        -- head.root.visible = true
-        -- head.stateOffline.visible = false
-        -- self.infoGroupEmpty.visible = false
         self.head.readyIndicator.visible = false
         if self.checkReadyHandBtn ~= nil then
             self.checkReadyHandBtn.visible = false
@@ -377,9 +361,6 @@ function PlayerView:initPlayerStatus()
     --准备
     local onReady = function(roomstate)
         print("llwant ,test onReady ")
-        -- head.root.visible = true
-        -- head.stateOffline.visible = false
-        -- self.infoGroupEmpty.visible = false
         self.head.readyIndicator.visible = true
         self:showOwner()
         onReset(roomstate)
@@ -389,8 +370,6 @@ function PlayerView:initPlayerStatus()
     local onLeave = function(roomstate)
         print("llwant ,test onLeave ")
         self.head.readyIndicator.visible = false
-        -- self.infoGroupEmpty.visible = false
-        -- head.stateOffline.visible = true
         onReset(roomstate)
     end
 
@@ -398,9 +377,6 @@ function PlayerView:initPlayerStatus()
     local onPlaying = function(roomstate)
         print("llwant ,test onPlaying ")
         self.head.readyIndicator.visible = false
-        -- self.infoGroupEmpty.visible = false
-        -- head.root.visible = true
-        -- head.stateOffline.visible = false
         self:showOwner()
         onReset(roomstate)
     end
@@ -423,24 +399,10 @@ function PlayerView:setHeadEffectBox(isShow)
     ani.setVisible(isShow)
 end
 
-function PlayerView:hideMelds()
-    local mymeldTilesNode = self.myView:GetChild("melds")
-    for i = 1, 4 do
-        local mm = mymeldTilesNode:GetChild("myMeld" .. i)
-        if mm then
-            mymeldTilesNode:RemoveChild(mm, true)
-        end
-    end
-end
 ------------------------------------
 --从根节点上隐藏所有
 ------------------------------------
 function PlayerView:hideAll()
-    -- for _, v in ipairs(self.head) do
-    --     v.visible = false
-    -- end
-    -- self.tilesRoot.visible = false
-    -- self.headPopup.headInfobg.visible = false
 end
 
 ------------------------------------
@@ -460,20 +422,6 @@ function PlayerView:resetForNewHand()
     if self.viewChairID == 1 then
         self:hideOperationButtons()
     end
-
-    --面子牌组需要重置
-    -- for _, m in ipairs(self.meldViews) do
-    --     if m.root then
-    --         --m.root.visible = false
-    --         tool:DestroyAllChilds(m.mountNode)
-    --         m.root = nil
-
-    --         --清理加杠遗留
-    --         if m.alreadyUsedKongPrefb then
-    --             m.alreadyUsedKongPrefb = false
-    --         end
-    --     end
-    -- end
 end
 
 ------------------------------------
@@ -500,7 +448,6 @@ end
 
 -------------------------------------
 --隐藏手牌列表
---其实是把整行都隐藏了
 -------------------------------------
 function PlayerView:hideHands()
     if self.hands then
@@ -508,15 +455,19 @@ function PlayerView:hideHands()
             h.visible = false
         end
     end
-    --TODO: 取消所有听牌、黄色遮罩等等
-    -- self.na.visible = false
+end
 
-    --面子牌组也隐藏
-    -- for _, m in ipairs(self.meldViews) do
-    --     if m.root then
-    --         m.root.visible = false
-    --     end
-    -- end
+-------------------------------------
+--隐藏面子牌组
+-------------------------------------
+function PlayerView:hideMelds()
+    local mymeldTilesNode = self.myView:GetChild("melds")
+    for i = 1, 4 do
+        local mm = mymeldTilesNode:GetChild("myMeld" .. i)
+        if mm then
+            mymeldTilesNode:RemoveChild(mm, true)
+        end
+    end
 end
 
 ------------------------------------------
@@ -544,13 +495,6 @@ function PlayerView:showFlowers()
     --花牌挂载点个数
     local dCount = #flowers
 
-    -- if tileCount > 0 then
-    --self.head.HuaNode.visible = true
-    -- self.head.HuaCountText.text = tostring(tileCount)
-    -- else
-    --self.head.HuaNode.visible = false
-    -- self.head.HuaCountText.text = "0"
-    -- end
     self.head.HuaNode.visible = true
 
     --从那张牌开始挂载，由于tileCount可能大于dCount
@@ -603,7 +547,7 @@ function PlayerView:showDiscarded(newDiscard, waitDiscardReAction)
 
     --如果是新打出的牌，给加一个箭头
     if newDiscard then
-        local d = discards[tileCount % dCount]
+        local d = discards[(tileCount - 1) % dCount + 1]
         player.room.roomView:setArrowByParent(d)
 
         --放大打出去的牌
@@ -665,16 +609,7 @@ function PlayerView:showMelds()
     local player = self.player
     local melds = player.melds
     local length = #melds
-    local rm = ""
-    if self.viewChairID == 1 then
-        rm = "mahjong_mine_meld_"
-    elseif self.viewChairID == 2 then
-        rm = "mahjong_right_meld_"
-    elseif self.viewChairID == 3 then
-        rm = "mahjong_dui_meld_"
-    elseif self.viewChairID == 4 then
-        rm = "mahjong_left_meld_"
-    end
+    local rm = MeldComponentPrefix[self.viewChairID]
     --摆放牌
     local mymeldTilesNode = self.myView:GetChild("melds")
     for i = 1, length do
@@ -685,23 +620,7 @@ function PlayerView:showMelds()
         end
         --TODO:根据面子牌挂载牌的图片
         local meldData = melds[i]
-        local resName = ""
-        if meldData.meldType == mjproto.MeldType.enumMeldTypeTriplet2Kong then
-            -- 如果是加杠，需要检查之前的碰的牌组是否存在，是的话需要删除
-            resName = rm .. "gang1"
-        elseif meldData.meldType == mjproto.MeldType.enumMeldTypeExposedKong then
-            --明杠
-            resName = rm .. "gang1"
-        elseif meldData.meldType == mjproto.MeldType.enumMeldTypeConcealedKong then
-            --暗杠
-            resName = rm .. "gang2"
-        elseif meldData.meldType == mjproto.MeldType.enumMeldTypeSequence then
-            --吃
-            resName = rm .. "chipeng"
-        elseif meldData.meldType == mjproto.MeldType.enumMeldTypeTriplet then
-            --碰
-            resName = rm .. "chipeng"
-        end
+        local resName = rm .. MeldComponentSuffix[meldData.meldType]
         local meldView = _ENV.thisMod:CreateUIObject("lobby_mahjong", resName)
         meldView.position = mv.position
         meldView.name = "myMeld" .. i
@@ -811,7 +730,6 @@ function PlayerView:showHandsForMe(wholeMove)
         handsClickCtrls[i].tileID = nil
     end
 
-    --TODO:有必要提取一个clearXXX函数
     --恢复所有牌的位置，由于点击手牌时会把手牌向上移动
     self:restoreHandPositionAndClickCount()
 
@@ -843,7 +761,6 @@ function PlayerView:showHandsForMe(wholeMove)
         handsClickCtrls[j].tileID = tileshand[i]
         if self.player.isRichi then
             --如果是听牌状态下，则不再把牌弄回白色（让手牌一直是灰色的）
-            --print("llwant, gray it")
             -- 判断 handsClickCtrls[j].isDiscardable 是否为 true ,是的话 则不能 setGray
             self:setGray(h)
             handsClickCtrls[j].isGray = true
@@ -857,7 +774,6 @@ end
 --显示所有人的暗牌
 ------------------------------------------
 function PlayerView:hand2Exposed(wholeMove)
-    --playerView.lights
     --不需要手牌显示了，全部摊开
     self:hideLights()
 
@@ -951,7 +867,6 @@ function PlayerView:onHandTileBtnClick(_, index)
 
     if clickCtrl.readyHandList ~= nil and #clickCtrl.readyHandList > 0 then
         --如果此牌可以听
-        -- local tingData = {}
         local tingP = {}
         for var = 1, #clickCtrl.readyHandList, 2 do
             table.insert(tingP, {Card = clickCtrl.readyHandList[var], Fan = 1, Num = clickCtrl.readyHandList[var + 1]})
@@ -1167,76 +1082,6 @@ end
 ----------------------------------------------------------
 function PlayerView:showHeadImg()
     self.head.headBox.visible = true
-    -- if self.head == nil then
-    --     logger.debug("showImg, self.head == nil")
-    --     return
-    -- end
-    -- if self.head.headImg == nil then
-    --     logger.debug("showHeadImg, self.head.headImg == nil")
-    --     return
-    -- end
-    -- local player = self.player
-    -- if player == nil then
-    --     logger.debug("showHeadImg, player == nil")
-    --     return
-    -- end
-    -- if player.sex == 1 then
-    --     self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/boy_head_img")
-    -- else
-    --     self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/girl_head_img")
-    -- end
-    -- if player.headIconURI and player.headIconURI ~= "" then
-    --     print("showHeadImg player.headIconURI = " .. player.headIconURI)
-    --     tool:SetUrlImage(self.head.headImg.transform, player.headIconURI)
-    -- else
-    --     logger.debug("showHeadIcon,  player.headIconURI == nil")
-    -- end
-    -- local boxImg = self.head.headBox.transform:GetComponent("Image")
-    -- boxImg.sprite = self.head.defaultHeadBox.sprite
-    -- boxImg:SetNativeSize()
-    -- self.head.headBox.transform.localScale = Vector3(1, 1, 1)
-    -- self.head.effectBox.transform.localScale = Vector3(1, 1, 1)
-    -- if self.head.headBox ~= nil and player.avatarID ~= nil and player.avatarID ~= 0 then
-    --     local imgPath = string.format("Component/CommonComponent/Bundle/image/bk_%d.png", player.avatarID)
-    --     self.head.headBox.transform:SetImage(imgPath)
-    --     self.head.headBox.transform:GetComponent("Image"):SetNativeSize()
-    --     self.head.headBox.transform.localScale = Vector3(0.8, 0.8, 0.8)
-    --     self.head.effectBox.transform.localScale = Vector3(1.25, 1.25, 1.25)
-    -- end
-end
-
-----------------------------------------------------------
---如果头像不存在则从微信服务器拉取
-----------------------------------------------------------
-function PlayerView:getPartnerWeixinIcon(_, _, _)
-    -- self.playersIcon = self.playersIcon or {}
-    -- self.playersIcon[iconUrl] = self.playersIcon[iconUrl] or {}
-    -- local icon = self.playersIcon[iconUrl]
-    -- if icon.tex ~= nil then
-    --     compCallback(icon.tex)
-    -- else
-    --     if icon.started then
-    --         return
-    --     end
-    --     icon.started = true
-    --     local www =
-    --         HttpGet(
-    --         iconUrl,
-    --         function(www)
-    --             local tex = www.texture
-    --             icon.tex = tex
-    --             compCallback(tex)
-    --         end,
-    --         function(error)
-    --             if failCallback then
-    --                 failCallback(error)
-    --             end
-    --         end
-    --     )
-    --     if www and not www.error then
-    --         icon.started = false
-    --     end
-    -- end
 end
 
 ----------------------------------------------------------
@@ -1245,56 +1090,6 @@ end
 function PlayerView:showOwner()
     local player = self.player
     self.head.roomOwnerFlag.visible = player:isMe()
-end
-
-----------------------------------------------------------
---动画播放，吃
-----------------------------------------------------------
-function PlayerView:playChowResultAnimation()
-    -- local player = self.player
-    -- --播放特效
-    self:playerOperationEffect("Effects_zi_chi")
-end
-
-----------------------------------------------------------
---动画播放，碰
-----------------------------------------------------------
-function PlayerView:playPongResultAnimation()
-    -- local player = self.player
-    -- --播放特效
-    self:playerOperationEffect("Effects_zi_peng")
-end
-
-----------------------------------------------------------
---动画播放，明杠
-----------------------------------------------------------
-function PlayerView:playExposedKongResultAnimation()
-    -- local player = self.player
-    -- --播放特效
-    self:playerOperationEffect("Effects_zi_gang")
-end
-
-----------------------------------------------------------
---动画播放，暗杠
-----------------------------------------------------------
-function PlayerView:playConcealedKongResultAnimation()
-    -- local player = self.player
-    -- --播放特效
-    self:playerOperationEffect("Effects_zi_gang")
-end
-
-----------------------------------------------------------
---动画播放，加杠（效果表现和明杠一样）
-----------------------------------------------------------
-function PlayerView:playTriplet2KongResultAnimation()
-    self:playExposedKongResultAnimation()
-end
-
-----------------------------------------------------------
---抓牌
-----------------------------------------------------------
-function PlayerView:playZhuaPaiAnimation()
-    self:playerOperationEffect("Effects_zi_zhua")
 end
 
 ----------------------------------------------------------
@@ -1308,9 +1103,6 @@ end
 --特效播放
 ----------------------------------------------------------
 function PlayerView:playerOperationEffect(effectName, coYield)
-    -- local effectObj = Animator.Play(dfConfig.PATH.EFFECTS .. effectName .. ".prefab", self.viewUnityNode.order)
-    -- effectObj:SetParent(self.operationTip)
-    -- effectObj.localPosition = Vector3(0, 0, 0)
     if coYield then
         animation.coplay("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
     else
@@ -1345,16 +1137,6 @@ function PlayerView:clearGray(_)
     --     imageA.color = Color(1, 1, 1, 1)
     --     imageB.color = Color(1, 1, 1, 1)
     -- end
-end
-
-----------------------------------------------------------
---头像动画播放
-----------------------------------------------------------
-function PlayerView:playInfoGroupAnimation()
-    -- local targetPos = self.infoGroupPos.localPosition
-    -- actionMgr:MoveTo(self.infoGroup, targetPos, 1, function()
-    --     --不等待动画完成
-    -- end)
 end
 
 return PlayerView

@@ -58,7 +58,6 @@ function Handler.onHandOver(msgHandOver, room)
     -- local win = false
 
     -- 隐藏游戏内聊天面板
-    room.roomView:hideChatPanel()
     local mjproto = proto.mahjong.HandOverType
     if msgHandOver.endType ~= mjproto.enumHandOverType_None then
         --胡，放铳效果直接挂在playerView上

@@ -119,18 +119,6 @@ end
 function RoomView:hide2ReadyButton()
     self.readyButton.visible = false
 end
-
-function RoomView:openChatView()
-end
-
-function RoomView:iniChatButtons()
-end
-
---隐藏游戏内聊天面板
-function RoomView:hideChatPanel()
-    --HideInGameChatPanel() 需要补上
-end
-
 --------------------------------------
 --响应玩家点击左上角的退出按钮以及后退事件
 --------------------------------------
@@ -153,15 +141,6 @@ function RoomView:onExitButtonClicked()
             --nothing to do
         end
     )
-end
-
-function RoomView:showRuleView()
-end
-
-function RoomView:closeRuleView()
-    if self.RoomRuleMsgBox then
-        self.RoomRuleMsgBox:Close()
-    end
 end
 
 ----------------------------------------------
@@ -203,29 +182,6 @@ function RoomView:gameStartAnimation()
     local x = screenWidth / 2
     local y = screenHeight / 2
     animation.coplay("animations/Effects_jiemian_duijukaishi.prefab", self.unityViewNode, x, y)
-end
-
-----------------------------------------------
--- 播放一手牌结束
-----------------------------------------------
-function RoomView:handOverAnimation()
-    --Animator.Play("Effects_jiemian_duijvjiesu")
-    local waitCo = coroutine.running()
-    --延迟播放
-    self.unityViewNode:DelayRun(
-        1.2,
-        function()
-            local flag, msg = coroutine.resume(waitCo)
-            if not flag then
-                msg = debug.traceback(waitCo, msg)
-                --error(msg)
-                logger.error(msg)
-                return
-            end
-        end
-    )
-
-    coroutine.yield()
 end
 
 function RoomView:startDiscardCountdown()
@@ -284,88 +240,6 @@ end
 --------------------------------------
 function RoomView:initRoomNumber()
     self.roomInfoText = self.unityViewNode:GetChild("roomInfo")
-
-    -- self.unityViewNode:AddClick(
-    --     self.roomInfoNode,
-    --     function()
-    --         if self.room.roomNumber == nil then
-    --             return
-    --         end
-    --         self.tipNode.visible = false
-    --         -- local content = "大丰关张:房号【" .. self.room.roomNumber .. "】, " .. self:getInvitationDescription()
-    --         -- Util.CopyClipboard(content)
-    --         prompt.showPrompt("复制房间信息成功，你可前往其他地方粘贴发送给好友！")
-    --         -- Util.SaveToPlayerPrefs("isCopyRoomNum", "1")
-    --         self.unityViewNode:StopAction(self.fingerMoveAction)
-    --         self.finger:Hide()
-    --     end
-    -- )
-end
-
-function RoomView:initRoomTip()
-    -- self.scrollTip = self.unityViewNode:FindChild("ExtendFuc/ScrollTip")
-    -- -- ios提审
-    -- if configModule:IsIosAudit() then
-    --     return
-    -- end
-    -- self.scrollTip.visible = true
-    -- self.scrollTipText = self.scrollTip:Find("Tip")
-    -- local tips = clone(dfConfig.RoomTips)
-    -- local function showTip(time1, time2)
-    --     if self.unityViewNode then
-    --         self.unityViewNode:RunAction(
-    --             self.scrollTipText,
-    --             {
-    --                 "fadeTo",
-    --                 0,
-    --                 time1,
-    --                 function(...)
-    --                     math.newrandomseed()
-    --                     local curTipIndex = math.random(1, #tips)
-    --                     self.scrollTipText.text = tips[curTipIndex]
-    --                     table.remove(tips, curTipIndex)
-    --                     if #tips <= 0 then
-    --                         tips = clone(dfConfig.RoomTips)
-    --                     end
-    --                     self.unityViewNode:RunAction(self.scrollTipText, {"fadeTo", 255, time2})
-    --                 end
-    --             }
-    --         )
-    --     end
-    -- end
-    -- showTip(0, 2)
-    -- self.unityViewNode:StartTimer(
-    --     "SHowTips",
-    --     5,
-    --     function(...)
-    --         showTip(1, 1)
-    --     end,
-    --     -1
-    -- )
-    -- self.ruleTipNode = self.unityViewNode:FindChild("ExtendFuc/TipNode")
-    -- self.ruleFinger = self.ruleTipNode:Find("Finger")
-    -- local isOpenRuleMsgBox = Util.GetFromPlayerPrefs("isOpenRuleMsgBox")
-    -- if isOpenRuleMsgBox == "1" then --复制过房号 则隐藏
-    --     self.ruleTipNode.visible = false
-    -- else
-    --     self.ruleTipNode.visible = true
-    --     local function fingerMove(posY)
-    --         self.fingerMoveAction1 =
-    --             self.unityViewNode:RunAction(
-    --             self.ruleFinger,
-    --             {
-    --                 "localMoveBy",
-    --                 0,
-    --                 posY,
-    --                 0.5,
-    --                 onEnd = function()
-    --                     fingerMove(-posY)
-    --                 end
-    --             }
-    --         )
-    --     end
-    --     fingerMove(20)
-    -- end
 end
 
 --------------------------------------
@@ -384,94 +258,6 @@ end
 --初始化时间 wifi信号 电量
 --------------------------------------
 function RoomView:initPhoneInfo()
-    -- iOS提审
-    -- if configModule:IsIosAudit() then
-    --     return
-    -- end
-    -- local timeObj = self.unityViewNode.transform:Find("ExtendFuc/Time")
-    -- local pingObj = self.unityViewNode.transform:Find("ExtendFuc/Ping")
-    -- local wifiObj = self.unityViewNode.transform:Find("ExtendFuc/Wifi")
-    -- local cmcObj = self.unityViewNode.transform:Find("ExtendFuc/CMC")
-    -- local powerObj = self.unityViewNode.transform:Find("ExtendFuc/Power")
-    -- timeObj.visible = true
-    -- pingObj.visible = true
-    -- wifiObj.visible = true
-    -- cmcObj.visible = false
-    -- powerObj.visible = true
-    -- self.time = self.unityViewNode:SubGet("ExtendFuc/Time", "Text")
-    -- self.ping = self.unityViewNode:SubGet("ExtendFuc/Ping", "Text")
-    -- self.wifi = {}
-    -- for i = 1, 2 do
-    --     self.wifi[i] = self.unityViewNode.transform:Find("ExtendFuc/Wifi/Wifi" .. i)
-    -- end
-    -- self.cmc = {}
-    -- for i = 1, 2 do
-    --     self.cmc[i] = self.unityViewNode.transform:Find("ExtendFuc/CMC/CMC" .. i)
-    -- end
-    -- self.power = {}
-    -- for i = 1, 3 do
-    --     self.power[i] = self.unityViewNode.transform:Find("ExtendFuc/Power/Power" .. i)
-    -- end
-    -- local function updatePhoneInfo(...)
-    --     local delay = self:getNetDelay()
-    --     self.time.text = os.date("%H:%M", os.time())
-    --     local battery = Util.GetBattery()
-    --     local netAvailable = Util.NetAvailable
-    --     local isWifi = Util.IsWifi
-    --     if battery >= 90 then
-    --         self.power[1].visible = true
-    --         self.power[2].visible = false
-    --         self.power[3].visible = false
-    --     elseif battery >= 30 and battery < 90 then
-    --         self.power[2].visible = true
-    --         self.power[1].visible = false
-    --         self.power[3].visible = false
-    --     else
-    --         self.power[3].visible = true
-    --         self.power[2].visible = false
-    --         self.power[1].visible = false
-    --     end
-    --     if netAvailable then
-    --         if isWifi then
-    --             wifiObj.visible = true
-    --             cmcObj.visible = false
-    --             self.ping.text = delay .. "ms"
-    --             if delay > 200 then
-    --                 self.ping.visible = true
-    --                 self.wifi[1].visible = false
-    --                 self.wifi[2].visible = true
-    --             else
-    --                 self.ping.visible = false
-    --                 self.wifi[1].visible = true
-    --                 self.wifi[2].visible = false
-    --             end
-    --         else
-    --             wifiObj.visible = false
-    --             cmcObj.visible = true
-    --             self.ping.text = delay .. "ms"
-    --             if delay > 200 then
-    --                 self.ping.visible = true
-    --                 self.cmc[1].visible = false
-    --                 self.cmc[2].visible = true
-    --             else
-    --                 self.ping.visible = false
-    --                 self.cmc[1].visible = true
-    --                 self.cmc[2].visible = false
-    --             end
-    --         end
-    --     else
-    --         logger.debug("net is not Available！！")
-    --     end
-    -- end
-    -- updatePhoneInfo()
-    -- self.unityViewNode:StartTimer(
-    --     "Clock",
-    --     10,
-    --     function(...)
-    --         updatePhoneInfo()
-    --     end,
-    --     -1
-    -- )
 end
 
 --------------------------------------
@@ -514,34 +300,6 @@ function RoomView:onRetunHallClick()
     room:onRetunHallClicked()
 end
 
---------------------------------------
---播放玩家开局头像动画
---------------------------------------
-function RoomView:playInfoGroupAnimation()
-    for _, v in ipairs(self.playerViews) do
-        v:playInfoGroupAnimation()
-    end
-end
-
-----------------------------------------------------------
--- 获取网络延时，用来刷新wifi信号强度
-----------------------------------------------------------
-function RoomView:getNetDelay()
-    local room = self.room
-    local netDelay = 0
-    if room:isReplayMode() then
-        return netDelay
-    end
-    local dfsingleton = room.host
-    if dfsingleton then
-        local ws = dfsingleton.ws
-        if ws then
-            netDelay = ws:getNetDelay()
-        end
-    end
-    return netDelay
-end
-
 ----------------------------------------------------------
 --注销界面
 ----------------------------------------------------------
@@ -569,54 +327,6 @@ end
 --         v.onReconnect()
 --     end
 -- end
---------------------------------------
---初始化声音按钮
---------------------------------------
-function RoomView:initVoiceButton()
-    -- 控制逻辑
-    -- self.voiceButton = self.unityViewNode.transform:Find("ExtendFuc/RightBtns/chat_audio_btn")
-    -- local w = self.voiceButton.width
-    -- local h = self.voiceButton.height
-    -- local camera = Util.GetUICamera():GetComponent(typeof(UnityEngine.Camera))
-    -- local scrPos = camera:WorldToScreenPoint(self.voiceButton.position)
-    -- local rect = UnityEngine.Rect(scrPos.x - w / 2, scrPos.y - h / 2, w, h)
-    -- local init = function()
-    --     if not self.voiceLayer then
-    --         self.voiceLayer = self:createVoiceLayer()
-    --         self.voiceLayer:SetVoiceButtonRect(rect)
-    --         self.voiceLayer:ResetMode()
-    --     end
-    -- end
-    -- init() -- 初始化
-    -- self.voiceButton.onDown = function()
-    --     self.voiceLayer:OnVoiceButtonDown(self.room.user.userID)
-    -- end
-    -- self.voiceButton.onUp = function()
-    --     self.voiceLayer:OnVoiceButtonUp(self.room.user.userID)
-    -- end
-    -- self.voiceButton.onDrag = function(sender, eventData)
-    --     self.voiceLayer:OnVoiceButtonDrag(sender, eventData)
-    -- end
-    -- self.delayRunMap = {}
-end
-
-function RoomView:createVoiceLayer()
-    -- local layer =
-    --     viewModule:CreatePanel(
-    --     {
-    --         luaPath = "VoiceComponent.Script.VoiceLayer",
-    --         resPath = "Component/VoiceComponent/Bundle/prefab/VoiceLayer.prefab",
-    --         superClass = self.unityViewNode,
-    --         parentNode = self.unityViewNode.transform
-    --     }
-    -- )
-    -- local uiDepth = layer:GetComponent("UIDepth")
-    -- if not uiDepth then
-    --     uiDepth = layer:AddComponent(UIDepth)
-    -- end
-    -- uiDepth.canvasOrder = self.unityViewNode.order + 2
-    -- return layer
-end
 
 ----------------------------------------------------------
 --初始化房间状态事件
@@ -631,23 +341,6 @@ function RoomView:initRoomStatus()
         self:stopDiscardCountdown()
         --等待状态重置上手牌遗留
         self.room:resetForNewHand()
-        --roomView.tilesInWall.visible = false
-
-        -- local config = self.room:getRoomConfig()
-        -- if config ~= nil then
-        --     logger.debug(" players:", room:playerCount(), ", required:", config.playerNumAcquired)
-        --     if room:playerCount() >= config.playerNumAcquired then
-        --         roomView.invitButton.visible = false
-        --     else
-        --         -- IOS 提审
-        --         -- if configModule:IsIosAudit() then
-        --         --     roomView.invitButton.visible = false
-        --         -- end
-        --         roomView.invitButton.visible = true
-        --     end
-        -- end
-
-        -- roomView:updateLeaveAndDisbandButtons()
     end
 
     --房间空闲，客户端永远看不到这个状态
@@ -663,23 +356,7 @@ function RoomView:initRoomStatus()
 
         self.roundMarkView.visible = true
         self:clearWaitingPlayer()
-        --if not room:isReplayMode() then
-        --<color=#775D42FF>" .. formatStr .. "</color>
-        -- local roundstr = "局数:<color=#e9bf89>%s/%s</color>"
-        --roomView.tilesInWall.visible = true
-        -- roomView.tipNode.visible = false
-        -- roomView.ruleTipNode.visible = false
         self:showRoomNumber()
-        -- else
-        --     roomView.curRound.visible = false
-        --     roomView.totalRound.visible = false
-        -- end
-        -- roomView:updateLeaveAndDisbandButtons()
-        -- self.scrollTip:Hide()
-        -- self.unityViewNode:StopTimer("SHowTips")
-        -- self.unityViewNode:StopAction(self.fingerMoveAction)
-        -- self.unityViewNode:StopAction(self.fingerMoveAction1)
-        -- self:hideNoFriendTips()
     end
 
     --房间已经被删除，客户端永远看不到这个状态
@@ -715,13 +392,6 @@ function RoomView:updateLeaveAndDisbandButtons()
     end
     self.exitBtn.visible = true
     self.dissolveBtn.visible = false
-    -- if room.ownerID == room:me().userID then
-    --     self.exitBtn.visible = true
-    --     self.dissolveBtn.visible = false
-    -- else
-    --     self.exitBtn.visible = true
-    --     self.dissolveBtn.visible = false
-    -- end
 end
 
 ----------------------------------------------------------
@@ -772,110 +442,6 @@ function RoomView:handleOnbackPress()
             end
         end
     end
-end
-
-function RoomView:ruleTopDisplayEvent()
-end
-
--- --------------------------------------------------------
--- 邀请好友进入游戏
--- --------------------------------------------------------
-function RoomView:getInvitationDescription()
-    local rule = ""
-    local config = self.room:getRoomConfig()
-    local players = self.room.players
-    local playerNumber = #players
-
-    -- local playerNumAcquired = ""
-    local p = ""
-    if config ~= nil then
-        if config.playerNumAcquired ~= nil then
-            if config.playerNumAcquired == 2 then
-                p = "二"
-            elseif config.playerNumAcquired == 3 then
-                p = "三"
-            elseif config.playerNumAcquired == 4 then
-                p = "四"
-            end
-            rule = rule .. p .. "人场，"
-        end
-
-        if playerNumber ~= nil then
-            local b = config.playerNumAcquired - playerNumber
-            local n = ""
-            if b == 1 then
-                n = "1"
-            elseif b == 2 then
-                n = "2"
-            elseif b == 3 then
-                n = "3"
-            end
-            rule = rule .. p .. "缺" .. n .. "，"
-        end
-
-        if config.handNum ~= nil then
-            rule = rule .. tostring(config.handNum) .. "局，"
-            self.room.handNum = config.handNum
-        end
-
-        if config.payType ~= nil then
-            local s = " 房主支付"
-            if config.payType == 1 then
-                s = " 钻石平摊"
-            end
-            rule = rule .. s
-        end
-
-        if config.fengDingType ~= nil then
-            local s = "封顶100/200/300"
-            if config.fengDingType == 0 then
-                s = "封顶20/40"
-            elseif config.fengDingType == 1 then
-                s = "封顶30/60"
-            elseif config.fengDingType == 2 then
-                s = "封顶50/100/150"
-            elseif config.fengDingType == 3 then
-                s = "封顶100/200/300"
-            end
-            rule = rule .. "，" .. s
-        end
-
-        if config.dunziPointType ~= nil then
-            local s = "墩子1分/2分"
-            if config.dunziPointType == 1 then
-                s = "墩子2分/4分"
-            end
-            if config.dunziPointType == 2 then
-                s = "墩子5分/10分/15分"
-            end
-            if config.dunziPointType == 3 then
-                s = "墩子10分/20分/30分"
-            end
-            rule = rule .. "，" .. s
-        end
-
-        if config.doubleScoreWhenSelfDrawn ~= nil and config.doubleScoreWhenSelfDrawn then
-            rule = rule .. "，自摸加双"
-        end
-        if config.doubleScoreWhenContinuousBanker ~= nil and config.doubleScoreWhenContinuousBanker then
-            rule = rule .. "，连庄"
-        end
-
-        if config.doubleScoreWhenZuoYuanZi ~= nil and config.doubleScoreWhenZuoYuanZi then
-            rule = rule .. ", 坐园子"
-        end
-
-        rule = rule .. "大丰关张，大丰人最喜爱的纸牌游戏，仅此一家！"
-
-        logger.debug("llwant , RoomView:getInvitationDescription rule : ", rule)
-    end
-    return rule
-end
-
-----------------------------------------------------------
---获取房间规则
-----------------------------------------------------------
-function RoomView:getRule(_)
 end
 
 --------------------------------------
