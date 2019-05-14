@@ -41,6 +41,7 @@ Player.ButtonDef = {
     Hu = "ui://dafeng/hu_button",
     Zhua = "ui://dafeng/zhua_button"
 }
+
 function Player.new(userID, chairID, room)
     local player = {userID = userID, chairID = chairID, room = room}
     setmetatable(player, mt)
@@ -632,36 +633,6 @@ function Player:onFinalDrawBtnClick(_)
     end
 
     self.playerView:clearAllowedActionsView()
-end
-
-----------------------------------------
--- 玩家选择了起手听牌
--- 上下文必然是allowedActionMsg
-----------------------------------------
-function Player:onReadyHandBtnClick2(btnObj)
-    local room = self.room
-
-    -- 庄家起手听要特殊处理
-    -- 先保存一下到hasRichiWill
-    -- TODO: 等庄家出牌后带上这个标志
-    local isOk = false
-
-    if self.allowedActionMsg ~= nil then
-        if room.bankerChairID == self.chairID then
-            isOk = self:onBankerReadyHandClicked(btnObj)
-        else
-            local actionMsg = {}
-            actionMsg.qaIndex = self.allowedActionMsg.qaIndex
-            actionMsg.action = mjproto.ActionType.enumActionType_FirstReadyHand
-            actionMsg.flags = 1 --0表示不起手听牌
-
-            self:sendActionMsg(actionMsg)
-            isOk = true
-        end
-    end
-    if isOk then
-        self.playerView:clearAllowedActionsView()
-    end
 end
 
 ----------------------------------------

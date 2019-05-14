@@ -38,9 +38,9 @@ function MsgCenter:start()
         if not self.retry then
             break
         else
-            logger.trace("Wait 3 seconds to retry, connectErrorCount:"..self.connectErrorCount)
-          --等待重连
-          coroutingExt.waitSecond(self.component, 3)
+            logger.trace("Wait 3 seconds to retry, connectErrorCount:" .. self.connectErrorCount)
+            --等待重连
+            coroutingExt.waitSecond(self.component, 3)
         end
     end
 end
