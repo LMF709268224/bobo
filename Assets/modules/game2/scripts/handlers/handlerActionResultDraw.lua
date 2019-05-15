@@ -16,10 +16,6 @@ function Handler.onMsg(actionResultMsg, room)
     --本次抽牌如果有抽到花牌，则把花牌保存到player的花牌列表
     --并显示出来
     if tilesFlower ~= nil and #tilesFlower > 0 then
-        player:addFlowerTiles(tilesFlower)
-        player.playerView:playDrawFlowerAnimation()
-        player:flower2UI()
-        player:waitSecond(0.5)
         for _, flower in ipairs(tilesFlower) do
             local xf = {}
             player.playerView:showFlowerOnHandTail(flower)

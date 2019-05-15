@@ -36,8 +36,6 @@ function Handler.onMsg(msgData, room)
     end
 
     room:updateTilesInWallUI()
-    --重连
-    --room.roomView:onReconnect()
     --TODO:根据风圈修改
     room.roomView:setRoundMask(1)
     --TODO:修改家家庄标志
@@ -82,11 +80,6 @@ function Handler.onMsg(msgData, room)
     --显示各个玩家的手牌（对手只显示暗牌）和花牌和打出去的牌
     for _, p in pairs(room.players) do
         p:hand2UI(not newDraw)
-        -- if mySelf == p then
-        --     p:hand2UI(not newDraw)
-        -- else
-        --     p:hand2UI()
-        -- end
 
         p:flower2UI()
         local newDiscarded = false

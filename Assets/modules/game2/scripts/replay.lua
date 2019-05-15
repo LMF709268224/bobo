@@ -12,6 +12,7 @@ local actionType = proto.mahjong.ActionType
 local mahjong = proto.mahjong
 local msgQueue = require "scripts/msgQueue"
 local fairy = require "lobby/lcore/fairygui"
+local meldType = proto.mahjong.MeldType
 
 function Replay.new(singleton, msgHandRecord)
     local replay = {}
@@ -222,45 +223,47 @@ function Replay:deal()
     local deals = self.msgHandRecord.deals
     --保存一些房间属性
     room.bankerChairID = self.msgHandRecord.bankerChairID
-    local player1 = nil
-    local player2 = nil
-    local mySelf = nil
+    --是否连庄
+    room.isContinuousBanker = self.msgHandRecord.isContinuousBanker
+    room.windFlowerID = self.msgHandRecord.windFlowerID
+
     --所有玩家状态改为playing
     local players = room.players
     for _, p in pairs(players) do
         p.state = mahjong.PlayerState.PSPlaying
         local onUpdate = p.playerView.onUpdateStatus[p.state]
         onUpdate(room.state)
-        if p:isMe() then
-            mySelf = p
-        else
-            if player1 == nil then
-                player1 = p
-            else
-                player2 = p
-            end
-        end
     end
+
+    --根据风圈修改
+    room.roomView:setRoundMask(1)
+    --修改庄家标志
+    room:setBankerFlag()
 
     local drawCount = 0
     --保存每一个玩家的牌列表
     for _, v in ipairs(deals) do
         local chairID = v.chairID
         local player = room:getPlayerByChairID(chairID)
-        drawCount = drawCount + #v.cardsHand
-        player.cardsOnHand = {}
+        drawCount = drawCount + #v.tilesHand
+        player.tilesHand = {}
         --填充手牌列表，所有人的手牌列表
-        player:addHandTiles(v.cardsHand)
+        player:addHandTiles(v.tilesHand)
+        --填充花牌列表
+        player:addFlowerTiles(v.tilesFlower)
     end
 
     --显示各个玩家的手牌（对手只显示暗牌）和花牌
     for _, p in pairs(players) do
         p:sortHands()
         p:hand2UI(false, false)
+        p:flower2UI()
     end
 
+    room.tilesInWall = 144 - drawCount
+    room:updateTilesInWallUI()
     --播放发牌动画，并使用coroutine等待动画完成
-    room.roomView:dealAnimation(mySelf, player1, player2)
+    -- room.roomView:dealAnimation(mySelf, player1, player2)
 
     --等待庄家出牌
     local bankerPlayer = room:getPlayerByChairID(room.bankerChairID)
@@ -299,58 +302,179 @@ end
 function Replay:armActionHandler()
     local handers = {}
 
-    handers[actionType.enumActionType_SKIP] = self.skipActionHandler
+    handers[actionType.enumActionType_FirstReadyHand] = self.firstReadyHandActionHandler
     handers[actionType.enumActionType_DISCARD] = self.discardedActionHandler
+    handers[actionType.enumActionType_DRAW] = self.drawActionHandler
+    handers[actionType.enumActionType_CHOW] = self.chowActionHandler
+    handers[actionType.enumActionType_PONG] = self.pongActionHandler
+    handers[actionType.enumActionType_KONG_Exposed] = self.kongExposedActionHandler
+    handers[actionType.enumActionType_KONG_Concealed] = self.kongConcealedActionHandler
+    handers[actionType.enumActionType_KONG_Triplet2] = self.triplet2KongActionHandler
+    handers[actionType.enumActionType_WIN_Chuck] = self.winChuckActionHandler
+    handers[actionType.enumActionType_WIN_SelfDrawn] = self.winSelfDrawActionHandler
 
     self.actionHandler = handers
 end
+
 ---------------------------------
---过
+--起手听
 ---------------------------------
-function Replay:skipActionHandler(srAction, room)
-    logger.debug(" replay, firstReadyHand")
+function Replay:firstReadyHandActionHandler(srAction, room)
+    print("llwant, dfreplay, firstReadyHand")
 
     local actionResultMsg = {targetChairID = srAction.chairID}
-    local h = require("scripts/handlers/handlerActionResultSkip")
+    local h = require("scripts/handlers/handlerActionResultReadyHand")
     h.onMsg(actionResultMsg, room)
-end
-
---深度复制table
-local function clone(obj)
-    local lookup_table = {}
-    local function _copy(object)
-        if type(object) ~= "table" then
-            return object
-        elseif lookup_table[object] then
-            return lookup_table[object]
-        end
-        local newObject = {}
-        lookup_table[object] = newObject
-        for key, value in pairs(object) do
-            newObject[_copy(key)] = _copy(value)
-        end
-        return setmetatable(newObject, getmetatable(object))
-    end
-    return _copy(obj)
 end
 ---------------------------------
 --出牌
+--补充庄家起手听
 ---------------------------------
 function Replay:discardedActionHandler(srAction, room, waitDiscardReAction)
-    logger.debug(" replay, discarded")
-    --这里要复制table出来用，否则，用户观看完一次回播记录之后，点击重播，srAction.cards会少了第一个元素
-    local tiles = clone(srAction.cards)
-    local cardHandType = tiles[1]
-    table.remove(tiles, 1)
+    print("llwant, dfreplay, discarded")
+    local tiles = srAction.tiles
+    local discardTileId = tiles[1]
     local actionResultMsg = {
         targetChairID = srAction.chairID,
-        actionHand = {cards = tiles, cardHandType = cardHandType},
+        actionTile = tiles[1],
         waitDiscardReAction = waitDiscardReAction
     }
-
     local h = require("scripts/handlers/handlerActionResultDiscarded")
     h.onMsg(actionResultMsg, room)
+
+    self.latestDiscardedPlayer = room:getPlayerByChairID(srAction.chairID)
+    self.latestDiscardedTile = discardTileId
+
+    if proto.actionsHasAction(srAction.flags, mahjong.SRFlags.SRRichi) then
+        self:firstReadyHandActionHandler(srAction, room)
+    end
 end
+---------------------------------
+--抽牌
+---------------------------------
+function Replay:drawActionHandler(srAction, room)
+    print("llwant, dfreplay, draw")
+    local tiles = srAction.tiles
+    local tilesFlower = nil
+    if #tiles > 1 then
+        tilesFlower = {}
+        for i = 1, #tiles - 1 do
+            tilesFlower[i] = tiles[i]
+        end
+    end
+
+    local drawTile = tiles[#tiles]
+    local drawCnt = #tiles
+    if drawTile == 1 + mahjong.TileID.enumTid_MAX then
+        drawCnt = drawCnt - 1
+    end
+    local tilesInWall = room.tilesInWall - drawCnt
+    local actionResultMsg = {
+        targetChairID = srAction.chairID,
+        actionTile = drawTile,
+        newFlowers = tilesFlower,
+        tilesInWall = tilesInWall
+    }
+
+    local player = room:getPlayerByChairID(srAction.chairID)
+    room.roomView:setWaitingPlayer(player)
+    --player.lastTile = drawTile
+
+    local h = require "scripts/handlers/handlerActionResultDraw"
+    h.onMsg(actionResultMsg, room)
+end
+---------------------------------
+--吃
+---------------------------------
+function Replay:chowActionHandler(srAction, room)
+    print("llwant, dfreplay, chow")
+
+    local tiles = srAction.tiles
+    local actionMeld = {
+        tile1 = tiles[1],
+        chowTile = tiles[2],
+        meldType = meldType.enumMeldTypeSequence,
+        contributor = self.latestDiscardedPlayer.chairID
+    }
+
+    local chowTileId = tiles[2]
+
+    local actionResultMsg = {targetChairID = srAction.chairID, actionMeld = actionMeld, actionTile = chowTileId}
+    local h = require "scripts/handlers/handlerActionResultChow"
+    h.onMsg(actionResultMsg, room)
+end
+---------------------------------
+--碰
+---------------------------------
+function Replay:pongActionHandler(srAction, room)
+    print("llwant, dfreplay, pong")
+
+    local tiles = srAction.tiles
+    local actionMeld = {
+        tile1 = tiles[1],
+        meldType = meldType.enumMeldTypeTriplet,
+        contributor = self.latestDiscardedPlayer.chairID
+    }
+
+    local actionResultMsg = {targetChairID = srAction.chairID, actionMeld = actionMeld}
+    local h = require "scripts/handlers/handlerActionResultPong"
+    h.onMsg(actionResultMsg, room)
+end
+---------------------------------
+--明杠
+---------------------------------
+function Replay:kongExposedActionHandler(srAction, room)
+    print("llwant, dfreplay, kong-exposed")
+    local tiles = srAction.tiles
+    local actionMeld = {
+        tile1 = tiles[1],
+        meldType = meldType.enumMeldTypeExposedKong,
+        contributor = self.latestDiscardedPlayer.chairID
+    }
+
+    local actionResultMsg = {targetChairID = srAction.chairID, actionMeld = actionMeld}
+    local h = require "scripts/handlers/handlerActionResultKongExposed"
+    h.onMsg(actionResultMsg, room)
+end
+---------------------------------
+--暗杠
+---------------------------------
+function Replay:kongConcealedActionHandler(srAction, room)
+    print("llwant, dfreplay, kong-concealed")
+    local tiles = srAction.tiles
+    local kongTileId = tiles[1]
+
+    local actionResultMsg = {targetChairID = srAction.chairID, actionTile = kongTileId}
+    local h = require "scripts/handlers/handlerActionResultKongConcealed"
+    h.onMsg(actionResultMsg, room)
+end
+---------------------------------
+--加（续）杠
+---------------------------------
+function Replay:triplet2KongActionHandler(srAction, room)
+    print("llwant, dfreplay, triplet2kong")
+    local tiles = srAction.tiles
+    local kongTileId = tiles[1]
+
+    local actionResultMsg = {targetChairID = srAction.chairID, actionTile = kongTileId}
+    local h = require "scripts/handlers/handlerActionResultTriplet2Kong"
+    h.onMsg(actionResultMsg, room)
+end
+---------------------------------
+--吃铳胡牌
+---------------------------------
+function Replay:winChuckActionHandler(srAction, room)
+    print("llwant, dfreplay, win chuck ")
+    local player = room:getPlayerByChairID(srAction.chairID)
+    player:addHandTile(srAction.tiles[1])
+end
+---------------------------------
+--自摸胡牌
+---------------------------------
+function Replay:winSelfDrawActionHandler(_, _)
+    print("llwant, dfreplay, win self draw ")
+end
+
 ---------------------------------
 --一手牌结束，显示得分页面
 ---------------------------------
@@ -379,7 +503,7 @@ function Replay:handOver()
     room.msgHandOver = msgHandOver
     local players = room.players
     for _, p in pairs(players) do
-        p.lastTile = p.cardsOnHand[#p.cardsOnHand] --保存最后一张牌，可能是胡牌。。。用于最后结算显示
+        p.lastTile = p.tilesHand[#p.tilesHand] --保存最后一张牌，可能是胡牌。。。用于最后结算显示
     end
 
     local h = require "scripts/handlers/handlerMsgHandOver"
