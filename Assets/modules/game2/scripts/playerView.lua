@@ -36,9 +36,12 @@ local MeldComponentSuffix = {
 function PlayerView.new(viewUnityNode, viewChairID)
     local playerView = {}
     setmetatable(playerView, mt)
+    playerView.viewChairID = viewChairID
+    playerView.viewUnityNode = viewUnityNode
     -- 这里需要把player的chairID转换为游戏视图中的chairID，这是因为，无论当前玩家本人
     -- 的chair ID是多少，他都是居于正中下方，左手是上家，右手是下家，正中上方是对家
     local view = viewUnityNode:GetChild("player" .. viewChairID)
+    playerView.myView = view
     if (viewChairID == 1) then
         playerView.operationPanel = viewUnityNode:GetChild("operationPanel")
         playerView.meldOpsPanel = viewUnityNode:GetChild("meldOpsPanel")
@@ -46,9 +49,6 @@ function PlayerView.new(viewUnityNode, viewChairID)
         playerView:initOperationButtons()
         playerView:initMeldsPanel()
     end
-    playerView.viewChairID = viewChairID
-    playerView.viewUnityNode = viewUnityNode
-    playerView.myView = view
     playerView.aniPos = view:GetChild("aniPos")
 
     -- 打出的牌放大显示
@@ -236,6 +236,14 @@ function PlayerView:initOperationButtons()
     self.operationButtonsRoot = self.operationPanel
 
     self:hideOperationButtons()
+
+    -- 检查听详情 按钮
+    self.checkReadyHandBtn = self.viewUnityNode:GetChild("checkReadyHandBtn")
+    self.checkReadyHandBtn.onClick:Set(
+        function(_)
+            self:onCheckReadyHandBtnClick()
+        end
+    )
 end
 
 function PlayerView:renderButtonListItem(index, obj)
@@ -353,7 +361,7 @@ function PlayerView:initPlayerStatus()
     local onStart = function()
         print("llwant ,test onstart ")
         self.head.readyIndicator.visible = false
-        if self.checkReadyHandBtn ~= nil then
+        if self.checkReadyHandBtn then
             self.checkReadyHandBtn.visible = false
         end
     end
@@ -825,8 +833,6 @@ function PlayerView:clearAllowedActionsView(discardAble)
     self:hideOperationButtons()
     --隐藏听牌详情界面
     self.player.room.roomView:hideTingDataView()
-
-    --self.checkReadyHandBtn.visible = false
 end
 
 ------------------------------------------
@@ -906,7 +912,7 @@ function PlayerView:onCheckReadyHandBtnClick()
     local player = self.player
     local roomView = self.player.room.roomView
     local readyHandList = player.readyHandList
-    if not roomView.ListensObj.activeSelf and readyHandList ~= nil and #readyHandList > 0 then
+    if not roomView.listensObj.visible and readyHandList ~= nil and #readyHandList > 0 then
         -- local tingData = {}
         local tingP = {}
         for var = 1, #readyHandList, 2 do

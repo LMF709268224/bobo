@@ -133,24 +133,6 @@ function HandResultView:updateRoomData()
         roomNumber = ""
     end
     self.textRoomNumber.text = "房号:" .. tostring(roomNumber)
-
-    -- local handNum = self.room.handNum
-    -- local handStartted = self.room.handStartted
-    -- local handNum = self.room.handNum
-    -- if handNum ~= nil and handStartted ~= nil then
-    --     self.handAmount.text = "局数: " .. tostring(handStartted) .. "/" .. tostring(handNum)
-    -- end
-    -- local roomConfig = self.room.roomInfo.config
-    -- if roomConfig ~= nil and roomConfig ~= "" then
-    --     logger.debug("roomConfig : ", roomConfig)
-    --     local config = Json.decode(roomConfig)
-    --     if config.payType ~= nil then
-    --         self.payType.text = "付费:房主支付"
-    --         if config.payType == 1 then
-    --             self.payType.text = "付费:钻石平摊"
-    --         end
-    --     end
-    -- end
 end
 
 -------------------------------------------
@@ -174,30 +156,6 @@ function HandResultView:updatePlayerInfoData(player, c)
         c.zhuang.visible = true
     end
     --头像
-    -- if player.sex == 1 then
-    --     c.imageIcon.sprite = dfCompatibleAPI:loadDynPic("playerIcon/boy_img")
-    -- else
-    --     c.imageIcon.sprite = dfCompatibleAPI:loadDynPic("playerIcon/girl_img")
-    -- end
-    -- if player.headIconURI ~= nil and player.headIconURI ~= "" then
-    -- player.playerView:getPartnerWeixinIcon(
-    --     player.headIconURI,
-    --     function(texture)
-    --         c.imageIcon.transform:SetImage(texture)
-    --     end
-    -- )
-    -- local tool = g_ModuleMgr:GetModule(ModuleName.TOOLLIB_MODULE)
-    -- tool:SetUrlImage(c.imageIcon.transform, player.headIconURI)
-    -- else
-    --     logger.debug("player.headIconURI is nill")
-    -- end
-
-    -- if player.avatarID ~= nil and player.avatarID ~= 0 then
-    -- local imagePath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png", player.avatarID)
-    -- c.headBox.transform:SetImage(imagePath)
-    -- c.headBox.transform:GetComponent("Image"):SetNativeSize()
-    -- c.headBox.transform.localScale = Vector3(0.8, 0.8, 1)
-    -- end
 end
 
 -------------------------------------------

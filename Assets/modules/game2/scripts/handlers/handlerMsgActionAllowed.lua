@@ -62,7 +62,6 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     if proto.actionsHasAction(actions, at.enumActionType_FirstReadyHand) then
         print("llwant, can ready hand")
         needShowOperationButtons = true
-        -- playerView.readyHandBtn.visible = true
         buttonMap[#buttonMap + 1] = player.ButtonDef.Ting
         --这个标志用来判断可否出牌，当点击了动作按钮之后flagsAction会设置为true，这时候才可以出牌
         player.waitSkip = true

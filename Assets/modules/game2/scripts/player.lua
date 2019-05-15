@@ -7,6 +7,7 @@ local Player = {}
 
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
+-- local logger = require "lobby/lcore/logger"
 local mjproto = proto.mahjong
 
 --音效文件定义
@@ -600,8 +601,8 @@ function Player:onReadyHandBtnClick(_)
             local handsClickCtrl = handsClickCtrls[i]
             local tileID = handsClickCtrl.tileID
             if tileID ~= nil then
-                handsClickCtrl.isDiscardable = handsClickCtrl.t.activeSelf
-                if not handsClickCtrl.t.activeSelf then
+                handsClickCtrl.isDiscardable = handsClickCtrl.t.visible
+                if not handsClickCtrl.t.visible then
                     handsClickCtrl.isGray = true
                     self.playerView:setGray(handsClickCtrl.h)
                 end
@@ -909,13 +910,13 @@ function Player:onPlayerDiscardTile(tileID)
     return true
 end
 
-function Player:updateReadyHandList(_)
-    -- self.readyHandList = readyHandList
-    -- if self.readyHandList ~= nil and #self.readyHandList > 0 then
-    --     self.playerView.checkReadyHandBtn.visible = true
-    -- else
-    --     self.playerView.checkReadyHandBtn.visible = false
-    -- end
+function Player:updateReadyHandList(readyHandList)
+    self.readyHandList = readyHandList
+    if self.readyHandList ~= nil and #self.readyHandList > 0 then
+        self.playerView.checkReadyHandBtn.visible = true
+    else
+        self.playerView.checkReadyHandBtn.visible = false
+    end
 end
 
 return Player
