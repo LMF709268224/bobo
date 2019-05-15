@@ -73,7 +73,7 @@ function Handler.onMsg(msgData, room)
         end
     end
 
-    local me = room:me()
+    local me = room.myPlayer
     local myOldState = me.state
 
     -- 更新，或者创建其他player

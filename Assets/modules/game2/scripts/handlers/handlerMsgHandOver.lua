@@ -38,7 +38,7 @@ function Handler.onMsg(msgData, room)
     --TODO:重置操作面板，重置等待玩家等等
     room.roomView:clearWaitingPlayer()
     --隐藏操作按钮
-    local myPlayer = room:me()
+    local myPlayer = room.myPlayer
     myPlayer.playerView:hideOperationButtons()
 
     --所有人的手牌，都排一下序
@@ -61,7 +61,7 @@ function Handler.onHandOver(msgHandOver, room)
     local mjproto = proto.mahjong.HandOverType
     if msgHandOver.endType ~= mjproto.enumHandOverType_None then
         --胡，放铳效果直接挂在playerView上
-        -- local myself = room:me()
+        -- local myself = room.myPlayer
         for _, score in ipairs(msgHandOver.scores.playerScores) do
             local player = room:getPlayerByChairID(score.targetChairID)
             if score.winType == mjproto.enumHandOverType_Win_SelfDrawn then

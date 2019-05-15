@@ -71,7 +71,7 @@ end
 -------------------------------------------
 function GameOverResultView:updatePlayerInfoData(player, c)
     --名字  id
-    -- local isMe = player == self.room:me()
+    -- local isMe = player == self.room.myPlayer
     local name = player.nick
     if name == nil or name == "" then
         name = player.userID

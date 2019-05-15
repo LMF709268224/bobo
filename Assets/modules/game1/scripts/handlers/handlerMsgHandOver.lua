@@ -34,7 +34,7 @@ function Handler.onMsg(msgData, room)
     --TODO:重置操作面板，重置等待玩家等等
     room.roomView:clearWaitingPlayer()
     --隐藏操作按钮
-    local myPlayer = room:me()
+    local myPlayer = room.myPlayer
     myPlayer.playerView:hideOperationButtons()
 
     --所有人的手牌，都排一下序
@@ -52,7 +52,7 @@ end
 
 function Handler.onHandOver(msgHandOver, room)
     if msgHandOver.endType ~= proto.prunfast.HandOverType.enumHandOverType_None then
-        -- local myself = room:me()
+        -- local myself = room.myPlayer
         for _, score in ipairs(msgHandOver.scores.playerScores) do
             local player = room:getPlayerByChairID(score.targetChairID)
             -- if player == myself then

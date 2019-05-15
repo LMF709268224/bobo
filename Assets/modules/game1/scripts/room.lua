@@ -143,13 +143,6 @@ function Room:getPlayerByChairID(chairID)
 end
 
 -------------------------------------------
--- 获得自身的player对象
--------------------------------------------
-function Room:me()
-    return self:getPlayerByUserId(self.user.userID)
-end
-
--------------------------------------------
 -- 判断player是否玩家自身
 -------------------------------------------
 function Room:isMe(player)

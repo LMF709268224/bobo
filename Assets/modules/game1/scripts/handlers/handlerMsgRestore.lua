@@ -70,7 +70,7 @@ function Handler.onMsg(msgData, room)
     end
 
     --自己手牌排一下序
-    local mySelf = room:me()
+    local mySelf = room.myPlayer
     mySelf:sortHands()
 
     --显示各个玩家的手牌（对手只显示暗牌）和花牌和打出去的牌

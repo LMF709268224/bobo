@@ -11,7 +11,7 @@ function Handler.onMsg(actionResultMsg, room)
     local player = room:getPlayerByChairID(targetChairID)
     local discardTileId = actionResultMsg.actionTile
 
-    local me = room:me()
+    local me = room.myPlayer
     if player ~= me or room:isReplayMode() then
         player:discardOutTileID(discardTileId)
     end

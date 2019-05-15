@@ -227,7 +227,7 @@ function DisbandVoteView:updateView(msgDisbandNotify)
             local disbandVoteView = self
 
             local found = false
-            local me = self.room:me()
+            local me = self.room.myPlayer
 
             for _, chairID in ipairs(msgDisbandNotify.waits) do
                 if chairID == me.chairID then

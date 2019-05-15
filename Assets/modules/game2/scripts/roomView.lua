@@ -382,7 +382,7 @@ function RoomView:handleOnbackPress()
         end
     else
         roomView.unityViewNode.OnMenuBack = function()
-            if room.ownerID ~= room:me().userID and self.exitBtn.activeSelf then
+            if room.ownerID ~= room.myPlayer.userID and self.exitBtn.activeSelf then
                 self:onExitButtonClicked()
             else
                 if room.handResultView then
@@ -568,8 +568,8 @@ function RoomView:onMeldOpsClick(index)
         actionMsg.action = mjproto.ActionType.enumActionType_KONG_Triplet2
     end
 
-    self.room:me():sendActionMsg(actionMsg)
-    self.room:me().playerView:hideOperationButtons()
+    self.room.myPlayer:sendActionMsg(actionMsg)
+    self.room.myPlayer.playerView:hideOperationButtons()
     self.meldOpsPanel.visible = false
 end
 

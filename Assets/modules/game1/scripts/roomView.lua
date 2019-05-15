@@ -322,7 +322,7 @@ function RoomView:updateLeaveAndDisbandButtons()
     end
     self.exitBtn:SetActive(true)
     self.dissolveBtn:SetActive(false)
-    -- if room.ownerID == room:me().userID then
+    -- if room.ownerID == room.myPlayer.userID then
     --     self.exitBtn:SetActive(true)
     --     self.dissolveBtn:SetActive(false)
     -- else
@@ -356,7 +356,7 @@ function RoomView:handleOnbackPress()
         end
     else
         roomView.unityViewNode.OnMenuBack = function()
-            if room.ownerID ~= room:me().userID and self.exitBtn.activeSelf then
+            if room.ownerID ~= room.myPlayer.userID and self.exitBtn.activeSelf then
                 self:onExitButtonClicked()
             else
                 if room.handResultView then
