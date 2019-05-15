@@ -63,7 +63,6 @@ function GameOverResultView:updateRoomData()
     --房间信息
     -- local rule = ""
     local roomNumber = self.room.roomNumber
-    --self.textRule.text = self.room:getRule()
     self.textRoomNumber.text = "房号:" .. tostring(roomNumber)
 end
 

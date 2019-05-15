@@ -19,10 +19,6 @@ local tileMounter = require("scripts/tileImageMounter")
 function PlayerView.new(viewUnityNode, viewChairID)
     local playerView = {}
     setmetatable(playerView, mt)
-    -- 先找到牌相关的节点
-    -- 现在的牌相关是在一个独立的prefab里面
-    -- 这个prefab在roomView构造是已经加载进来
-    -- 此处找到该节点
     -- 这里需要把player的chairID转换为游戏视图中的chairID，这是因为，无论当前玩家本人
     -- 的chair ID是多少，他都是居于正中下方，左手是上家，右手是下家，正中上方是对家
     -- 根据prefab中的位置，正中下方是Cards/1，左手是Cards/4，右手是Cards/2，正中上方是Cards/3
@@ -248,48 +244,28 @@ function PlayerView:initPlayerStatus()
     --起始
     local onStart = function()
         logger.debug("llwant ,test onstart ")
-        -- head.root:SetActive(true)
-        -- head.stateOffline:SetActive(false)
-        -- self.infoGroupEmpty:SetActive(false)
         self.head.readyIndicator.visible = false
     end
 
     --准备
     local onReady = function()
         logger.debug("llwant ,test onReady ")
-        -- head.root:SetActive(true)
-        -- head.stateOffline:SetActive(false)
-        -- self.infoGroupEmpty:SetActive(false)
         self.head.readyIndicator.visible = true
-        -- self:showOwner()
-        --onReset(roomstate)
     end
 
     --离线
     local onLeave = function()
         logger.debug("llwant ,test onLeave ")
         self.head.readyIndicator.visible = false
-        -- self.infoGroupEmpty:SetActive(false)
-        -- head.stateOffline:SetActive(true)
-        --onReset(roomstate)
     end
 
     --正在玩
     local onPlaying = function()
         logger.debug("llwant ,test onPlaying ")
         self.head.readyIndicator.visible = false
-        -- self.infoGroupEmpty:SetActive(false)
-        -- head.root:SetActive(true)
-        -- head.stateOffline:SetActive(false)
-        -- self:showOwner()
-        --onReset(roomstate)
     end
 
     ----玩家状态
-    -- PSNone = 0
-    -- PSReady = 1
-    -- PSOffline = 2
-    -- PSPlaying = 3
     local status = {}
     status[proto.pokerface.PlayerState.PSNone] = onStart
     status[proto.pokerface.PlayerState.PSReady] = onReady
@@ -349,13 +325,10 @@ end
 ------------------------------------
 function PlayerView:resetForNewHand()
     self:hideHands()
-    -- self:hideFlowers()
     self:hideLights()
-    -- self:clearDiscardable()
     self:hideDiscarded()
     --特效列表
     --self:cleanEffectObjLists()
-    --self.head.ting:SetActive(false)
     self:setHeadEffectBox(false)
     self:hideGaoJing()
     --这里还要删除特效
@@ -571,20 +544,6 @@ function PlayerView:dealOther()
             end
         )
     end
-    -- self.dealNumer = 0
-    -- self.viewUnityNode:StartTimer(
-    --     "playerDeal",
-    --     1,
-    --     0,
-    --     function()
-    --         self.dealNumer = self.dealNumer + 1
-    --         self.handsNumber.text = self.dealNumer
-    --         if self.dealNumer >= 16 then
-    --             self.viewUnityNode:StopTimer("playerDeal")
-    --         end
-    --     end,
-    --     self.dealNumer
-    -- )
 end
 --发牌动画。。。玩家1 手牌展现
 function PlayerView:deal()
@@ -768,44 +727,6 @@ function PlayerView:showHeadImg()
     self.head.headImg.visible = true
     self.head.scoreText.visible = true
     self.head.scoreBg.visible = true
-    -- if self.head.headImg == nil then
-    --     logger.error("showHeadIcon, self.head.headImg == nil")
-    --     return
-    -- end
-
-    -- local player = self.player
-    -- if player == nil then
-    --     logger.error("showHeadIcon, player == nil")
-    --     return
-    -- end
-
-    -- if player.sex == 1 then
-    --     self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/boy_img")
-    -- else
-    --     self.head.headImg.sprite = dfCompatibleAPI:loadDynPic("playerIcon/girl_img")
-    -- end
-
-    -- if player.headIconURI then
-    --     logger.debug("showHeadImg player.headIconURI = ", player.headIconURI)
-    --     tool:SetUrlImage(self.head.headImg.transform, player.headIconURI)
-    -- else
-    --     logger.error("showHeadIcon,  player.headIconURI == nil")
-    -- end
-
-    -- local boxImg = self.head.headBox.transform:GetComponent("Image")
-    -- boxImg.sprite = self.head.defaultHeadBox.sprite
-    -- boxImg:SetNativeSize()
-
-    -- self.head.headBox.transform.localScale = Vector3(1,1,1)
-    -- self.head.effectBox.transform.localScale = Vector3(1,1,1)
-
-    -- if self.head.headBox ~= nil and player.avatarID ~= nil and player.avatarID ~= 0 then
-    --     local imgPath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png",player.avatarID)
-    --     self.head.headBox.transform:SetImage(imgPath)
-    --     self.head.headBox.transform:GetComponent("Image"):SetNativeSize()
-    --     self.head.headBox.transform.localScale = Vector3(0.8,0.8,0.8)
-    --     self.head.effectBox.transform.localScale = Vector3(1.25,1.25,1.25)
-    -- end
 end
 
 ----------------------------------------------------------
@@ -854,20 +775,6 @@ end
 --不要动画并等待
 function PlayerView:playSkipAnimation()
     self:playerOperationEffectWhitGZ("Effects_zi_buyao", "")
-    --local waitCo = coroutine.running()
-    -- self:playerOperationEffectWhitGZ(dfConfig.EFF_DEFINE.SUB_GUANZHANG_BUYAO, "buyao")
-    --self.player:playSound("hua")
-    -- self.viewUnityNode:DelayRun(
-    --     1.5,
-    --     function()
-    --         local flag, msg = coroutine.resume(waitCo)
-    --         if not flag then
-    --             logger.error(msg)
-    --             return
-    --         end
-    --     end
-    -- )
-    --coroutine.yield()
 end
 
 ----------------------------------------------------------
@@ -877,16 +784,6 @@ function PlayerView:playerOperationEffectWhitGZ(effectName)
     --新代码
     -- self.aniPos.visible = true
     animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
-end
-
-----------------------------------------------------------
---头像动画播放
-----------------------------------------------------------
-function PlayerView:playInfoGroupAnimation()
-    -- local targetPos = self.infoGroupPos.localPosition
-    -- actionMgr:MoveTo(self.infoGroup, targetPos, 1, function()
-    --     --不等待动画完成
-    -- end)
 end
 
 function PlayerView:updateHeadEffectBox()

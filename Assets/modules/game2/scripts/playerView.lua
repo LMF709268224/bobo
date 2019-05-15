@@ -10,6 +10,7 @@ local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
 local animation = require "lobby/lcore/animations"
 local tileMounter = require("scripts/tileImageMounter")
+local prompt = require "lobby/lcore/prompt"
 local mjproto = proto.mahjong
 
 --面子牌组资源 前缀
@@ -787,13 +788,7 @@ function PlayerView:onHandTileBtnClick(_, index)
         if clickCtrl.isGray then
             logger.debug("clickCtrl.isGray ----")
             if not self.alreadyShowNonDiscardAbleTips then
-                -- dfCompatibleAPI:showTip(
-                --     "本轮不能出与该牌组合的牌，请选择其他牌",
-                --     1,
-                --     function()
-                --         self.alreadyShowNonDiscardAbleTips = false
-                --     end
-                -- )
+                prompt.showPrompt("本轮不能出与该牌组合的牌，请选择其他牌")
                 self.alreadyShowNonDiscardAbleTips = true
             end
         end

@@ -51,11 +51,6 @@ function Handler.onMsg(msgData, room)
 end
 
 function Handler.onHandOver(msgHandOver, room)
-    -- local win = false
-
-    -- 隐藏游戏内聊天面板
-    -- room.roomView:hideChatPanel()
-
     if msgHandOver.endType ~= proto.prunfast.HandOverType.enumHandOverType_None then
         -- local myself = room:me()
         for _, score in ipairs(msgHandOver.scores.playerScores) do

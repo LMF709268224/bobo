@@ -12,7 +12,7 @@ DFConfig.EFF_DEFINE = {
 	SUB_TOUZI_NAME = "Effects_touzi_0", --骰子前缀
 	SUB_SHUIPAO = "Effects_shuipao",
 	SUB_DRAGCARDEFF = "Effects_tuodong",
-	 --拖动牌
+	--拖动牌
 	--结算界面
 	SUB_DAYINGJIA = "Effects_jiemian_dayingjia", --大赢家
 	SUB_JIEMIAN_HUANGZHUANG = "Effects_jiemian_pingjv", --平局
@@ -35,21 +35,21 @@ DFConfig.EFF_DEFINE = {
 --动画播放时间
 DFConfig.ANITIME_DEFINE = {
 	HANDCARDFLYLONGTIME = 0.4,
-	 --长距离移牌
+	--长距离移牌
 	HANDCARDFLYSHORTTIME = 0.2,
-	 --短距离移牌
+	--短距离移牌
 	DELAYPLAYDICEANITIME = 2,
-	 --延迟播放骰子动画
+	--延迟播放骰子动画
 	DELAYSHOWOVERUITIME = 5,
-	 --延迟多久播放结算界面
+	--延迟多久播放结算界面
 	SAIZIPLAYTIME = 2,
-	 --骰子动画播放多久
+	--骰子动画播放多久
 	OUTCARDTIPSHOWTIME = 0.7,
-	 --出牌展示框显示多久
+	--出牌展示框显示多久
 	FAPAIANIPLAYTIME = 1,
-	 --发牌动画播放多久
+	--发牌动画播放多久
 	CHATQIPAOSHOWTIME = 2
- --聊天汽泡显示多久
+	--聊天汽泡显示多久
 }
 
 --聊天
