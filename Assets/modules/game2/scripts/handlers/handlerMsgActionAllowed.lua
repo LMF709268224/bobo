@@ -48,42 +48,47 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     player.isGuoHuTips = false
 
     local at = proto.mahjong.ActionType
+    local buttonMap = {}
     --如果可以抓牌
     if proto.actionsHasAction(actions, at.enumActionType_CustomB) then
         print("llwant, can zhua")
-    -- needShowOperationButtons = true
-    -- playerView.finalDrawBtn.visible = true
-    -- player.waitSkip = true
+        needShowOperationButtons = true
+        -- playerView.finalDrawBtn.visible = true
+        buttonMap[#buttonMap + 1] = player.ButtonDef.Zhua
+        player.waitSkip = true
     end
 
     --如果可以起手听牌
     if proto.actionsHasAction(actions, at.enumActionType_FirstReadyHand) then
         print("llwant, can ready hand")
         needShowOperationButtons = true
-        playerView.readyHandBtn.visible = true
+        buttonMap[#buttonMap + 1] = player.ButtonDef.Ting
         --这个标志用来判断可否出牌，当点击了动作按钮之后flagsAction会设置为true，这时候才可以出牌
         player.waitSkip = true
     end
 
-    --如果可以自摸胡牌
+    --如果可以过
     if proto.actionsHasAction(actions, at.enumActionType_SKIP) then
         print("llwant, can skip")
         needShowOperationButtons = true
-        playerView.skipBtn.visible = true
+        -- playerView.skipBtn.visible = true
+        buttonMap[#buttonMap + 1] = player.ButtonDef.Skip
     end
 
     --如果可以暗杠
     if proto.actionsHasAction(actions, at.enumActionType_KONG_Concealed) then
         print("llwant, can concealed kong")
         needShowOperationButtons = true
-        playerView.kongBtn.visible = true
+        -- playerView.kongBtn.visible = true
+        buttonMap[#buttonMap + 1] = player.ButtonDef.Kong
     end
 
     --如果可以加杠
     if proto.actionsHasAction(actions, at.enumActionType_KONG_Triplet2) then
         print("llwant, can triplet2 kong")
         needShowOperationButtons = true
-        playerView.kongBtn.visible = true
+        -- playerView.kongBtn.visible = true
+        buttonMap[#buttonMap + 1] = player.ButtonDef.Kong
     end
 
     --如果可以自摸胡牌
@@ -91,7 +96,8 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
         print("llwant, can win self drawn")
         needShowOperationButtons = true
 
-        playerView.winBtn.visible = true
+        -- playerView.winBtn.visible = true
+        buttonMap[#buttonMap + 1] = player.ButtonDef.Hu
     end
 
     -- 可胡牌时，需要点击2次过才可过牌。
@@ -158,9 +164,9 @@ function Handler.processMyAllowedActions(allowedActionMsg, player)
     end
 
     if needShowOperationButtons then
-        playerView.operationButtonsRoot.visible = true
         --这个标志用来判断可否出牌，当点击了动作按钮之后flagsAction会设置为true，这时候才可以出牌
         player.waitSkip = true
+        playerView:showButton(buttonMap)
     end
 end
 

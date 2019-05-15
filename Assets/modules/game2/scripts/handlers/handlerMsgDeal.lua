@@ -32,7 +32,7 @@ function Handler.onMsg(msgData, room)
     --隐藏复制按钮
     --room.roomView.copyRoomNumber.visible = false
     --对局开始动画
-    room.roomView:gameStartAnimation()
+    -- room.roomView:gameStartAnimation()
     --TODO: 播放投色子动画
     -- room.roomView:touZiStartAnimation(msgDeal.dice1, msgDeal.dice2)
     --TODO:修改家家庄标志
