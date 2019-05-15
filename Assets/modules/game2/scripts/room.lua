@@ -390,7 +390,8 @@ end
 function Room:cleanUI()
     -- self.roomView.MultiChiOpsObj.visible = false
     -- self.roomView.MultiGangOpsObj.visible = false
-    -- self.roomView.ListensObj.visible = false
+    self.roomView.listensObj.visible = false
+    self.roomView.meldOpsPanel.visible = false
 end
 
 -----------------------------------------------------------

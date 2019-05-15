@@ -654,7 +654,7 @@ function Player:onChowBtnClick(_)
         -- logger.debug("chowMelds : ", chowMelds)
         actionMsg.tile = self.allowedReActionMsg.victimTileID
         if #chowMelds > 1 then
-            self.playerView:showOrHideMeldsOpsPanel(chowMelds)
+            self.room.roomView:showOrHideMeldsOpsPanel(chowMelds)
         else
             actionMsg.meldType = chowMelds[1].meldType
             actionMsg.meldTile1 = chowMelds[1].tile1
@@ -722,7 +722,7 @@ function Player:onKongBtnClick(_)
         end
 
         if #kongs > 1 then
-            self.playerView:showOrHideMeldsOpsPanel(kongs)
+            self.room.roomView:showOrHideMeldsOpsPanel(kongs)
         else
             actionMsg.action = action
             --无论是加杠，或者暗杠，肯定只有一个面子牌组

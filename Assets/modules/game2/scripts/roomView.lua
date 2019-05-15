@@ -8,6 +8,7 @@ local fairy = require "lobby/lcore/fairygui"
 local PlayerView = require("scripts/playerView")
 local logger = require "lobby/lcore/logger"
 local proto = require "scripts/proto/proto"
+local mjproto = proto.mahjong
 local dialog = require "lobby/lcore/dialog"
 local chatView = require "lobby/scripts/chat/chatView"
 local prompt = require "lobby/lcore/prompt"
@@ -81,6 +82,7 @@ function RoomView.new(room)
     roomView:initOtherView()
 
     roomView:initTingData()
+    roomView:initMeldsPanel()
 
     return roomView
 end
@@ -503,6 +505,72 @@ function RoomView:renderListensListItem(index, obj)
     local num = obj:GetChild("num")
     num.text = data.Num .. "张"
     tileMounter:mountTileImage(t, data.Card)
+end
+
+-------------------------------------------------
+--面子牌选择面板
+-------------------------------------------------
+function RoomView:initMeldsPanel()
+    -- local meldMap = {}
+    self.meldOpsPanel = self.unityViewNode:GetChild("meldOpsPanel")
+    self.multiOpsObj = self.meldOpsPanel:GetChild("list").asList
+    self.multiOpsObj.itemRenderer = function(index, obj)
+        self:renderMultiOpsListItem(index, obj)
+    end
+    self.multiOpsObj.onClickItem:Add(
+        function(onClickItem)
+            self:onMeldOpsClick(onClickItem.data.name)
+        end
+    )
+end
+
+function RoomView:renderMultiOpsListItem(index, obj)
+    local data = self.multiOpsDataList[index + 1]
+    obj.name = index
+    local MJ  --用来显示可选择的牌
+    if data.meldType == mjproto.MeldType.enumMeldTypeSequence then
+        --吃的时候exp是3，所以第4个牌可以隐藏起来
+        obj:GetChild("n4").visible = false
+        MJ = {data.tile1, data.tile1 + 1, data.tile1 + 2}
+    else
+        MJ = {data.tile1, data.tile1, data.tile1, data.tile1}
+    end
+    for j, v in ipairs(MJ) do
+        local oCurCard = obj:GetChild("n" .. j)
+        tileMounter:mountTileImage(oCurCard, v)
+        oCurCard.visible = true
+    end
+
+    obj.visible = true
+end
+
+function RoomView:showOrHideMeldsOpsPanel(map)
+    local size = #map
+    self.multiOpsDataList = map
+    self.multiOpsObj.numItems = size
+    self.multiOpsObj:ResizeToFit(#map)
+    self.meldOpsPanel.visible = size > 0
+end
+
+function RoomView:onMeldOpsClick(index)
+    local data = self.multiOpsDataList[index + 1]
+    local actionMsg = {}
+    actionMsg.qaIndex = data.actionMsg.qaIndex
+    actionMsg.action = data.actionMsg.action
+    actionMsg.tile = data.actionMsg.tile
+    actionMsg.meldType = data.meldType
+    actionMsg.meldTile1 = data.tile1
+    if data.meldType == mjproto.MeldType.enumMeldTypeConcealedKong then
+        actionMsg.tile = data.tile1
+        actionMsg.action = mjproto.ActionType.enumActionType_KONG_Concealed
+    elseif data.meldType == mjproto.MeldType.enumMeldTypeTriplet2Kong then
+        actionMsg.tile = data.tile1
+        actionMsg.action = mjproto.ActionType.enumActionType_KONG_Triplet2
+    end
+
+    self.room:me():sendActionMsg(actionMsg)
+    self.room:me().playerView:hideOperationButtons()
+    self.meldOpsPanel.visible = false
 end
 
 return RoomView
