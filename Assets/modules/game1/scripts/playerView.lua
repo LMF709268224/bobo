@@ -88,7 +88,7 @@ function PlayerView:initLights()
             local cname = "n" .. i
             local go = tilesNode:GetChild(cname)
             if go ~= nil then
-                local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number_lo")
+                local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number")
                 card.scale = go.scale
                 card.position = go.position
                 tilesNode:AddChild(card)
@@ -118,7 +118,7 @@ function PlayerView:initHands()
             local cname = "n" .. i
             local go = myHandTilesNode:GetChild(cname)
             if go ~= nil then
-                local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number_lo")
+                local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number")
                 card.position = go.position
                 myHandTilesNode:AddChild(card)
                 local btn = card:GetChild("n0")
@@ -160,7 +160,7 @@ function PlayerView:initDiscards()
         local cname = "n" .. i
         local go = myHandTilesNode:GetChild(cname)
         if go ~= nil then
-            local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number_lo")
+            local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number")
             card.scale = go.scale
             card.position = go.position
             myHandTilesNode:AddChild(card)

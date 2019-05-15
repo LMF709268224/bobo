@@ -230,7 +230,7 @@ function Player:showCardHandType(cardHandType, discardTileId)
             tip = "Effects_zi_FeiJi" -- 飞机
             effectName = "feiji"
         end,
-        [pokerfaceRf.CardHandType.Triplet2X] = function()
+        [pokerfaceRf.CardHandType.Triplet2X2Pair] = function()
             tip = "Effects_zi_FeiJiDaiChiBang" --夯加飞机
             effectName = "feijidaicibang"
         end

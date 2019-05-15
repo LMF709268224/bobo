@@ -273,7 +273,7 @@ function HandResultView:initHands(view)
         local cname = "n" .. i
         local go = myHandTilesNode:GetChild(cname)
         if go ~= nil then
-            local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number_lo")
+            local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number")
             card.position = go.position
             card.scale = go.scale
             myHandTilesNode:AddChild(card)
