@@ -144,36 +144,6 @@ function RoomView:onExitButtonClicked()
 end
 
 ----------------------------------------------
--- 播放发牌动画
-----------------------------------------------
-function RoomView:dealAnimation(me, player1, player2)
-    local waitCo = coroutine.running()
-
-    -- dfCompatibleAPI:soundPlay("effect/effect_fapai")
-
-    --self.FaPaiAniObj:Show()
-    me.playerView:deal()
-    player1.playerView:dealOther()
-    player2.playerView:dealOther()
-
-    self.unityViewNode:DelayRun(
-        2,
-        function()
-            -- self.FaPaiAniObj:Hide()
-            local flag, msg = coroutine.resume(waitCo)
-            if not flag then
-                msg = debug.traceback(waitCo, msg)
-                --error(msg)
-                logger.error(msg)
-                return
-            end
-        end
-    )
-
-    coroutine.yield()
-end
-
-----------------------------------------------
 -- 播放牌局开始动画
 ----------------------------------------------
 function RoomView:gameStartAnimation()
