@@ -33,8 +33,8 @@ local UrlPaths = {
 	-- 邮件
 	loadMails = "/lobby/uuid/loadMails",
 	setMailRead = "/lobby/uuid/setMailRead",
-	deleteMail = "/lobby/deleteMail",
-	receiveAttachment = "/lobby/receiveAttachment"
+	deleteMail = "/lobby/uuid/deleteMail",
+	receiveAttachment = "/lobby/uuid/receiveAttachment"
 }
 
 return UrlPaths
