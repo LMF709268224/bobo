@@ -108,7 +108,7 @@ function EmailView:selectEmail(email, index)
     end
 
     if email.isRead == false then
-        self:setRead(email.id, index)
+        self:setRead(email, index)
     end
 end
 
@@ -122,7 +122,7 @@ function EmailView:renderAttachmentListItem(_, obj)
     local attachment = email.attachments
 
     local count = obj:GetChild("count")
-    count.text = attachment.num
+    count.text = "x " .. attachment.num
 
     local readController = obj:GetController("c3")
 
@@ -174,7 +174,16 @@ function EmailView:takeAttachment(email)
     local takeAttachmentUrl =
         urlpathsCfg.rootURL .. urlpathsCfg.receiveAttachment .. "?tk=" .. tk .. "&mailID=" .. email.id
 
-    local cb = function()
+    local cb = function(body)
+        if body == "ok" then
+            logger.debug("领取成功")
+            dialog.showDialog(
+                "领取成功",
+                function()
+                end
+            )
+        end
+
         local obj = self.attachmentsList:GetChildAt(0)
         local readController = obj:GetController("c3")
         readController.selectedIndex = 0
@@ -188,11 +197,12 @@ end
     emailId:邮件ID
     listIndex:邮件列表的index,用来设置邮件的读取标志
 ]]
-function EmailView:setRead(emailId, listIndex)
+function EmailView:setRead(email, listIndex)
     local tk = CS.UnityEngine.PlayerPrefs.GetString("token", "")
-    local setReadEmailUrl = urlpathsCfg.rootURL .. urlpathsCfg.setMailRead .. "?&tk=" .. tk .. "&mailID=" .. emailId
+    local setReadEmailUrl = urlpathsCfg.rootURL .. urlpathsCfg.setMailRead .. "?&tk=" .. tk .. "&mailID=" .. email.id
 
     local cb = function()
+        email.isRead = true
         local obj = self.list:GetChildAt(listIndex)
         local readController = obj:GetController("c1")
         readController.selectedIndex = 1
@@ -219,7 +229,6 @@ end
     url:请求的URL
     msg:请求的diolog信息
     cb: 完成回调
-
 ]]
 function EmailView:emailRequest(url, msg, cb)
     if url == nil then
