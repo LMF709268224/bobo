@@ -7,6 +7,7 @@ local Player = {}
 
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
+local playerInfoView = require "lobby/scripts/playerInfo/playerInfoView"
 -- local logger = require "lobby/lcore/logger"
 local mjproto = proto.mahjong
 
@@ -514,6 +515,7 @@ function Player:updateByPlayerInfo(playerInfo)
     --     g_dataModule:GetUserData():SetCharm(playerInfo.charm)
     -- end
     self.state = playerInfo.state
+    self.playerInfo = playerInfo
 end
 
 function Player:discardOutTileID(tileID)
@@ -917,6 +919,11 @@ function Player:updateReadyHandList(readyHandList)
     else
         self.playerView.checkReadyHandBtn.visible = false
     end
+end
+
+function Player:onPlayerInfoClick()
+    local pos = {x = self.playerView.userInfoPos.x, y = self.playerView.userInfoPos.y}
+    playerInfoView.showUserInfoView(self.playerInfo, pos, self:isMe() == false)
 end
 
 return Player

@@ -37,31 +37,13 @@ function PlayerView.new(viewUnityNode, viewChairID)
     playerView.viewUnityNode = viewUnityNode
     playerView.myView = view
     playerView.aniPos = view:GetChild("aniPos")
+    playerView.userInfoPos = view:GetChild("userInfoPos")
     -- -- self.texiaoPos = myTilesNode.transform:Find("texiaoPos") --特效的位置
     -- local operationPanel = view:GetChild("n31")
     -- 头像相关
     playerView:initHeadView(view)
     -- 玩家状态
     playerView:initPlayerStatus()
-    -- -- 滑动拖牌
-    -- viewUnityNode:AddDrag(
-    --     myHandTilesNode,
-    --     function(cardObj, data)
-    --         playerView:OnItemDrag(cardObj, data)
-    --     end
-    -- )
-    -- viewUnityNode:AddBeginDrag(
-    --     myHandTilesNode,
-    --     function(cardObj, data)
-    --         playerView:OnItemBeginDrag(cardObj, data)
-    --     end
-    -- )
-    -- viewUnityNode:AddDragEnd(
-    --     myHandTilesNode,
-    --     function(cardObj, data)
-    --         playerView:OnItemDragEnd(cardObj, data)
-    --     end
-    -- )
 
     return playerView
 end
@@ -113,6 +95,22 @@ function PlayerView:initHands()
     local handsOriginPos = {}
     local handsClickCtrls = {}
     if (self.viewChairID == 1) then
+        -- 滑动拖牌
+        -- myHandTilesNode.onDragMove:Set(
+        --     function(context)
+        --         self:OnItemDrag(context)
+        --     end
+        -- )
+        -- myHandTilesNode.onDragStart:Set(
+        --     function()
+        --         self:OnItemBeginDrag()
+        --     end
+        -- )
+        -- myHandTilesNode.onDragEnd:Set(
+        --     function()
+        --         self:OnItemDragEnd()
+        --     end
+        -- )
         local myHandTilesNode = view:GetChild("hands")
         for i = 1, 16 do
             local cname = "n" .. i
@@ -608,31 +606,32 @@ function PlayerView:clearAllowedActionsView()
 end
 
 --处理玩家拖动牌
-function PlayerView:OnItemDrag(_, data)
-    if not data.pointerPressRaycast.gameObject or not data.pointerCurrentRaycast.gameObject then
-        return
-    end
-    local startNum = tonumber(data.pointerPressRaycast.gameObject.name)
-    local nCurSelNum = tonumber(data.pointerCurrentRaycast.gameObject.name)
-    if nCurSelNum == nil then
-        return
-    end
-    if startNum > 0 then
-        local nCurStep
-        if nCurSelNum <= startNum then
-            nCurStep = -1
-        else
-            nCurStep = 1
-        end
-        -- logWarn("startNum==>" .. startNum .. "nCurSelNum==>" .. nCurSelNum .. "nCurStep=>" .. nCurStep)
-        for i = startNum, nCurSelNum, nCurStep do
-            local oSearchObj = self:search(self.dragSelCards, i)
-            if not oSearchObj then
-                table.insert(self.dragSelCards, i)
-            -- self:setGray(self.handsClickCtrls[i].h)
-            end
-        end
-    end
+function PlayerView:OnItemDrag(_)
+    -- logger.debug("处理玩家拖动牌 context : ", context)
+    -- if not data.pointerPressRaycast.gameObject or not data.pointerCurrentRaycast.gameObject then
+    --     return
+    -- end
+    -- local startNum = tonumber(data.pointerPressRaycast.gameObject.name)
+    -- local nCurSelNum = tonumber(data.pointerCurrentRaycast.gameObject.name)
+    -- if nCurSelNum == nil then
+    --     return
+    -- end
+    -- if startNum > 0 then
+    --     local nCurStep
+    --     if nCurSelNum <= startNum then
+    --         nCurStep = -1
+    --     else
+    --         nCurStep = 1
+    --     end
+    --     -- logWarn("startNum==>" .. startNum .. "nCurSelNum==>" .. nCurSelNum .. "nCurStep=>" .. nCurStep)
+    --     for i = startNum, nCurSelNum, nCurStep do
+    --         local oSearchObj = self:search(self.dragSelCards, i)
+    --         if not oSearchObj then
+    --             table.insert(self.dragSelCards, i)
+    --         -- self:setGray(self.handsClickCtrls[i].h)
+    --         end
+    --     end
+    -- end
 end
 function PlayerView:search(t, value)
     for k, v in pairs(t) do
@@ -727,6 +726,12 @@ function PlayerView:showHeadImg()
     self.head.headImg.visible = true
     self.head.scoreText.visible = true
     self.head.scoreBg.visible = true
+
+    self.head.headImg.onClick:Set(
+        function(_)
+            self.player:onPlayerInfoClick()
+        end
+    )
 end
 
 ----------------------------------------------------------

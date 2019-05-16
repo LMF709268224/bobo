@@ -11,6 +11,7 @@ local proto = require "scripts/proto/proto"
 local prompt = require "lobby/lcore/prompt"
 local dfConfig = require "scripts/dfConfig"
 local agariIndex = require("scripts/AgariIndex")
+local playerInfoView = require "lobby/scripts/playerInfo/playerInfoView"
 local pokerfaceRf = proto.prunfast
 local pokerface = proto.pokerface
 
@@ -342,6 +343,7 @@ function Player:updateByPlayerInfo(playerInfo)
     self.state = playerInfo.state
     -- logger.debug("player id:", player.userID, ", avatarID:" , player.avatarID)
     self:updateHeadEffectBox()
+    self.playerInfo = playerInfo
 end
 
 ----------------------------------------
@@ -592,6 +594,11 @@ function Player:updateHeadEffectBox()
     end
 
     self.playerView:updateHeadEffectBox()
+end
+
+function Player:onPlayerInfoClick()
+    local pos = {x = self.playerView.userInfoPos.x, y = self.playerView.userInfoPos.y}
+    playerInfoView.showUserInfoView(self.playerInfo, pos, self:isMe() == false)
 end
 
 return Player
