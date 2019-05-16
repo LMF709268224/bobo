@@ -17,6 +17,9 @@ local urlpathsCfg = require "lobby/lcore/urlpathsCfg"
 local newRoomView = require "lobby/scripts/newRoom/newRoomView"
 local joinRoomView = require "lobby/scripts/newRoom/joinRoomView"
 local recordView = require "lobby/scripts/gameRecord/recordView"
+local emailView = require "lobby/scripts/email/emailView"
+local userInfoView = require "lobby/scripts/userInfo/userInfoView"
+local proto = require "lobby/scripts/proto/proto"
 local CS = _ENV.CS
 
 function LobbyView:show()
@@ -70,7 +73,7 @@ end
 
 function LobbyView:registerMsgHandler(ops, handler)
     if self.msgHandler[ops] ~= nil then
-        logger.Error("handler aready exist, ops:", ops)
+        logger.error("handler aready exist, ops:", ops)
         return
     end
 
@@ -101,10 +104,16 @@ function LobbyView:initView()
 
     --local listView = self.viewNode:GetChild("n29")
     local dfTestBtn = self.viewNode:GetChild("n8")
-
     dfTestBtn.onClick:Set(
         function()
             self:openRecordView()
+        end
+    )
+
+    local emailBtn = self.viewNode:GetChild("n9")
+    emailBtn.onClick:Set(
+        function()
+            self:openEmailView()
         end
     )
 
@@ -121,6 +130,53 @@ function LobbyView:initView()
             self:onCreateRoom()
         end
     )
+
+    local userInfo = self.viewNode:GetChild("userInfo")
+    self:initInfoView(userInfo)
+    userInfo.onClick:Set(
+        function()
+            self:openUserInfoView()
+        end
+    )
+end
+
+function LobbyView:initInfoView(userInfo)
+    local nameLab = userInfo:GetChild("name")
+    local idLab = userInfo:GetChild("id")
+
+    local pp = _ENV.CS.UnityEngine.PlayerPrefs
+
+    if pp.HasKey("nickName") then
+        local name = pp.GetString("nickName")
+
+        if name == nil or #name < 1 then
+            nameLab.text = "默认用户名字"
+        else
+            nameLab.text = name
+        end
+    end
+
+    if pp.HasKey("userID") then
+        idLab.text = "ID: " .. pp.GetString("userID")
+    end
+
+    local diamondNode = self.viewNode:GetChild("diamondNode")
+
+    self.diamondText = diamondNode:GetChild("diamond")
+
+    if pp.HasKey("diamond") then
+        self.diamondText = diamondNode:GetChild("diamond")
+        self.diamondText.text = pp.GetString("diamond")
+    end
+    local addDiamond = diamondNode:GetChild("addDiamond")
+
+    addDiamond.onClick:Set(
+        function()
+            self:goShop()
+        end
+    )
+
+    self:registerDiamondChange()
 end
 
 function LobbyView:ondfTestClick()
@@ -187,8 +243,22 @@ function LobbyView:onCreateRoom()
     newRoomView.new()
 end
 
+function LobbyView:openUserInfoView()
+    userInfoView.new()
+end
+
+function LobbyView:goShop()
+    logger.debug("LobbyView go shop----------------------")
+end
+
 function LobbyView:openRecordView()
     recordView.new(self)
+end
+
+function LobbyView:openEmailView()
+    local view = emailView.new()
+    local msgCodeEnum = proto.lobby.MessageCode
+    self:registerMsgHandler(msgCodeEnum.OPMail, view)
 end
 
 function LobbyView:enterRoom(modName, jsonString)
@@ -196,6 +266,24 @@ function LobbyView:enterRoom(modName, jsonString)
     fairy.GRoot.inst:RemoveChild(mylobbyView)
     fairy.GRoot.inst:CleanupChildren()
     _ENV.thisMod:LaunchGameModule(modName, jsonString)
+end
+
+function LobbyView:registerDiamondChange()
+    -- body
+    local msgCodeEnum = proto.lobby.MessageCode
+    self:registerMsgHandler(msgCodeEnum.OPUpdateDiamond, self)
+end
+
+function LobbyView:onMsg(body)
+    local data = proto.decodeMessage("lobby.MsgUpdateUserDiamond", body)
+    local diamond = data.diamond
+    self:updateDiamond(diamond)
+end
+
+function LobbyView:updateDiamond(diamond)
+    local pp = CS.UnityEngine.PlayerPrefs
+    pp.SetString("diamond", diamond)
+    self.diamondText.text = diamond
 end
 
 function LobbyView:dispatchMessage(lobbyMessage)

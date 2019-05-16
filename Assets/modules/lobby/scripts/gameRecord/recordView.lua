@@ -110,15 +110,6 @@ function RecordView:renderPhraseListItem(index, obj)
 
     local owner
     for _, playerInfo in ipairs(replayRoom.players) do
-        -- logger.debug("replayRoom.players ---------------- : ", playerInfo)
-        -- local player = obj:GetChild("player" .. i)
-        -- local name = player:GetChild("name")
-        -- name.text = playerInfo.nick
-        -- local winScore = player:GetChild("winScore")
-        -- local loseScore = player:GetChild("loseScore")
-        -- winScore.visible = false
-        -- loseScore.visible = false
-
         if playerInfo.userID == ownerUserID then
             if playerInfo.nick ~= "" then
                 owner = playerInfo.nick
