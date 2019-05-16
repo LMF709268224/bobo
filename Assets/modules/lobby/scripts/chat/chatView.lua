@@ -38,8 +38,10 @@ function ChatView.showChatView()
     fairy.GRoot.inst:ShowPopup(ChatView.viewNode)
     local screenWidth = CS.UnityEngine.Screen.width
     -- local screenHeight = CS.UnityEngine.Screen.height
-    ChatView.viewNode.x = screenWidth - 500
-    ChatView.viewNode.y = 0
+    -- ChatView.viewNode.x = screenWidth - 500
+    -- ChatView.viewNode.y = 0
+    logger.debug("screenWidth sssssssssssss ", screenWidth)
+    ChatView.viewNode:SetXY(screenWidth - 500, 0)
     --自己的信息
     ChatView.userID = CS.UnityEngine.PlayerPrefs.GetString("userID", "")
 end

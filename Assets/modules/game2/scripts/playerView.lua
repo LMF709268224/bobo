@@ -49,6 +49,7 @@ function PlayerView.new(viewUnityNode, viewChairID)
         playerView:initOperationButtons()
     end
     playerView.aniPos = view:GetChild("aniPos")
+    playerView.userInfoPos = view:GetChild("userInfoPos")
 
     -- 打出的牌放大显示
     playerView.discardTips = view:GetChild("discardTip")
@@ -1012,6 +1013,11 @@ end
 ----------------------------------------------------------
 function PlayerView:showHeadImg()
     self.head.headBox.visible = true
+    self.head.headBox.onClick:Set(
+        function(_)
+            self.player:onPlayerInfoClick()
+        end
+    )
 end
 
 ----------------------------------------------------------
