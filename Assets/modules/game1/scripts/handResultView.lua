@@ -99,7 +99,7 @@ function HandResultView:updateRoomData()
     --endType == enumHandOverType_None 表示流局 也就是没有人胡牌
     --if self.msgHandOver.endType ~= pokerfacerf.enumHandOverType_None then
     local en = "Effects_JieMian_ShiBai"
-    if self.room:me().score.score > 0 then
+    if self.room.myPlayer.score.score > 0 then
         en = "Effects_JieMian_ShengLi"
     end
     self.ani = animation.play("animations/" .. en .. ".prefab", self.unityViewNode, self.aniPos.x, self.aniPos.y, true)
@@ -225,7 +225,7 @@ function HandResultView:updateAllData()
     for _, player in ipairs(self.players) do
         local c = self.contentGroup[number]
         c.group.visible = true
-        -- local isMe = player == self.room:me()
+        -- local isMe = player == self.room.myPlayer
         --玩家基本信息
         self:updatePlayerInfoData(player, c)
         --endType == enumHandOverType_None 表示流局 也就是没有人胡牌
@@ -273,7 +273,7 @@ function HandResultView:initHands(view)
         local cname = "n" .. i
         local go = myHandTilesNode:GetChild(cname)
         if go ~= nil then
-            local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number_lo")
+            local card = _ENV.thisMod:CreateUIObject("runfast", "desk_poker_number")
             card.position = go.position
             card.scale = go.scale
             myHandTilesNode:AddChild(card)

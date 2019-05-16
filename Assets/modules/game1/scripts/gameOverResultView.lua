@@ -63,7 +63,6 @@ function GameOverResultView:updateRoomData()
     --房间信息
     -- local rule = ""
     local roomNumber = self.room.roomNumber
-    --self.textRule.text = self.room:getRule()
     self.textRoomNumber.text = "房号:" .. tostring(roomNumber)
 end
 
@@ -72,7 +71,7 @@ end
 -------------------------------------------
 function GameOverResultView:updatePlayerInfoData(player, c)
     --名字  id
-    -- local isMe = player == self.room:me()
+    -- local isMe = player == self.room.myPlayer
     local name = player.nick
     if name == nil or name == "" then
         name = player.userID

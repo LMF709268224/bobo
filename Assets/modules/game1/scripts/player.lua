@@ -9,20 +9,10 @@ local logger = require "lobby/lcore/logger"
 local mt = {__index = Player}
 local proto = require "scripts/proto/proto"
 local prompt = require "lobby/lcore/prompt"
+local dfConfig = require "scripts/dfConfig"
 local agariIndex = require("scripts/AgariIndex")
 local pokerfaceRf = proto.prunfast
 local pokerface = proto.pokerface
-
---音效文件定义
--- local SoundDef = {
---     Chow = "chi",
---     Pong = "peng",
---     Kong = "gang",
---     Ting = "ting",
---     WinChuck = "hu", --被点炮
---     WinDraw = "zimo", --自摸
---     Common = "effect_common"
--- }
 
 function Player.new(userID, chairID, room)
     local player = {userID = userID, chairID = chairID, room = room}
@@ -43,14 +33,6 @@ end
 function Player:resetForNewHand()
     --玩家打出的牌列表
     self.tilesDiscarded = {}
-    --玩家的面子牌组列表
-    --self.melds = {}
-    --玩家的花牌列表
-    --self.tilesFlower = {}
-
-    --是否起手听牌
-    --TODO: 当玩家起手听牌时，当仅仅可以打牌操作时，自动打牌
-    --self.isRichi = false
 
     --如果玩家对象是属于当前用户的，而不是对手的
     --则有手牌列表，否则只有一个数字表示对手的手牌张数
@@ -248,7 +230,7 @@ function Player:showCardHandType(cardHandType, discardTileId)
             tip = "Effects_zi_FeiJi" -- 飞机
             effectName = "feiji"
         end,
-        [pokerfaceRf.CardHandType.Triplet2X] = function()
+        [pokerfaceRf.CardHandType.Triplet2X2Pair] = function()
             tip = "Effects_zi_FeiJiDaiChiBang" --夯加飞机
             effectName = "feijidaicibang"
         end
@@ -428,8 +410,7 @@ end
 function Player:onDiscardBtnClick(isHui)
     if isHui then
         --提示。。。无牌可出
-        logger.error("ERR_ROOM_NOTDISCARDS")
-        -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDS)
+        prompt.showPrompt(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDS)
         return
     end
     --出牌逻辑
@@ -453,7 +434,6 @@ end
 ----------------------------------------
 function Player:onSkipBtnClick(isHui)
     if isHui then
-        local dfConfig = require "scripts/dfConfig"
         --提示 不可以过
         if self.allowedActionMsg ~= nil then
             prompt.showPrompt(dfConfig.ErrorInRoom.ERR_ROOM_NOTSKIP_2)
@@ -510,14 +490,6 @@ function Player:autoDiscard()
     -- end
 
     if self.allowedReActionMsg ~= nil then
-        -- local actionMsg = pokerface.MsgPlayerAction()
-        -- actionMsg.action = pokerfaceRf.enumActionType_DISCARD
-        -- actionMsg.qaIndex = self.allowedReActionMsg.qaIndex
-        -- table.insert(actionMsg.cards, pokerface.R2H)
-        -- self.room:sendActionMsg(actionMsg)
-        -- self.discardR2H = false
-        -- self.playerView:clearAllowedActionsView()
-
         local disCards = {pokerface.CardID.R2H}
         self:onPlayerDiscardCards(disCards)
     end
@@ -528,17 +500,15 @@ function Player:onPlayerDiscardCards(disCards)
     --dump(disCards , "----------------- disCards ---------------------------")
     if disCards == nil or #disCards < 1 then
         -- logger.error(" ERR_ROOM_NOTSELECTCARDS .")
-        prompt.showPrompt("没有选中任何牌")
-        -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTSELECTCARDS)
+        prompt.showPrompt(dfConfig.ErrorInRoom.ERR_ROOM_NOTSELECTCARDS)
         return
     end
     local actionMsg = {} -- pokerface.MsgPlayerAction()
     local r3h = false
     local current = agariIndex.agariConvertMsgCardHand(disCards)
     if current == nil then
-        prompt.showPrompt("选中的牌不符合规则")
         -- logger.error(" ERR_ROOM_CARDSNOTDIS .")
-        -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_CARDSNOTDIS)
+        prompt.showPrompt(dfConfig.ErrorInRoom.ERR_ROOM_CARDSNOTDIS)
         return
     end
 
@@ -559,8 +529,7 @@ function Player:onPlayerDiscardCards(disCards)
         if self.haveR3H then
             --此时必须出 红桃3
             if not r3h then
-                logger.error("ERR_ROOM_NOTDISCARDSR3H")
-                -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR3H)
+                prompt.showPrompt(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR3H)
                 return
             end
             self.haveR3H = false
@@ -573,15 +542,13 @@ function Player:onPlayerDiscardCards(disCards)
         if self.discardR2H then
             --此时必须出2
             if #disCards ~= 1 or disCards[1] ~= pokerface.CardID.R2H then
-                logger.error("ERR_ROOM_NOTDISCARDSR2H")
-                -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR2H)
+                prompt.showPrompt(dfConfig.ErrorInRoom.ERR_ROOM_NOTDISCARDSR2H)
                 return
             end
             self.discardR2H = false
         end
         if not agariIndex.agariGreatThan(prevActionHand, current) then
-            logger.error("ERR_ROOM_DISCARDISSMALL")
-            -- dfCompatibleAPI:showTip(dfConfig.ErrorInRoom.ERR_ROOM_DISCARDISSMALL)
+            prompt.showPrompt(dfConfig.ErrorInRoom.ERR_ROOM_DISCARDISSMALL)
             return
         end
     end

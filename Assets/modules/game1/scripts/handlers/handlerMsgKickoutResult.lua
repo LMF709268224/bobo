@@ -14,7 +14,7 @@ function Handler.onMsg(msgData, room)
     local msg = ""
     local kickoutResultEnum = proto.pokerface.MsgKickoutResult
     if msgKickoutResult.result == kickoutResultEnum.KickoutResult_Success then
-        if msgKickoutResult.victimUserID == room:me().userID then
+        if msgKickoutResult.victimUserID == room.myPlayer.userID then
             --自己被踢
             room.isDestroy = true
             msg = "您被房主[" .. msgKickoutResult.byWhoNick .. "]踢出房间"
@@ -37,7 +37,7 @@ function Handler.onMsg(msgData, room)
             logger.debug(msg)
             --coroutine.yield()
             return
-        elseif msgKickoutResult.byWhoUserID == room:me().userID then
+        elseif msgKickoutResult.byWhoUserID == room.myPlayer.userID then
             --自己踢别人
             msg = "玩家[" .. msgKickoutResult.victimNick .. "]已经被踢出房间"
         else

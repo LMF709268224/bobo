@@ -102,7 +102,7 @@ function HandResultView:updateRoomData()
     --背景（输还是赢）
     local en
     if self.msgHandOver.endType ~= proto.mahjong.HandOverType.enumHandOverType_None then
-        if self.room:me().score.score >= 0 then
+        if self.room.myPlayer.score.score >= 0 then
             en = "Effects_jiemian_ying"
         else
             en = "Effects_jiemian_shu"
@@ -238,7 +238,7 @@ function HandResultView:updateAllData()
     for _, player in ipairs(self.players) do
         local c = self.contentGroup[number]
         c.group.visible = true
-        -- local isMe = player == self.room:me()
+        -- local isMe = player == self.room.myPlayer
         --玩家基本信息
         self:updatePlayerInfoData(player, c)
         local myScore = 0

@@ -62,7 +62,7 @@ function Handler.onMsg(msg, room)
     --因此如果本玩家还处于选择起手听状态，那么不应该把操作面板关闭
     --其他情况，既然本人或者其他用户做出了选择，那么应该确保操作面板是关闭的
     if action ~= proto.mahjong.ActionType.enumActionType_FirstReadyHand then
-        local myPlayer = room:me()
+        local myPlayer = room.myPlayer
         myPlayer.playerView:hideOperationButtons()
     end
 end

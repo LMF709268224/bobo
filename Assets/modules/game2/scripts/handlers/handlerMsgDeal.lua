@@ -70,7 +70,7 @@ function Handler.onMsg(msgData, room)
     room.roomView:setWaitingPlayer(bankerPlayer)
 
     --自己手牌排一下序
-    local mySelf = room:me()
+    local mySelf = room.myPlayer
     mySelf:sortHands(mySelf == bankerPlayer)
 
     --显示各个玩家的手牌（对手只显示暗牌）和花牌

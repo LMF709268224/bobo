@@ -73,7 +73,7 @@ function Handler.onMsg(msgData, room)
     end
 
     --自己手牌排一下序
-    local mySelf = room:me()
+    local mySelf = room.myPlayer
     local newDraw = msgRestore.isMeNewDraw
     mySelf:sortHands(newDraw)
 
