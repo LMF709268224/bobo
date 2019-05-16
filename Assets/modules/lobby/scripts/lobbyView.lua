@@ -275,14 +275,12 @@ function LobbyView:registerDiamondChange()
 end
 
 function LobbyView:onMsg(body)
-    logger.debug("body -----------------= ", body)
     local data = proto.decodeMessage("lobby.MsgUpdateUserDiamond", body)
     local diamond = data.diamond
     self:updateDiamond(diamond)
 end
 
 function LobbyView:updateDiamond(diamond)
-    logger.debug("diamond -----------------= ", diamond)
     local pp = CS.UnityEngine.PlayerPrefs
     pp.SetString("diamond", diamond)
     self.diamondText.text = diamond
