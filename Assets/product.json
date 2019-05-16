@@ -10,11 +10,6 @@
 					"filters":"*.lua,*.pb"
 				},
 				{
-					"path":"lobby/lcore",
-					"istxt":true,
-					"filters":"*.lua,*.pb"
-				},
-				{
 					"path":"lobby/fui",
 					"filters":"*.png,*.bytes"
 				},
@@ -23,7 +18,19 @@
 					"filters":"*.png,*.bytes"
 				},
 				{
+					"path":"lobby/fui_create_room",
+					"filters":"*.png,*.bytes"
+				},
+				{
 					"path":"lobby/fui_dialog",
+					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"lobby/fui_email",
+					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"lobby/fui_game_record",
 					"filters":"*.png,*.bytes"
 				},
 				{
@@ -31,7 +38,7 @@
 					"filters":"*.png,*.bytes"
 				},
 				{
-					"path":"lobby/fui_login",
+					"path":"lobby/fui_lobby_mahjong",
 					"filters":"*.png,*.bytes"
 				},
 				{
@@ -43,12 +50,21 @@
 					"filters":"*.png,*.bytes"
 				},
 				{
+					"path":"lobby/fui_login",
+					"filters":"*.png,*.bytes"
+				},
+				{
 					"path":"lobby/fui_replay",
 					"filters":"*.png,*.bytes"
 				},
 				{
-					"path":"lobby/fui_create_room",
+					"path":"lobby/fui_user_info",
 					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"lobby/lcore",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
 				},
 				{
 					"path":"lobby/scripts",
@@ -61,7 +77,22 @@
 					"filters":"*.lua,*.pb"
 				},
 				{
+					"path":"lobby/scripts/email",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"lobby/scripts/gameRecord",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
 					"path":"lobby/scripts/login",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"lobby/scripts/newroom",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
 				},
@@ -71,7 +102,7 @@
 					"filters":"*.lua,*.pb"
 				},
 				{
-					"path":"lobby/scripts/newRoom",
+					"path":"lobby/scripts/userInfo",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
 				}
@@ -82,21 +113,6 @@
 			"bundles":[
 				{
 					"path":"game1",
-					"istxt":true,
-					"filters":"*.lua,*.pb"
-				},
-				{
-					"path":"game1/scripts",
-					"istxt":true,
-					"filters":"*.lua,*.pb"
-				},
-				{
-					"path":"game1/scripts/proto",
-					"istxt":true,
-					"filters":"*.lua,*.pb"
-				},
-				{
-					"path":"game1/scripts/handlers",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
 				},
@@ -115,6 +131,62 @@
 				{
 					"path":"game1/animations",
 					"filters":"*.prefab"
+				},
+				{
+					"path":"game1/scripts",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"game1/scripts/proto",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"game1/scripts/handlers",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				}
+			]
+		},
+		{
+			"name":"game2",
+			"bundles":[
+				{
+					"path":"game2",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"game2/bg",
+					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"game2/fgui",
+					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"game2/setting",
+					"filters":"*.png,*.bytes"
+				},
+				{
+					"path":"game2/animations",
+					"filters":"*.prefab"
+				},
+				{
+					"path":"game2/scripts",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"game2/scripts/proto",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"game2/scripts/handlers",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
 				}
 			]
 		}
