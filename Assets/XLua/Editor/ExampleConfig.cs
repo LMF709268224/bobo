@@ -73,7 +73,8 @@ public static class ExampleConfig
 		"BestHTTP.Futures",
 		"AssetsFolderLoader",
 		"BestHTTP.PlatformSupport",
-	};
+        "FairyGUI.CopyPastePatch"
+    };
 
 	static bool isCustomExlucded(Type type)
 	{
