@@ -103,6 +103,8 @@ function RoomView:initOtherView()
 
     --倒计时
     self.countDownText = self.roundMarkView:GetChild("num")
+    --道具
+    self.donateMoveObj = self.unityViewNode:GetChild("donate")
 end
 
 function RoomView:pauseResumeButtons(pauseBtnVisible, resumeBtnVisible)
