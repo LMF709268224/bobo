@@ -4,17 +4,13 @@
 local Handler = {}
 Handler.VERSION = "1.0"
 
+local proto = require "scripts/proto/proto"
 -- local mjproto = mjproto2
 
-function Handler.onMsg(_, _)
+function Handler.onMsg(msgData, room)
     --print('llwant Donate msg')
-    -- local msgDonate = mjproto.MsgDonate()
-    -- msgDonate:ParseFromString(msgData)
-    --
-    --logError("-------------------- msgDonate item :"..tostring(msgDonate.itemID))
-    --logError("-------------------- msgDonate toChairID :"..tostring(msgDonate.toChairID))
-    --logError("-------------------- msgDonate fromChairID :"..tostring(msgDonate.fromChairID))
-    -- room:showDonate(msgDonate)
+    local msgDonate = proto.decodeMessage("mahjong.MsgDonate", msgData)
+    room:showDonate(msgDonate)
 end
 
 return Handler
