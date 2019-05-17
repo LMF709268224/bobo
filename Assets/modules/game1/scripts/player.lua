@@ -598,7 +598,7 @@ end
 
 function Player:onPlayerInfoClick()
     local pos = {x = self.playerView.userInfoPos.x, y = self.playerView.userInfoPos.y}
-    playerInfoView.showUserInfoView(self.playerInfo, pos, self:isMe() == false)
+    playerInfoView.showUserInfoView(self.playerInfo, pos, self:isMe() == false, self.room)
 end
 
 return Player

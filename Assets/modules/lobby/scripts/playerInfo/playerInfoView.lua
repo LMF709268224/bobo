@@ -38,6 +38,10 @@ function PlayerInfoView.showUserInfoView(playerInfo, pos, isOther, room)
     PlayerInfoView.viewNode:SetXY(pos.x, pos.y)
 end
 
+function PlayerInfoView:closeView()
+    fairy.GRoot.inst:HidePopup(self.viewNode)
+end
+
 function PlayerInfoView:updateView()
     self.kickoutBtn.visible = self.isOther
     self:updatePropList()
@@ -79,7 +83,8 @@ function PlayerInfoView:initView()
     end
     self.propList.onClickItem:Add(
         function(onClickItem)
-            self.room:sendDonate(onClickItem.data.name)
+            self.room:sendDonate(onClickItem.data.name, PlayerInfoView.playerInfo.chairID)
+            self:closeView()
         end
     )
     self.propList:SetVirtual()

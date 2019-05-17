@@ -8,7 +8,6 @@ local proto = require "scripts/proto/proto"
 -- local mjproto = mjproto2
 
 function Handler.onMsg(msgData, room)
-    --print('llwant Donate msg')
     local msgDonate = proto.decodeMessage("mahjong.MsgDonate", msgData)
     room:showDonate(msgDonate)
 end

@@ -77,6 +77,8 @@ function RoomView.new(room)
             roomView:onDissolveClick()
         end
     )
+    --道具
+    roomView.donateMoveObj = view:GetChild("donate")
     -- --房间号
     roomView:initRoomNumber()
 

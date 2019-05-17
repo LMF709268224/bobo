@@ -105,6 +105,8 @@ function RoomView:initOtherView()
     self.countDownText = self.roundMarkView:GetChild("num")
     --道具
     self.donateMoveObj = self.unityViewNode:GetChild("donate")
+    --剩牌
+    self.tilesInWall = self.unityViewNode:GetChild("tilesInWall")
 end
 
 function RoomView:pauseResumeButtons(pauseBtnVisible, resumeBtnVisible)
@@ -301,6 +303,7 @@ function RoomView:initRoomStatus()
     local onWait = function()
         self.wind.visible = false
         self.windTile.visible = false
+        self.tilesInWall.visible = false
 
         self.roundMarkView.visible = false
         self:stopDiscardCountdown()
@@ -316,6 +319,7 @@ function RoomView:initRoomStatus()
     local onPlay = function()
         -- roomView.invitButton.visible = false
         -- roomView.returnHallBtn.visible = false
+        self.tilesInWall.visible = true
         self.wind.visible = false --发牌的时候，或者掉线恢复的时候会设置风圈因此此处不需要visible
         self.windTile.visible = false
 
