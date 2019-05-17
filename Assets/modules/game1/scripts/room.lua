@@ -399,4 +399,112 @@ function Room:loadGameOverResultView()
     GameOverResultView.new(self)
 end
 
+function Room:sendDonate(donateId, toChairID)
+    -- 1：鲜花    2：啤酒    3：鸡蛋    4：拖鞋
+    -- 8：献吻    7：红酒    6：大便    5：拳头
+    local chairID = self.myPlayer.chairID
+
+    local msgDonate = {}
+    msgDonate.fromChairID = chairID
+    msgDonate.toChairID = toChairID
+    msgDonate.itemID = donateId
+
+    local actionMsgBuf = proto.encodeMessage("pokerface.MsgDonate", msgDonate)
+    self:sendMsg(proto.pokerface.MessageCode.OPDonate, actionMsgBuf)
+end
+
+----------------------------------------------
+-- 显示道具动画
+----------------------------------------------
+function Room:showDonate(msgDonate)
+    -- logger.debug("显示道具动画 msgDonate : ", msgDonate)
+    if msgDonate then
+        local itemID = msgDonate.itemID
+        local oCurOpObj = self.roomView.donateMoveObj
+
+        local fromPlayer = self:getPlayerByChairID(msgDonate.fromChairID)
+        local toPlayer = self:getPlayerByChairID(msgDonate.toChairID)
+        if fromPlayer == nil or toPlayer == nil then
+            print("llwant, fromPlayer or toPlayer is nil...")
+            return
+        end
+        -- if toPlayer.playerView.headPopup.headInfobg.activeSelf then
+        --     --更新界面信息  to的player 主要更新 红心数量
+        --     toPlayer.playerView:updateHeadPopup()
+        -- end
+        -- if fromPlayer.playerView.headPopup.headInfobg.activeSelf then
+        --     --更新界面信息  from的player 主要更新 钻石数量
+        --     fromPlayer.playerView:updateHeadPopup()
+        -- end
+        local fromX = fromPlayer.playerView.head.headImg.x
+        local fromY = fromPlayer.playerView.head.headImg.y
+        local toX = toPlayer.playerView.head.headImg.x
+        local toY = toPlayer.playerView.head.headImg.y
+        -- logger.debug("目标位置 toX : ", toX, " ; toY : ", toY)
+        oCurOpObj:SetXY(fromX, fromY)
+        oCurOpObj.visible = true
+        local sprite = nil
+        local effobjSUB = nil
+        -- local sound = nil
+        local handTypeMap = {
+            [1] = function()
+                sprite = "dj_meigui"
+                effobjSUB = "Effects_daojv_hua"
+            end,
+            [2] = function()
+                sprite = "dj_ganbei"
+                effobjSUB = "Effects_daojv_jiubei"
+            end,
+            [3] = function()
+                sprite = "dj_jd"
+                effobjSUB = "Effects_daojv_jidan"
+            end,
+            [4] = function()
+                sprite = "dj_tuoxie"
+                effobjSUB = "Effects_daojv_tuoxie"
+            end,
+            [5] = function()
+                sprite = "dj_qj"
+                effobjSUB = "Effects_daojv_quanji"
+            end,
+            [6] = function()
+                sprite = "dj_bb"
+                effobjSUB = "Effects_daojv_shiren"
+            end,
+            [7] = function()
+                sprite = "dj_hj"
+                effobjSUB = "Effects_daojv_hongjiu"
+            end,
+            [8] = function()
+                sprite = "dj_mmd"
+                effobjSUB = "Effects_daojv_zui"
+            end
+        }
+
+        local fn = handTypeMap[itemID]
+        fn()
+        if sprite == nil or effobjSUB == nil then
+            print("llwant, sprite or effobjSUB is nil...")
+            return
+        end
+        oCurOpObj.url = "ui://lobby_player_info/" .. sprite
+        --飞动画
+        oCurOpObj:TweenMove({x = toX, y = toY}, 1)
+        self.roomView.unityViewNode:DelayRun(
+            1,
+            function()
+                --飞完之后的回调
+                --飞完之后 关闭oCurOpObj
+                oCurOpObj.visible = false
+                --播放特效
+                toPlayer.playerView:playerDonateEffect(effobjSUB)
+                --播放声音
+                -- if sound ~= nil then
+                -- dfCompatibleAPI:soundPlay("daoju/" .. sound)
+                -- end
+            end
+        )
+    end
+end
+
 return Room

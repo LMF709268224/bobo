@@ -258,6 +258,8 @@ function PlayerView:initHeadView()
 
     head.HuaNode = self.myView:GetChild("hua")
     head.HuaNode.visible = false
+    head.HuaNodeText = self.myView:GetChild("huaText")
+    head.HuaNodeText.visible = false
 
     --更新庄家UI
     local updateBanker = function(isBanker, isContinue)
@@ -419,6 +421,7 @@ function PlayerView:hideFlowers()
         end
     end
     self.head.HuaNode.visible = false
+    self.head.HuaNodeText.visible = false
 end
 
 ------------------------------------------
@@ -435,6 +438,8 @@ function PlayerView:showFlowers()
     local dCount = #flowers
 
     self.head.HuaNode.visible = true
+    self.head.HuaNodeText.visible = true
+    self.head.HuaNodeText.text = tileCount
 
     --从那张牌开始挂载，由于tileCount可能大于dCount
     --因此，需要选择tilesDiscarded末尾的dCount个牌显示即可
@@ -1050,7 +1055,7 @@ end
 ----------------------------------------------------------
 function PlayerView:playerDonateEffect(effectName)
     local pos = self.head.headBox
-    animation.play("animations/daoju" .. effectName .. ".prefab", self.myView, pos.x, pos.y)
+    animation.play("animations/" .. effectName .. ".prefab", self.myView, pos.x, pos.y)
 end
 ----------------------------------------------------------
 --起手听特效播放

@@ -171,8 +171,7 @@ end
 --把tilesInWall显示到房间的剩余牌数中
 ------------------------------------
 function Room:updateTilesInWallUI()
-    -- local str = "剩牌 : %s"
-    -- self.roomView.tilesInWall.text = string.format(str, tostring(self.tilesInWall))
+    self.roomView.tilesInWall.text = "剩牌 :" .. self.tilesInWall
 end
 
 ----------------------------------------------
@@ -430,13 +429,14 @@ function Room:hideDiscardedTips()
     end
 end
 
-function Room:sendDonate(donateId)
+function Room:sendDonate(donateId, toChairID)
     -- 1：鲜花    2：啤酒    3：鸡蛋    4：拖鞋
     -- 8：献吻    7：红酒    6：大便    5：拳头
     local chairID = self.myPlayer.chairID
 
     local msgDonate = {}
-    msgDonate.toChairID = chairID
+    msgDonate.fromChairID = chairID
+    msgDonate.toChairID = toChairID
     msgDonate.itemID = donateId
 
     local actionMsgBuf = proto.encodeMessage("mahjong.MsgDonate", msgDonate)
@@ -447,14 +447,10 @@ end
 -- 显示道具动画
 ----------------------------------------------
 function Room:showDonate(msgDonate)
-    logger.debug("显示道具动画 msgDonate : ", msgDonate)
+    -- logger.debug("显示道具动画 msgDonate : ", msgDonate)
     if msgDonate then
         local itemID = msgDonate.itemID
         local oCurOpObj = self.roomView.donateMoveObj
-        -- local obj = oCurOpObj:Find("Donate")
-
-        -- local donate = tool:UguiAddChild(oCurOpObj, obj, obj.name)
-        -- local image = donate:SubGet("Image", "Image")
 
         local fromPlayer = self:getPlayerByChairID(msgDonate.fromChairID)
         local toPlayer = self:getPlayerByChairID(msgDonate.toChairID)
@@ -474,6 +470,7 @@ function Room:showDonate(msgDonate)
         local fromY = fromPlayer.playerView.head.headBox.y
         local toX = toPlayer.playerView.head.headBox.x
         local toY = toPlayer.playerView.head.headBox.y
+        -- logger.debug("目标位置 toX : ", toX, " ; toY : ", toY)
         oCurOpObj:SetXY(fromX, fromY)
         oCurOpObj.visible = true
         local sprite = nil
@@ -522,30 +519,19 @@ function Room:showDonate(msgDonate)
         end
         oCurOpObj.url = "ui://lobby_player_info/" .. sprite
         --飞动画
+        oCurOpObj:TweenMove({x = toX, y = toY}, 1)
         self.roomView.unityViewNode:DelayRun(
-            0.5,
+            1,
             function()
-                --oCurOpObj.transform 飞的图片
-                self.roomView.unityViewNode:RunAction(
-                    oCurOpObj,
-                    {
-                        "localMoveTo",
-                        toX,
-                        toY,
-                        1,
-                        function()
-                            --飞完之后的回调
-                            --飞完之后 关闭oCurOpObj
-                            oCurOpObj.visible = false
-                            --播放特效
-                            toPlayer.playerView:playerDonateEffect(effobjSUB)
-                            --播放声音
-                            -- if sound ~= nil then
-                            -- dfCompatibleAPI:soundPlay("daoju/" .. sound)
-                            -- end
-                        end
-                    }
-                )
+                --飞完之后的回调
+                --飞完之后 关闭oCurOpObj
+                oCurOpObj.visible = false
+                --播放特效
+                toPlayer.playerView:playerDonateEffect(effobjSUB)
+                --播放声音
+                -- if sound ~= nil then
+                -- dfCompatibleAPI:soundPlay("daoju/" .. sound)
+                -- end
             end
         )
     end

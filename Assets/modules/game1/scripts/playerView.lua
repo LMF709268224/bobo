@@ -790,6 +790,13 @@ function PlayerView:playerOperationEffectWhitGZ(effectName)
     -- self.aniPos.visible = true
     animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
 end
+----------------------------------------------------------
+--特效道具播放
+----------------------------------------------------------
+function PlayerView:playerDonateEffect(effectName)
+    local pos = self.head.headImg
+    animation.play("animations/" .. effectName .. ".prefab", self.myView, pos.x, pos.y)
+end
 
 function PlayerView:updateHeadEffectBox()
     if self.head == nil then

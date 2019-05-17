@@ -219,6 +219,7 @@ public class ModuleHub
     {
 
         var writeModuleDir = Path.Combine(Application.persistentDataPath, "modules", modName);
+        
         if (Directory.Exists(writeModuleDir))
         {
             Debug.Log($"{writeModuleDir} exist, try to use writable dir");
