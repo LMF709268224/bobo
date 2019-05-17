@@ -5,7 +5,7 @@ local PlayerInfoView = {}
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
 
-function PlayerInfoView.showUserInfoView(playerInfo, pos, isOther)
+function PlayerInfoView.showUserInfoView(playerInfo, pos, isOther, room)
     if PlayerInfoView.viewNode then
         logger.debug("showUserInfoView -----------")
     else
@@ -29,6 +29,7 @@ function PlayerInfoView.showUserInfoView(playerInfo, pos, isOther)
             end
         )
     end
+    PlayerInfoView.room = room
     PlayerInfoView.playerInfo = playerInfo
     PlayerInfoView.isOther = isOther
     PlayerInfoView:updateView()
@@ -76,6 +77,11 @@ function PlayerInfoView:initView()
     self.propList.itemRenderer = function(index, obj)
         self:renderPropListItem(index, obj)
     end
+    self.propList.onClickItem:Add(
+        function(onClickItem)
+            self.room:sendDonate(onClickItem.data.name)
+        end
+    )
     self.propList:SetVirtual()
 end
 
@@ -83,10 +89,12 @@ function PlayerInfoView:updatePropList()
     self.dataList = {}
     if self.isOther then
         local images = {"dj_bb", "dj_jd", "dj_qj", "dj_tuoxie", "dj_ganbei", "dj_hj", "dj_meigui", "dj_mmd"}
+        local ids = {6, 3, 5, 4, 2, 7, 1, 8}
         for i = 1, 8 do
             local data = {}
             data.image = images[i]
             data.num = i - 4
+            data.id = ids[i]
             table.insert(self.dataList, data)
         end
     end
@@ -100,6 +108,7 @@ function PlayerInfoView:renderPropListItem(index, obj)
     local icon = obj:GetChild("icon")
     local xinNum = obj:GetChild("xinNum")
     local zuanNum = obj:GetChild("zuanNum")
+    obj.name = data.id
     xinNum.text = data.num * 2
     zuanNum.text = data.num
     icon.url = "ui://lobby_player_info/" .. data.image

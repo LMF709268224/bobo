@@ -35,6 +35,12 @@ local UrlPaths = {
 	setMailRead = "/lobby/uuid/setMailRead",
 	deleteMail = "/lobby/uuid/deleteMail",
 	receiveAttachment = "/lobby/uuid/receiveAttachment"
+
+	-- 牌友圈
+	createClub = "/lobby/uuid/createClub",
+	loadMyClubs = "/lobby/uuid/loadMyClubs",
+	deleteClub = "/lobby/uuid/deleteClub",
+
 }
 
 return UrlPaths

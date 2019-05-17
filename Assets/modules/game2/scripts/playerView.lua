@@ -1045,7 +1045,13 @@ function PlayerView:playerOperationEffect(effectName, coYield)
         animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
     end
 end
-
+----------------------------------------------------------
+--特效道具播放
+----------------------------------------------------------
+function PlayerView:playerDonateEffect(effectName)
+    local pos = self.head.headBox
+    animation.play("animations/daoju" .. effectName .. ".prefab", self.myView, pos.x, pos.y)
+end
 ----------------------------------------------------------
 --起手听特效播放
 ----------------------------------------------------------
