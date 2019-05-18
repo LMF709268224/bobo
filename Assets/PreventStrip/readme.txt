@@ -1,0 +1,2 @@
+主要是IL2CPP裁剪了UnityEditor.dll内的AnimatorController，而又不能通过link.xml来防止裁剪。
+因此搞一个空的gameobject，然后挂上一个空的animator和animator controller到场景中，防止裁剪。
