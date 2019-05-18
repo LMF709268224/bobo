@@ -23,18 +23,19 @@ local UrlPaths = {
 	-- 创建房间
 	createRoom = "/lobby/uuid/createRoom",
 	loadRoomPriceCfgs = "/lobby/uuid/loadPrices",
-
 	requestRoomInfo = "/lobby/uuid/requestRoomInfo",
-
 	--战绩
 	lrproom = "/lobby/uuid/lrproom",
 	lrprecord = "/lobby/uuid/lrprecord",
-
 	-- 邮件
 	loadMails = "/lobby/uuid/loadMails",
 	setMailRead = "/lobby/uuid/setMailRead",
 	deleteMail = "/lobby/uuid/deleteMail",
-	receiveAttachment = "/lobby/uuid/receiveAttachment"
+	receiveAttachment = "/lobby/uuid/receiveAttachment",
+	-- 牌友圈
+	createClub = "/lobby/uuid/createClub",
+	loadMyClubs = "/lobby/uuid/loadMyClubs",
+	deleteClub = "/lobby/uuid/deleteClub"
 }
 
 return UrlPaths
