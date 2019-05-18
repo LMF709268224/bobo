@@ -436,10 +436,10 @@ function Room:showDonate(msgDonate)
         --     --更新界面信息  from的player 主要更新 钻石数量
         --     fromPlayer.playerView:updateHeadPopup()
         -- end
-        local fromX = fromPlayer.playerView.head.headImg.x
-        local fromY = fromPlayer.playerView.head.headImg.y
-        local toX = toPlayer.playerView.head.headImg.x
-        local toY = toPlayer.playerView.head.headImg.y
+        local fromX = fromPlayer.playerView.head.headView.x
+        local fromY = fromPlayer.playerView.head.headView.y
+        local toX = toPlayer.playerView.head.headView.x
+        local toY = toPlayer.playerView.head.headView.y
         -- logger.debug("目标位置 toX : ", toX, " ; toY : ", toY)
         oCurOpObj:SetXY(fromX, fromY)
         oCurOpObj.visible = true

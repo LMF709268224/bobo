@@ -116,9 +116,9 @@ function GameOverResultView:updatePlayerInfoData(player, c)
 
     -- if player.avatarID ~= nil and player.avatarID ~= 0 then
     --     local imagePath = string.format("Component/CommonComponent/Bundle/image/box/bk_%d.png", player.avatarID)
-    --     c.headBox.transform:SetImage(imagePath)
-    --     c.headBox.transform:GetComponent("Image"):SetNativeSize()
-    --     c.headBox.transform.localScale = Vector3(0.6, 0.6, 1)
+    --     c.headView.transform:SetImage(imagePath)
+    --     c.headView.transform:GetComponent("Image"):SetNativeSize()
+    --     c.headView.transform.localScale = Vector3(0.6, 0.6, 1)
     -- end
 end
 
@@ -262,7 +262,7 @@ function GameOverResultView:initAllView()
         --头像
         contentGroupData.imageIcon = group:GetChild("head")
         --头像框
-        -- contentGroupData.headBox = group:SubGet("ImageIcon/Image", "Image")
+        -- contentGroupData.headView = group:SubGet("ImageIcon/Image", "Image")
         --房主标志
         contentGroupData.imageRoom = group:GetChild("roomOwner")
         contentGroupData.imageRoom.visible = false

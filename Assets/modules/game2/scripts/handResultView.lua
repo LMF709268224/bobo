@@ -477,7 +477,7 @@ function HandResultView:initAllView()
         contentGroupData.group = group
         --头像
         contentGroupData.imageIcon = group:GetChild("head")
-        -- contentGroupData.headBox = group:SubGet("ImageIcon/Image", "Image")
+        -- contentGroupData.headView = group:SubGet("ImageIcon/Image", "Image")
         --房主标志
         contentGroupData.imageRoom = group:GetChild("roomOwner")
         contentGroupData.imageRoom.visible = false

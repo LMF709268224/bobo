@@ -48,25 +48,22 @@ function PlayerView.new(viewUnityNode, viewChairID)
 
         playerView:initOperationButtons()
     end
-    playerView.aniPos = view:GetChild("aniPos")
-    playerView.userInfoPos = view:GetChild("userInfoPos")
-
-    -- 打出的牌放大显示
-    playerView.discardTips = view:GetChild("discardTip")
-    playerView.discardTipsTile = playerView.discardTips:GetChild("card")
 
     -- 头像相关
     playerView:initHeadView()
+    -- 其他UI
+    playerView:initOtherView(view)
     -- 玩家状态
     playerView:initPlayerStatus()
 
     return playerView
 end
 
+-------------------------------------------------
+--初始化
+-------------------------------------------------
+-- 花牌列表
 function PlayerView:initFlowers()
-    -- 花牌列表
-    -- TODO: 先拿这个hu牌列表来当做花牌列表，hu牌列表只有10个，花牌最多
-    -- 时候会有12个，4个当做花牌的风牌+8个花牌
     local flowers = {}
     local myFlowerTilesNode = self.myView:GetChild("flowers")
     for i = 1, 12 do
@@ -76,8 +73,8 @@ function PlayerView:initFlowers()
     self.flowers = flowers
 end
 
+-- 明牌列表
 function PlayerView:initLights()
-    -- 下面这个Light得到的牌表，是用于结局时摊开牌给其他人看
     local lights = {}
     local myLightTilesNode = self.myView:GetChild("lights")
     for i = 1, 14 do
@@ -87,8 +84,8 @@ function PlayerView:initLights()
     self.lights = lights
 end
 
+-- 打出的牌列表
 function PlayerView:initDiscards()
-    -- 打出的牌列表
     local discards = {}
     local myDicardTilesNode = self.myView:GetChild("discards")
     for i = 1, 20 do
@@ -98,8 +95,8 @@ function PlayerView:initDiscards()
     self.discards = discards
 end
 
+-- 手牌列表
 function PlayerView:initHands()
-    -- 手牌列表
     local hands = {}
     local handsOriginPos = {}
     local handsClickCtrls = {}
@@ -148,9 +145,7 @@ function PlayerView:initCardLists()
     self:initLights()
 end
 
--------------------------------------------------
---保存操作按钮
--------------------------------------------------
+--操作按钮
 function PlayerView:initOperationButtons()
     self.buttonList = self.operationPanel:GetChild("buttonList").asList
     self.buttonList.itemRenderer = function(index, obj)
@@ -183,13 +178,6 @@ function PlayerView:renderButtonListItem(index, obj)
     obj.visible = true
 end
 
-function PlayerView:showButton(map)
-    self.buttonDataList = map
-    self.buttonList.numItems = #map
-    self.buttonList:ResizeToFit(#map)
-    self.operationButtonsRoot.visible = true
-end
-
 function PlayerView:onClickBtn(name)
     local player = self.player
     if name == player.ButtonDef.Chow then
@@ -209,6 +197,14 @@ function PlayerView:onClickBtn(name)
     end
 end
 
+--显示操作按钮
+function PlayerView:showButton(map)
+    self.buttonDataList = map
+    self.buttonList.numItems = #map
+    self.buttonList:ResizeToFit(#map)
+    self.operationButtonsRoot.visible = true
+end
+
 --隐藏所有操作按钮
 function PlayerView:hideOperationButtons()
     -- 先隐藏掉所有按钮
@@ -216,30 +212,23 @@ function PlayerView:hideOperationButtons()
     -- 隐藏根节点
     self.operationButtonsRoot.visible = false
 end
-------------------------------------
--- 设置金币数显示（目前是累计分数）
------------------------------------
-function PlayerView:setGold(_)
-    -- if checkint(gold) < 0 then
-    --     self.head.goldText1:Show()
-    --     self.head.goldText:Hide()
-    --     self.head.goldText1.text = tostring(gold)
-    -- else
-    --     self.head.goldText1:Hide()
-    --     self.head.goldText:Show()
-    --     self.head.goldText.text = tostring(gold)
-    -- end
+
+function PlayerView:initOtherView(view)
+    self.aniPos = view:GetChild("aniPos")
+    self.userInfoPos = view:GetChild("userInfoPos")
+
+    -- 打出的牌放大显示
+    self.discardTips = view:GetChild("discardTip")
+    self.discardTipsTile = self.discardTips:GetChild("card")
 end
 
--------------------------------------------------
---保存头像周边内容节点
--------------------------------------------------
+--头像周边内容节点
 function PlayerView:initHeadView()
     local head = {}
 
-    head.headBox = self.myView:GetChild("head")
-    head.headBox.visible = false
-    head.pos = head.headBox:GetChild("pos")
+    head.headView = self.myView:GetChild("head")
+    head.headView.visible = false
+    head.pos = head.headView:GetChild("pos")
     -- ready状态指示
     head.readyIndicator = self.myView:GetChild("ready")
     head.readyIndicator.visible = false
@@ -281,15 +270,8 @@ function PlayerView:initHeadView()
     self.head = head
 end
 
+-- 玩家状态
 function PlayerView:initPlayerStatus()
-    --重置位置
-    local onReset = function(_)
-        --  房间状态
-        -- if roomstate == proto.mahjong.PlayerState.SRoomPlaying then
-        -- self.infoGroup.localPosition = self.infoGroupPos.localPosition
-        -- end
-    end
-
     --起始
     local onStart = function()
         print("llwant ,test onstart ")
@@ -300,26 +282,23 @@ function PlayerView:initPlayerStatus()
     end
 
     --准备
-    local onReady = function(roomstate)
+    local onReady = function()
         print("llwant ,test onReady ")
         self.head.readyIndicator.visible = true
         self:showOwner()
-        onReset(roomstate)
     end
 
     --离线
-    local onLeave = function(roomstate)
+    local onLeave = function()
         print("llwant ,test onLeave ")
         self.head.readyIndicator.visible = false
-        onReset(roomstate)
     end
 
     --正在玩
-    local onPlaying = function(roomstate)
+    local onPlaying = function()
         print("llwant ,test onPlaying ")
         self.head.readyIndicator.visible = false
         self:showOwner()
-        onReset(roomstate)
     end
 
     local status = {}
@@ -330,25 +309,46 @@ function PlayerView:initPlayerStatus()
     self.onUpdateStatus = status
 end
 
+-------------------------------------------------
+--界面操作
+-------------------------------------------------
+
+-- 设置金币数显示（目前是累计分数）
+function PlayerView:setGold(_)
+    -- if checkint(gold) < 0 then
+    --     self.head.goldText1:Show()
+    --     self.head.goldText:Hide()
+    --     self.head.goldText1.text = tostring(gold)
+    -- else
+    --     self.head.goldText1:Hide()
+    --     self.head.goldText:Show()
+    --     self.head.goldText.text = tostring(gold)
+    -- end
+end
+
 ------------------------------------
 -- 设置头像特殊效果是否显示（当前出牌者则显示）
 -----------------------------------
 function PlayerView:setHeadEffectBox(isShow)
     local x = self.head.pos.x
     local y = self.head.pos.y
-    local ani = animation.play("animations/Effects_UI_touxiang.prefab", self.head.headBox, x, y, true)
+    local ani = animation.play("animations/Effects_UI_touxiang.prefab", self.head.headView, x, y, true)
     ani.setVisible(isShow)
 end
 
-------------------------------------
 --从根节点上隐藏所有
-------------------------------------
 function PlayerView:hideAll()
+    for _, v in ipairs(self.head) do
+        v.visible = false
+    end
+    self:hideHands()
+    self:hideFlowers()
+    self:hideMelds()
+    self:hideLights()
+    self:hideDiscarded()
 end
 
-------------------------------------
 --新的一手牌开始，做一些清理后再开始
-------------------------------------
 function PlayerView:resetForNewHand()
     self:hideHands()
     self:hideFlowers()
@@ -365,9 +365,7 @@ function PlayerView:resetForNewHand()
     end
 end
 
-------------------------------------
 --隐藏打出去的牌列表
-------------------------------------
 function PlayerView:hideDiscarded()
     if self.discards then
         for _, d in ipairs(self.discards) do
@@ -376,9 +374,7 @@ function PlayerView:hideDiscarded()
     end
 end
 
--------------------------------------
 --隐藏摊开牌列表
--------------------------------------
 function PlayerView:hideLights()
     if self.lights then
         for _, h in ipairs(self.lights) do
@@ -387,9 +383,7 @@ function PlayerView:hideLights()
     end
 end
 
--------------------------------------
 --隐藏手牌列表
--------------------------------------
 function PlayerView:hideHands()
     if self.hands then
         for _, h in ipairs(self.hands) do
@@ -398,9 +392,7 @@ function PlayerView:hideHands()
     end
 end
 
--------------------------------------
 --隐藏面子牌组
--------------------------------------
 function PlayerView:hideMelds()
     local mymeldTilesNode = self.myView:GetChild("melds")
     for i = 1, 4 do
@@ -411,9 +403,7 @@ function PlayerView:hideMelds()
     end
 end
 
-------------------------------------------
 --隐藏花牌列表
-------------------------------------------
 function PlayerView:hideFlowers()
     if self.flowers then
         for _, f in ipairs(self.flowers) do
@@ -424,9 +414,7 @@ function PlayerView:hideFlowers()
     self.head.HuaNodeText.visible = false
 end
 
-------------------------------------------
 --显示花牌，注意花牌需要是平放的
-------------------------------------------
 function PlayerView:showFlowers()
     local player = self.player
     local tilesFlower = player.tilesFlower
@@ -457,9 +445,7 @@ function PlayerView:showFlowers()
     end
 end
 
-------------------------------------------
 --显示打出去的牌，明牌显示
-------------------------------------------
 function PlayerView:showDiscarded(newDiscard, waitDiscardReAction)
     local player = self.player
     local tilesDiscarded = player.tilesDiscarded
@@ -499,35 +485,25 @@ function PlayerView:showDiscarded(newDiscard, waitDiscardReAction)
     end
 end
 
-------------------------------------
 --把打出的牌放大显示
-------------------------------------
 function PlayerView:enlargeDiscarded(discardTileId, waitDiscardReAction)
     local discardTips = self.discardTips
     local discardTipsTile = self.discardTipsTile
-    -- local discardTipsYellow = self.discardTipsYellow
     tileMounter:mountTileImage(discardTipsTile, discardTileId)
-    -- discardTipsTile.visible = true
     discardTips.visible = true
     if waitDiscardReAction then
-        -- discardTipsYellow.visible = true
         self.player.waitDiscardReAction = true
     else
-        -- discardTipsYellow.visible = false
-        --ANITIME_DEFINE.OUTCARDTIPSHOWTIME --> 0.7
         self.myView:DelayRun(
             1,
             function()
-                -- discardTipsTile.visible = false
                 discardTips.visible = false
             end
         )
     end
 end
 
----------------------------------------------
 --显示对手玩家的手牌，对手玩家的手牌是暗牌显示
----------------------------------------------
 function PlayerView:showHandsForOpponents()
     local player = self.player
     local tileCountInHand = player.tileCountInHand
@@ -546,9 +522,7 @@ function PlayerView:showHandsForOpponents()
     end
 end
 
----------------------------------------------
 --显示面子牌组
----------------------------------------------
 function PlayerView:showMelds()
     local player = self.player
     local melds = player.melds
@@ -562,7 +536,7 @@ function PlayerView:showMelds()
         if mm then
             mymeldTilesNode:RemoveChild(mm, true)
         end
-        --TODO:根据面子牌挂载牌的图片
+        --根据面子牌挂载牌的图片
         local meldData = melds[i]
         local resName = rm .. MeldComponentSuffix[meldData.meldType]
         local meldView = _ENV.thisMod:CreateUIObject("lobby_mahjong", resName)
@@ -573,11 +547,9 @@ function PlayerView:showMelds()
     end
 end
 
-------------------------------------------
 --显示面子牌组，暗杠需要特殊处理，如果是自己的暗杠，
 --则明牌显示前3张，第4张暗牌显示（以便和明杠区分）
 --如果是别人的暗杠，则全部暗牌显示
-------------------------------------------
 function PlayerView:mountMeldImage(meldView, msgMeld)
     local player = self.player
     local view = player.room:getPlayerViewByChairID(msgMeld.contributor)
@@ -659,10 +631,7 @@ function PlayerView:showFlowerOnHandTail(flower)
     end
 end
 
----------------------------------------------
---为本人显示手牌，也即是1号playerView(prefab中的1号)
---@param wholeMove 是否整体移动
----------------------------------------------
+--为本人显示手牌，也即是1号playerView(prefab中的1号)--@param wholeMove 是否整体移动
 function PlayerView:showHandsForMe(wholeMove)
     local player = self.player
     local tileshand = player.tilesHand
@@ -713,10 +682,7 @@ function PlayerView:showHandsForMe(wholeMove)
     end
 end
 
-------------------------------------------
 --把手牌摊开，包括对手的暗杠牌，用于一手牌结束时
---显示所有人的暗牌
-------------------------------------------
 function PlayerView:hand2Exposed(wholeMove)
     --不需要手牌显示了，全部摊开
     self:hideLights()
@@ -754,10 +720,7 @@ function PlayerView:hand2Exposed(wholeMove)
     end
 end
 
-------------------------------------------
---清除掉由于服务器发下来allowed actions而导致显示出来的view
---例如吃椪杠操作面板等等
-------------------------------------------
+--清除掉由于服务器发下来allowed actions而导致显示出来的view--例如吃椪杠操作面板等等
 function PlayerView:clearAllowedActionsView(discardAble)
     if not discardAble then
         --print("llwant, clear discardable.."..debug.traceback())
@@ -771,11 +734,7 @@ function PlayerView:clearAllowedActionsView(discardAble)
     self.player.room.roomView:hideTingDataView()
 end
 
-------------------------------------------
 --处理玩家点击手牌按钮
---@param index 从1开始到14，表示手牌序号以及
---  摸牌（对应self.hands[14])
-------------------------------------------
 function PlayerView:onHandTileBtnClick(_, index)
     local handsClickCtrls = self.handsClickCtrls
 
@@ -788,11 +747,9 @@ function PlayerView:onHandTileBtnClick(_, index)
     local clickCtrl = handsClickCtrls[index]
 
     if not clickCtrl.isDiscardable then
-        logger.debug("clickCtrl.isDiscardable ----")
         -- 不可以出牌
         --"本轮不能出与该牌组合的牌，请选择其他牌"
         if clickCtrl.isGray then
-            logger.debug("clickCtrl.isGray ----")
             if not self.alreadyShowNonDiscardAbleTips then
                 prompt.showPrompt("本轮不能出与该牌组合的牌，请选择其他牌")
                 self.alreadyShowNonDiscardAbleTips = true
@@ -835,9 +792,7 @@ function PlayerView:onHandTileBtnClick(_, index)
     end
 end
 
----------------------------------------------
 --处理玩家点击左下角的“听”按钮
----------------------------------------------
 function PlayerView:onCheckReadyHandBtnClick()
     local player = self.player
     local roomView = self.player.room.roomView
@@ -853,9 +808,8 @@ function PlayerView:onCheckReadyHandBtnClick()
         roomView:hideTingDataView()
     end
 end
--------------------------------------------------
+
 --拖动出牌事件
--------------------------------------------------
 function PlayerView:onDrag(dragGo, index)
     local startPos = {x = dragGo.x, y = dragGo.y}
     local enable = false
@@ -960,9 +914,7 @@ function PlayerView:onDrag(dragGo, index)
     )
 end
 
--------------------------------------------------
 --还原所有手牌到它初始化时候的位置，并把clickCount重置为0
--------------------------------------------------
 function PlayerView:restoreHandPositionAndClickCount(index)
     for i = 1, 14 do
         if i ~= index then
@@ -975,9 +927,7 @@ function PlayerView:restoreHandPositionAndClickCount(index)
     end
 end
 
--------------------------------------------------
 --隐藏听牌标志
--------------------------------------------------
 function PlayerView:hideTing()
     for i = 1, 14 do
         local clickCtrl = self.handsClickCtrls[i]
@@ -986,18 +936,15 @@ function PlayerView:hideTing()
         end
     end
 end
--------------------------------------------------
+
 --把手牌往上移动30的单位距离
--------------------------------------------------
 function PlayerView:moveHandUp(index)
     local originPos = self.handsOriginPos[index]
     local h = self.handsClickCtrls[index].h
     h.y = originPos.y - 30
 end
 
--------------------------------------------------
 --让所有的手牌都不可以点击
--------------------------------------------------
 function PlayerView:clearDiscardable()
     if self.player.isRichi then
         --如果是听牌状态下，则不再把牌弄回白色（让手牌一直是灰色的）
@@ -1013,36 +960,30 @@ function PlayerView:clearDiscardable()
     end
 end
 
-----------------------------------------------------------
 --显示玩家头像
-----------------------------------------------------------
 function PlayerView:showHeadImg()
-    self.head.headBox.visible = true
-    self.head.headBox.onClick:Set(
+    self.head.headView.visible = true
+    self.head.headView.onClick:Set(
         function(_)
             self.player:onPlayerInfoClick()
         end
     )
 end
 
-----------------------------------------------------------
 --显示桌主
-----------------------------------------------------------
 function PlayerView:showOwner()
     local player = self.player
     self.head.roomOwnerFlag.visible = player:isMe()
 end
 
 ----------------------------------------------------------
---播放补花效果，并等待结束
+--特效播放
 ----------------------------------------------------------
+--播放补花效果，并等待结束
 function PlayerView:playDrawFlowerAnimation()
     self:playerOperationEffect("Effects_zi_buhua", true)
 end
 
-----------------------------------------------------------
---特效播放
-----------------------------------------------------------
 function PlayerView:playerOperationEffect(effectName, coYield)
     if coYield then
         animation.coplay("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
@@ -1050,16 +991,12 @@ function PlayerView:playerOperationEffect(effectName, coYield)
         animation.play("animations/" .. effectName .. ".prefab", self.myView, self.aniPos.x, self.aniPos.y)
     end
 end
-----------------------------------------------------------
 --特效道具播放
-----------------------------------------------------------
 function PlayerView:playerDonateEffect(effectName)
-    local pos = self.head.headBox
+    local pos = self.head.headView
     animation.play("animations/" .. effectName .. ".prefab", self.myView, pos.x, pos.y)
 end
-----------------------------------------------------------
 --起手听特效播放
-----------------------------------------------------------
 function PlayerView:playReadyHandEffect()
     -- self:playerOperationEffect(dfConfig.EFF_DEFINE.SUB_ZI_TING)
 end

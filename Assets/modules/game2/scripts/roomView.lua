@@ -46,9 +46,22 @@ function RoomView.new(room)
     roomView.rightPlayerView = playerViews[2]
     roomView.downPlayerView = playerViews[1]
 
-    -- local voiceBtn = view:GetChild("voice")
-    -- voiceBtn.visible = false
+    roomView:initButton(view)
+    --房间状态事件初始化
+    roomView:initRoomStatus()
 
+    roomView:initOtherView()
+
+    roomView:initTingData()
+    roomView:initMeldsPanel()
+
+    return roomView
+end
+
+--------------------------------------
+--初始化
+--------------------------------------
+function RoomView:initButton(view)
     local chatBtn = view:GetChild("chatBtn")
     chatBtn.onClick:Set(
         function()
@@ -61,33 +74,24 @@ function RoomView.new(room)
     local infoBtn = view:GetChild("guizeBtn")
     infoBtn.visible = true
 
-    roomView.readyButton = view:GetChild("ready")
-    roomView.readyButton.visible = false
-    roomView.readyButton.onClick:Set(
+    self.readyButton = view:GetChild("ready")
+    self.readyButton.visible = false
+    self.readyButton.onClick:Set(
         function()
-            roomView.room:onReadyButtonClick()
+            self.room:onReadyButtonClick()
         end
     )
 
     settingBtn.onClick:Set(
         function()
-            roomView:onDissolveClick()
+            self:onDissolveClick()
         end
     )
-    -- --房间号
-    roomView:initRoomNumber()
-    --房间状态事件初始化
-    roomView:initRoomStatus()
-
-    roomView:initOtherView()
-
-    roomView:initTingData()
-    roomView:initMeldsPanel()
-
-    return roomView
 end
 
 function RoomView:initOtherView()
+    -- 房间号
+    self.roomInfoText = self.unityViewNode:GetChild("roomInfo")
     -- 风圈和当前操作玩家指示箭头roundMarkArrow
     local roundMarks = {}
     self.roundMarkView = self.unityViewNode:GetChild("roundMask")
@@ -109,195 +113,7 @@ function RoomView:initOtherView()
     self.tilesInWall = self.unityViewNode:GetChild("tilesInWall")
 end
 
-function RoomView:pauseResumeButtons(pauseBtnVisible, resumeBtnVisible)
-    self.pauseBtn.visible = pauseBtnVisible
-    self.resumeBtn.visible = resumeBtnVisible
-end
-
-function RoomView:destroyReplayView()
-    self.replayUnityViewNode:Destroy()
-end
-
-function RoomView:show2ReadyButton()
-    self.readyButton.visible = true
-end
-
-function RoomView:hide2ReadyButton()
-    self.readyButton.visible = false
-end
---------------------------------------
---响应玩家点击左上角的退出按钮以及后退事件
---------------------------------------
-function RoomView:onExitButtonClicked()
-    local roomView = self
-
-    if roomView.room ~= nil and roomView.room.handStartted > 0 then
-        prompt.showPrompt("牌局已经开始，请申请解散房间")
-        return
-    end
-
-    local room = roomView.room
-    local msg = "确实要退出房间吗？"
-    dialog:showDialog(
-        msg,
-        function()
-            room.host:triggerLeaveRoom()
-        end,
-        function()
-            --nothing to do
-        end
-    )
-end
-
-----------------------------------------------
--- 播放牌局开始动画
-----------------------------------------------
-function RoomView:gameStartAnimation()
-    local screenWidth = CS.UnityEngine.Screen.width
-    local screenHeight = CS.UnityEngine.Screen.height
-    local x = screenWidth / 2
-    local y = screenHeight / 2
-    animation.coplay("animations/Effects_jiemian_duijukaishi.prefab", self.unityViewNode, x, y)
-end
-
-function RoomView:startDiscardCountdown()
-    --清理定时器
-    self.unityViewNode:StopTimer("roomViewCountDown")
-
-    self.leftTime = 0
-    --起定时器
-    self.unityViewNode:StartTimer(
-        "roomViewCountDown",
-        1,
-        0,
-        function()
-            self.leftTime = self.leftTime + 1
-            self.countDownText.text = self.leftTime
-            if self.leftTime >= 999 then
-                self.unityViewNode:StopTimer("roomViewCountDown")
-            end
-        end,
-        self.leftTime
-    )
-end
-
-function RoomView:stopDiscardCountdown()
-    --清理定时器
-    self.unityViewNode:StopTimer("roomViewCountDown")
-    self.countDownText.text = ""
-end
---------------------------------------
---设置当前房间所等待的操作玩家
---------------------------------------
-function RoomView:setWaitingPlayer(player)
-    --TODO:假设客户端只允许一个等待标志
-    --因此设置一个等待时，先把其他的清理掉
-    self:startDiscardCountdown()
-    self:clearWaitingPlayer()
-    local viewChairID = player.playerView.viewChairID
-    self.roundMarks[viewChairID].visible = true
-
-    player.playerView:setHeadEffectBox(true)
-end
---------------------------------------
---清除当前房间的等待玩家标志
---------------------------------------
-function RoomView:clearWaitingPlayer()
-    for _, mask in ipairs(self.roundMarks) do
-        mask.visible = false
-    end
-    for _, v in pairs(self.playerViews) do
-        v:setHeadEffectBox(false)
-    end
-end
-
---------------------------------------
---初始化房间号
---------------------------------------
-function RoomView:initRoomNumber()
-    self.roomInfoText = self.unityViewNode:GetChild("roomInfo")
-end
-
---------------------------------------
---显示房间号
---------------------------------------
-function RoomView:showRoomNumber()
-    local room = self.room
-    local num = string.format(tostring(self.room.handStartted) or "0", "/", tostring((self.room.handNum)))
-    local str = "房号:" .. room.roomInfo.roomNumber .. " 局数:" .. num
-    self.roomInfoText.text = str
-    -- if self.room.handStartted and self.room.handStartted > 0 then
-    --     self.returnHallBtn:Hide()
-    -- end
-end
-
---初始化时间 wifi信号 电量
---------------------------------------
-function RoomView:initPhoneInfo()
-end
-
---------------------------------------
---解散房间按钮点击事件
---------------------------------------
-function RoomView:onDissolveClick()
-    local msg = "确实要申请解散房间吗？"
-    local roomView = self
-
-    dialog.showDialog(
-        msg,
-        function()
-            roomView.room:onDissolveClicked()
-        end,
-        function()
-            -- do nothing
-        end
-    )
-end
-
---------------------------------------
---解散房间按钮点击事件
---------------------------------------
-function RoomView:onRetunHallClick()
-    -- msg = "确定要返回大厅吗？"
-    -- local roomView = self
-    -- dfCompatibleAPI:showMessageBox(
-    --     msg,
-    --     function()
-    --         local room = roomView.room
-    --         --先向服务器发送返回大厅请求
-    --         room:onRetunHallClicked()
-    --     end,
-    --     function()
-    --         --nothing to do
-    --     end
-    -- )
-    local room = self.room
-    --先向服务器发送返回大厅请求
-    room:onRetunHallClicked()
-end
-
-----------------------------------------------------------
---注销界面
-----------------------------------------------------------
-function RoomView:unInitialize()
-    self:unregisterBroadcast()
-    if self.chatView ~= nil then
-        self.chatView:UnRegisterListener()
-        self.chatView = nil
-    end
-
-    self.skinManager:Clear()
-
-    -- for k, v in pairs(self.timer) do
-    --     if v then
-    --         StopTimer(v)
-    --     end
-    -- end
-end
-
-----------------------------------------------------------
 --初始化房间状态事件
-----------------------------------------------------------
 function RoomView:initRoomStatus()
     -- 房间正在等待玩家准备
     local onWait = function()
@@ -341,31 +157,222 @@ function RoomView:initRoomStatus()
     self.statusHandlers = status
 end
 
-function RoomView:hideNoFriendTips()
-    for _, tip in ipairs(self.noFriendTips) do
-        tip:Hide()
+--初始化显示听牌详情界面
+function RoomView:initTingData()
+    self.listensObj = self.unityViewNode:GetChild("listensPanel")
+    self.listensObjList = self.listensObj:GetChild("list").asList
+    self.listensObjNum = self.listensObj:GetChild("num")
+
+    self.listensObjList.itemRenderer = function(index, obj)
+        self:renderListensListItem(index, obj)
     end
+    self.listensObjList:SetVirtual()
+
+    self.listensObj.onClick:Set(
+        function()
+            self.listensObj.visible = false
+        end
+    )
 end
 
-----------------------------------------------------------
---根据游戏状态控制两个按钮的可见性
-----------------------------------------------------------
-function RoomView:updateLeaveAndDisbandButtons()
-    local room = self.room
+function RoomView:renderListensListItem(index, obj)
+    local data = self.listensDataList[index + 1]
+    local t = obj:GetChild("n1")
+    local num = obj:GetChild("num")
+    num.text = data.Num .. "张"
+    tileMounter:mountTileImage(t, data.Card)
+end
 
-    local handStartted = room.handStartted
-    if handStartted > 0 then
-        self.exitBtn.visible = false
-        self.dissolveBtn.visible = true
+--面子牌选择面板
+function RoomView:initMeldsPanel()
+    -- local meldMap = {}
+    self.meldOpsPanel = self.unityViewNode:GetChild("meldOpsPanel")
+    self.multiOpsObj = self.meldOpsPanel:GetChild("list").asList
+    self.multiOpsObj.itemRenderer = function(index, obj)
+        self:renderMultiOpsListItem(index, obj)
+    end
+    self.multiOpsObj.onClickItem:Add(
+        function(onClickItem)
+            self:onMeldOpsClick(onClickItem.data.name)
+        end
+    )
+end
+
+function RoomView:renderMultiOpsListItem(index, obj)
+    local data = self.multiOpsDataList[index + 1]
+    obj.name = index
+    local MJ  --用来显示可选择的牌
+    if data.meldType == mjproto.MeldType.enumMeldTypeSequence then
+        --吃的时候exp是3，所以第4个牌可以隐藏起来
+        obj:GetChild("n4").visible = false
+        MJ = {data.tile1, data.tile1 + 1, data.tile1 + 2}
+    else
+        MJ = {data.tile1, data.tile1, data.tile1, data.tile1}
+    end
+    for j, v in ipairs(MJ) do
+        local oCurCard = obj:GetChild("n" .. j)
+        tileMounter:mountTileImage(oCurCard, v)
+        oCurCard.visible = true
+    end
+
+    obj.visible = true
+end
+
+function RoomView:onMeldOpsClick(index)
+    local data = self.multiOpsDataList[index + 1]
+    local actionMsg = {}
+    actionMsg.qaIndex = data.actionMsg.qaIndex
+    actionMsg.action = data.actionMsg.action
+    actionMsg.tile = data.actionMsg.tile
+    actionMsg.meldType = data.meldType
+    actionMsg.meldTile1 = data.tile1
+    if data.meldType == mjproto.MeldType.enumMeldTypeConcealedKong then
+        actionMsg.tile = data.tile1
+        actionMsg.action = mjproto.ActionType.enumActionType_KONG_Concealed
+    elseif data.meldType == mjproto.MeldType.enumMeldTypeTriplet2Kong then
+        actionMsg.tile = data.tile1
+        actionMsg.action = mjproto.ActionType.enumActionType_KONG_Triplet2
+    end
+
+    self.room.myPlayer:sendActionMsg(actionMsg)
+    self.room.myPlayer.playerView:hideOperationButtons()
+    self.meldOpsPanel.visible = false
+end
+
+--------------------------------------
+--操作ui
+--------------------------------------
+function RoomView:show2ReadyButton()
+    self.readyButton.visible = true
+end
+
+function RoomView:hide2ReadyButton()
+    self.readyButton.visible = false
+end
+--响应玩家点击左上角的退出按钮以及后退事件
+function RoomView:onExitButtonClicked()
+    local roomView = self
+
+    if roomView.room ~= nil and roomView.room.handStartted > 0 then
+        prompt.showPrompt("牌局已经开始，请申请解散房间")
         return
     end
-    self.exitBtn.visible = true
-    self.dissolveBtn.visible = false
+
+    local room = roomView.room
+    local msg = "确实要退出房间吗？"
+    dialog:showDialog(
+        msg,
+        function()
+            room.host:triggerLeaveRoom()
+        end,
+        function()
+            --nothing to do
+        end
+    )
 end
 
-----------------------------------------------------------
+-- 播放牌局开始动画
+function RoomView:gameStartAnimation()
+    local screenWidth = CS.UnityEngine.Screen.width
+    local screenHeight = CS.UnityEngine.Screen.height
+    local x = screenWidth / 2
+    local y = screenHeight / 2
+    animation.coplay("animations/Effects_jiemian_duijukaishi.prefab", self.unityViewNode, x, y)
+end
+
+function RoomView:startDiscardCountdown()
+    --清理定时器
+    self.unityViewNode:StopTimer("roomViewCountDown")
+
+    self.leftTime = 0
+    --起定时器
+    self.unityViewNode:StartTimer(
+        "roomViewCountDown",
+        1,
+        0,
+        function()
+            self.leftTime = self.leftTime + 1
+            self.countDownText.text = self.leftTime
+            if self.leftTime >= 999 then
+                self.unityViewNode:StopTimer("roomViewCountDown")
+            end
+        end,
+        self.leftTime
+    )
+end
+
+function RoomView:stopDiscardCountdown()
+    --清理定时器
+    self.unityViewNode:StopTimer("roomViewCountDown")
+    self.countDownText.text = ""
+end
+
+--设置当前房间所等待的操作玩家
+function RoomView:setWaitingPlayer(player)
+    --TODO:假设客户端只允许一个等待标志
+    --因此设置一个等待时，先把其他的清理掉
+    self:startDiscardCountdown()
+    self:clearWaitingPlayer()
+    local viewChairID = player.playerView.viewChairID
+    self.roundMarks[viewChairID].visible = true
+
+    player.playerView:setHeadEffectBox(true)
+end
+--清除当前房间的等待玩家标志
+function RoomView:clearWaitingPlayer()
+    for _, mask in ipairs(self.roundMarks) do
+        mask.visible = false
+    end
+    for _, v in pairs(self.playerViews) do
+        v:setHeadEffectBox(false)
+    end
+end
+
+--显示房间号
+function RoomView:showRoomNumber()
+    local room = self.room
+    local num = string.format(tostring(self.room.handStartted) or "0", "/", tostring((self.room.handNum)))
+    local str = "房号:" .. room.roomInfo.roomNumber .. " 局数:" .. num
+    self.roomInfoText.text = str
+    -- if self.room.handStartted and self.room.handStartted > 0 then
+    --     self.returnHallBtn:Hide()
+    -- end
+end
+
+--解散房间按钮点击事件
+function RoomView:onDissolveClick()
+    local msg = "确实要申请解散房间吗？"
+    local roomView = self
+
+    dialog.showDialog(
+        msg,
+        function()
+            roomView.room:onDissolveClicked()
+        end,
+        function()
+            -- do nothing
+        end
+    )
+end
+
+--注销界面
+function RoomView:unInitialize()
+    self:unregisterBroadcast()
+    if self.chatView ~= nil then
+        self.chatView:UnRegisterListener()
+        self.chatView = nil
+    end
+
+    self.skinManager:Clear()
+
+    -- for k, v in pairs(self.timer) do
+    --     if v then
+    --         StopTimer(v)
+    --     end
+    -- end
+end
+
 --根据房间的状态做一些开关变量切换
-----------------------------------------------------------
 function RoomView:onUpdateStatus(state)
     local handler = self.statusHandlers[state]
     if handler ~= nil then
@@ -373,49 +380,7 @@ function RoomView:onUpdateStatus(state)
     end
 end
 
-----------------------------------------------------------
---初始化回退键动作
-----------------------------------------------------------
-function RoomView:handleOnbackPress()
-    local roomView = self
-    local room = roomView.room
-
-    if room:isReplayMode() then
-        roomView.replayUnityViewNode.OnMenuBack = function()
-            local dfReplay = room.dfReplay
-            dfReplay:onExitReplay()
-            --self:onExitButtonClicked()
-        end
-    else
-        roomView.unityViewNode.OnMenuBack = function()
-            if room.ownerID ~= room.myPlayer.userID and self.exitBtn.activeSelf then
-                self:onExitButtonClicked()
-            else
-                if room.handResultView then
-                    logger.debug("on back OnMenuBack ")
-                    room.handResultView:onAgainButtonClick()
-                    return
-                end
-
-                if self.menuPanel.activeSelf then
-                    self.menuPanel:Hide()
-                    return
-                end
-
-                if self.chatView.transform.gameObject.activeSelf then
-                    self.chatView:Hide()
-                    return
-                end
-
-                self:onDissolveClick()
-            end
-        end
-    end
-end
-
---------------------------------------
 --显示出牌提示箭头
---------------------------------------
 function RoomView:setArrowByParent(btn)
     local pos = btn:GetChild("pos")
     local x = pos.x
@@ -456,15 +421,12 @@ function RoomView:setRoundMask(index)
     --self.playerViews[index]:setHeadEffectBox()
 end
 
---------------------------------------
 --隐藏听牌详情界面
---------------------------------------
 function RoomView:hideTingDataView()
     self.listensObj.visible = false
 end
---------------------------------------
+
 --显示听牌详情界面
---------------------------------------
 function RoomView:showTingDataView(data)
     if not data or #data == 0 then
         self.listensObj.visible = false
@@ -485,71 +447,7 @@ function RoomView:showTingDataView(data)
     self.listensObj.visible = true
 end
 
---------------------------------------
---初始化显示听牌详情界面
---------------------------------------
-function RoomView:initTingData()
-    self.listensObj = self.unityViewNode:GetChild("listensPanel")
-    self.listensObjList = self.listensObj:GetChild("list").asList
-    self.listensObjNum = self.listensObj:GetChild("num")
-
-    self.listensObjList.itemRenderer = function(index, obj)
-        self:renderListensListItem(index, obj)
-    end
-    self.listensObjList:SetVirtual()
-
-    self.listensObj.onClick:Set(
-        function()
-            self.listensObj.visible = false
-        end
-    )
-end
-
-function RoomView:renderListensListItem(index, obj)
-    local data = self.listensDataList[index + 1]
-    local t = obj:GetChild("n1")
-    local num = obj:GetChild("num")
-    num.text = data.Num .. "张"
-    tileMounter:mountTileImage(t, data.Card)
-end
-
--------------------------------------------------
---面子牌选择面板
--------------------------------------------------
-function RoomView:initMeldsPanel()
-    -- local meldMap = {}
-    self.meldOpsPanel = self.unityViewNode:GetChild("meldOpsPanel")
-    self.multiOpsObj = self.meldOpsPanel:GetChild("list").asList
-    self.multiOpsObj.itemRenderer = function(index, obj)
-        self:renderMultiOpsListItem(index, obj)
-    end
-    self.multiOpsObj.onClickItem:Add(
-        function(onClickItem)
-            self:onMeldOpsClick(onClickItem.data.name)
-        end
-    )
-end
-
-function RoomView:renderMultiOpsListItem(index, obj)
-    local data = self.multiOpsDataList[index + 1]
-    obj.name = index
-    local MJ  --用来显示可选择的牌
-    if data.meldType == mjproto.MeldType.enumMeldTypeSequence then
-        --吃的时候exp是3，所以第4个牌可以隐藏起来
-        obj:GetChild("n4").visible = false
-        MJ = {data.tile1, data.tile1 + 1, data.tile1 + 2}
-    else
-        MJ = {data.tile1, data.tile1, data.tile1, data.tile1}
-    end
-    for j, v in ipairs(MJ) do
-        local oCurCard = obj:GetChild("n" .. j)
-        tileMounter:mountTileImage(oCurCard, v)
-        oCurCard.visible = true
-    end
-
-    obj.visible = true
-end
-
+--显示面子牌组选择界面
 function RoomView:showOrHideMeldsOpsPanel(map)
     local size = #map
     self.multiOpsDataList = map
@@ -558,25 +456,42 @@ function RoomView:showOrHideMeldsOpsPanel(map)
     self.meldOpsPanel.visible = size > 0
 end
 
-function RoomView:onMeldOpsClick(index)
-    local data = self.multiOpsDataList[index + 1]
-    local actionMsg = {}
-    actionMsg.qaIndex = data.actionMsg.qaIndex
-    actionMsg.action = data.actionMsg.action
-    actionMsg.tile = data.actionMsg.tile
-    actionMsg.meldType = data.meldType
-    actionMsg.meldTile1 = data.tile1
-    if data.meldType == mjproto.MeldType.enumMeldTypeConcealedKong then
-        actionMsg.tile = data.tile1
-        actionMsg.action = mjproto.ActionType.enumActionType_KONG_Concealed
-    elseif data.meldType == mjproto.MeldType.enumMeldTypeTriplet2Kong then
-        actionMsg.tile = data.tile1
-        actionMsg.action = mjproto.ActionType.enumActionType_KONG_Triplet2
-    end
+--初始化回退键动作
+function RoomView:handleOnbackPress()
+    local roomView = self
+    local room = roomView.room
 
-    self.room.myPlayer:sendActionMsg(actionMsg)
-    self.room.myPlayer.playerView:hideOperationButtons()
-    self.meldOpsPanel.visible = false
+    if room:isReplayMode() then
+        roomView.replayUnityViewNode.OnMenuBack = function()
+            local dfReplay = room.dfReplay
+            dfReplay:onExitReplay()
+            --self:onExitButtonClicked()
+        end
+    else
+        roomView.unityViewNode.OnMenuBack = function()
+            if room.ownerID ~= room.myPlayer.userID and self.exitBtn.activeSelf then
+                self:onExitButtonClicked()
+            else
+                if room.handResultView then
+                    logger.debug("on back OnMenuBack ")
+                    room.handResultView:onAgainButtonClick()
+                    return
+                end
+
+                if self.menuPanel.activeSelf then
+                    self.menuPanel:Hide()
+                    return
+                end
+
+                if self.chatView.transform.gameObject.activeSelf then
+                    self.chatView:Hide()
+                    return
+                end
+
+                self:onDissolveClick()
+            end
+        end
+    end
 end
 
 return RoomView

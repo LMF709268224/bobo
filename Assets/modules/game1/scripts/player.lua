@@ -242,7 +242,7 @@ function Player:showCardHandType(cardHandType, discardTileId)
 
     logger.debug("tip : ", tip)
     if tip ~= "" then
-        self.playerView:playerOperationEffectWhitGZ(tip, effectName)
+        self.playerView:playerOperationEffect(tip, effectName)
     end
 end
 
