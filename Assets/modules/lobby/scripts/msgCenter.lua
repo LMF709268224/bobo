@@ -40,7 +40,7 @@ function MsgCenter:start()
         else
             logger.trace("Wait 3 seconds to retry, connectErrorCount:" .. self.connectErrorCount)
             --等待重连
-            coroutingExt.waitSecond(self.component, 3)
+            coroutingExt.waitSecond(self.lobbyView.viewNode, 3)
         end
     end
 end
