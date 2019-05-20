@@ -1,5 +1,4 @@
 local logger = require "lobby/lcore/logger"
-local CreateRoomView = require "scripts/createRoomView"
 local dialog = require "lobby/lcore/dialog"
 
 logger.warn("i am game1")
@@ -16,11 +15,6 @@ local version = require "version"
 -- 		end
 -- 	end
 -- end
-
-local function testCreateUI()
-	_ENV.thisMod:AddUIPackage("game1/fgui/runfast")
-	CreateRoomView.new()
-end
 
 -- local function testRecordUI()
 -- 	_ENV.thisMod:AddUIPackage("game1/fgui/runfast")
@@ -264,8 +258,6 @@ local function main()
 		logger.debug("launchArgs:", json)
 		if json.gameType == "1" then
 			goTestGame()
-		elseif json.gameType == "2" then
-			testCreateUI()
 		elseif json.gameType == "3" then
 			--goTestReplay()
 			--testRecordUI()

@@ -1,5 +1,4 @@
 local logger = require "lobby/lcore/logger"
-local CreateRoomView = require "scripts/createRoomView"
 -- local RecordTotalView = require "scripts/recordTotalView"
 local dialog = require "lobby/lcore/dialog"
 
@@ -17,11 +16,6 @@ local version = require "version"
 -- 		end
 -- 	end
 -- end
-
-local function testCreateUI()
-	_ENV.thisMod:AddUIPackage("game2/fgui/dafeng")
-	CreateRoomView.new()
-end
 
 -- local function testRecordUI()
 -- 	_ENV.thisMod:AddUIPackage("game2/fgui/dafeng")
@@ -286,9 +280,9 @@ local function main()
 		local json = rapidjson.decode(jsonString)
 		logger.debug("launchArgs:", json)
 		if json.gameType == "1" then
+			-- elseif json.gameType == "2" then
+			-- testCreateUI()
 			goTestGame()
-		elseif json.gameType == "2" then
-			testCreateUI()
 		elseif json.gameType == "3" then
 			-- goTestReplay()
 			--testRecordUI()
