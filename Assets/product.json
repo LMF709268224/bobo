@@ -62,6 +62,10 @@
 					"filters":"*.png,*.bytes"
 				},
 				{
+					"path":"lobby/fui_player_info",
+					"filters":"*.png,*.bytes"
+				},
+				{
 					"path":"lobby/lcore",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
@@ -98,6 +102,11 @@
 				},
 				{
 					"path":"lobby/scripts/proto",
+					"istxt":true,
+					"filters":"*.lua,*.pb"
+				},
+				{
+					"path":"lobby/scripts/playerInfo",
 					"istxt":true,
 					"filters":"*.lua,*.pb"
 				},

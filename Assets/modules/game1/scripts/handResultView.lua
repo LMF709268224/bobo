@@ -46,10 +46,6 @@ function HandResultView.new(room)
 
     -- fairy.GRoot.inst:AddChild(viewObj)
 
-    -- local screenWidth = CS.UnityEngine.Screen.width
-    -- local screenHeight = CS.UnityEngine.Screen.height
-    -- win:SetXY(screenWidth / 2, screenHeight / 2)
-
     --排序players
     local players2 = room.players
     local players = {}

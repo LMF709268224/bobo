@@ -73,6 +73,7 @@ public static class ExampleConfig
 		"BestHTTP.Futures",
 		"AssetsFolderLoader",
 		"BestHTTP.PlatformSupport",
+        "BestHTTP.SecureProtocol",
         "FairyGUI.CopyPastePatch"
     };
 

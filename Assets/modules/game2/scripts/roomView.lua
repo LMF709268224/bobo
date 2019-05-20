@@ -14,7 +14,7 @@ local chatView = require "lobby/scripts/chat/chatView"
 local prompt = require "lobby/lcore/prompt"
 local tileMounter = require("scripts/tileImageMounter")
 local animation = require "lobby/lcore/animations"
-local CS = _ENV.CS
+--local CS = _ENV.CS
 
 local mt = {__index = RoomView}
 
@@ -273,8 +273,8 @@ end
 
 -- 播放牌局开始动画
 function RoomView:gameStartAnimation()
-    local screenWidth = CS.UnityEngine.Screen.width
-    local screenHeight = CS.UnityEngine.Screen.height
+    local screenWidth = 1136
+    local screenHeight = 640
     local x = screenWidth / 2
     local y = screenHeight / 2
     animation.coplay("animations/Effects_jiemian_duijukaishi.prefab", self.unityViewNode, x, y)

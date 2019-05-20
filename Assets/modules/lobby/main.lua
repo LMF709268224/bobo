@@ -86,6 +86,8 @@ local function main()
 	--日志等级设置
 	logger.level = lenv.loglevel
 	CS.BestHTTP.HTTPManager.Logger.Level = lenv.bestHTTP.loglevel
+	--设置为60fps
+	CS.UnityEngine.Application.targetFrameRate = 30
 
 	logger.warn("lobby/Boot begin, lobby version:", lobbyVer, ",csharp version:", csharpVer)
 	fairy.GRoot.inst:SetContentScaleFactor(1136, 640)

@@ -2,7 +2,7 @@
     Prompt 提示框
 ]]
 local Prompt = {}
-local CS = _ENV.CS
+--local CS = _ENV.CS
 local fairy = require "lobby/lcore/fairygui"
 
 _ENV.thisMod:AddUIPackage("lobby/fui_dialog/lobby_dialog")
@@ -12,8 +12,8 @@ function Prompt.showPrompt(msg)
 	local label = view:GetChild("text")
 	label.text = msg
 
-	local screenWidth = CS.UnityEngine.Screen.width
-	local screenHeight = CS.UnityEngine.Screen.height
+	local screenWidth = 1136
+	local screenHeight = 640
 	local x = screenWidth / 2
 	local y = screenHeight / 2
 	view:SetXY(x, y)

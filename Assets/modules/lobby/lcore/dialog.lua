@@ -4,7 +4,7 @@
 local Dialog = {}
 local logger = require "lobby/lcore/logger"
 local fairy = require "lobby/lcore/fairygui"
-local CS = _ENV.CS
+--local CS = _ENV.CS
 
 function Dialog.showDialog(msg, callBackOK, callBackCancel)
     if Dialog.viewNode then
@@ -17,8 +17,8 @@ function Dialog.showDialog(msg, callBackOK, callBackCancel)
         local win = fairy.Window()
         win.contentPane = view
         win.modal = true
-        local screenWidth = CS.UnityEngine.Screen.width
-        local screenHeight = CS.UnityEngine.Screen.height
+        local screenWidth = 1136
+        local screenHeight = 640
         win:SetXY(screenWidth / 2, screenHeight / 2)
 
         Dialog.viewNode = view
